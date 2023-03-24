@@ -1,0 +1,40 @@
+server:
+  port: 9528
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
+    username: root
+    password: znrlsp123
+magicalcoder:
+  file:
+    upload:
+      useDisk:
+        open: true
+        returnUrl: true
+        mapping:
+          uploadDiskFolder:
+          requestPrefix: upload
+          fileExtraAddPrefix: upload/
+          ap: D:\\home\\equity\\manage\\upload\\
+#          ap: /www/springboot/manage/upload
+      useAliyunOss:
+        open: false
+        returnUrl: true
+        endpoint: http://oss-cn-beijing.aliyuncs.com
+        accessKeyId: LTAIGeWoz1iMmX2X
+        accessKeySecret: OywMJpmN5cSqreqgLNYZVrBqtxmE8H
+        bucketName: youyaboot
+        aliyunImgDomain: https://youyaboot.oss-cn-beijing.aliyuncs.com/
+
+  superUserName: magicalcoder
+  cors:
+    allowOrigin:
+  publish: false
+  settings:
+    autoStartExplorer: true
+    explorerPath: C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe
+#mybatis-plus配置控制台打印完整带参数SQL语句
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
