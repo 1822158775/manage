@@ -151,7 +151,7 @@ public class CodeGeneration {
 
             DBEntity dbEntity = tableField.get(i);
             String entity = DbConfig.isNotNullEntity(dbEntity);
-            arrayList.add(entity);
+            arrayList.add("    " + entity);
         }
         arrayList.add("}");
         for (int i = 0; i < arrayList.size(); i++) {
@@ -196,8 +196,8 @@ public class CodeGeneration {
             progressBar(i,tableField.size() - 1,"加载数据");
             DBEntity dbEntity = tableField.get(i);
             JSONObject entitys = DbConfig.entitys(dbEntity);
-            arrayList.add(String.valueOf(entitys.get("key")));
-            arrayList.add(String.valueOf(entitys.get("value")));
+            arrayList.add("    " + entitys.get("key"));
+            arrayList.add("    " + entitys.get("value"));
         }
         arrayList.add("}");
         for (int i = 0; i < arrayList.size(); i++) {

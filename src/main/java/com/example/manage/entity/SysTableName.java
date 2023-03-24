@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.ToString;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -18,8 +19,12 @@ import java.io.Serializable;
 @ToString
 @TableName(value = "sys_table_name")
 public class SysTableName implements Serializable {
-@TableId(value = "id",type = IdType.AUTO)
-public Integer id;//数据编码
-@TableField(value = "name")
-public String name;//表的名称
+    @TableId(value = "id",type = IdType.AUTO)
+    public Integer id;//数据编码
+    @TableField(value = "name")
+    public String name;//表的名称
+    @TableField(value = "table_name")
+    public String tableName;//表的名称
+    @TableField(exist = false)
+    public List<SysTableAuthority> sysTableAuthorityS;//权限表
 }

@@ -17,7 +17,9 @@ import java.io.Serializable;
 @Data
 @ToString
 public class SysTableAuthorityNotNull implements Serializable {
-public String id;//
-public String tableNameId;//表名id
-public String authority;//1：查询，2：添加，3：修改，4删除
+    public String id;//
+    public String tableNameId;//表名id
+    public String authority;//1：查询，2：添加，3：修改，4删除
+    public Integer authorityState;//权限状态
+    public Integer roleId;//权限状态
 }

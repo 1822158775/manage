@@ -5,6 +5,17 @@
         <result column="id" property="id" />
         <result column="table_name_id" property="tableNameId" />
         <result column="authority" property="authority" />
+        <result column="authority_state" property="authorityState" />
+        <result column="role_id" property="roleId" />
+        <association property="sysTableName" javaType="com.example.manage.entity.SysTableName">
+            <result column="s_id" property="id" />
+            <result column="s_name" property="name" />
+            <result column="s_table_name" property="tableName" />
+        </association>
+        <association property="sysRole" javaType="com.example.manage.entity.SysRole">
+            <result column="r_id" property="id" />
+            <result column="r_name" property="name" />
+        </association>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
@@ -12,9 +23,11 @@
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select <include refid="tableSql"/>.*
+        select
+            <include refid="returnSql"/>
         from
         <include refid="tableSql"/>
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
@@ -22,9 +35,21 @@
     <sql id="tableSql">
         manage.sys_table_authority
     </sql>
+    <sql id="returnSql">
+        <include refid="tableSql"/>.*
+        ,sys_table_name.id as s_id
+        ,sys_table_name.name as s_name
+        ,sys_table_name.table_name as s_table_name
+        ,sys_role.name as r_name
+        ,sys_role.id as r_id
+    </sql>
+    <sql id="relevanceSql">
+        LEFT JOIN sys_table_name on sys_table_name.id = <include refid="tableSql"/>.table_name_id
+        LEFT JOIN sys_role on sys_role.id = <include refid="tableSql"/>.role_id
+    </sql>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="id != null "> and `id` = #{id}</if>
+        <if test="id != null "> and <include refid="tableSql"/>.`id` = #{id}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
