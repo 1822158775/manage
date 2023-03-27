@@ -1,6 +1,6 @@
 package com.example.manage.controller;
 
-import com.example.manage.service.ISysTableAuthorityService;
+import com.example.manage.service.IBalanceRecordManagementService;
 import com.example.manage.util.entity.ReturnEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,32 +11,31 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @avthor 潘小章
- * @date 2023-03-24 15:26:30
- * 角色权限
+ * @date 2023-03-27 11:16:09
+ * 余额记录管理
  */
 
 @RestController
-@RequestMapping(value = "/api/sys_table_authority/")
-public class SysTableAuthorityController {
-
+@RequestMapping(value = "/api/balance_record_management/")
+public class BalanceRecordManagementController {
     @Resource
-    private ISysTableAuthorityService iSysTableAuthorityService;
+    private IBalanceRecordManagementService iBalanceRecordManagementService;
 
-    // 查询角色权限
+    // 查询余额记录管理
     @PostMapping(value = "cat")
     public ReturnEntity cat(HttpServletRequest request){
-        return iSysTableAuthorityService.methodMaster(request,"cat");
+        return iBalanceRecordManagementService.methodMaster(request,"cat");
     }
 
-    // 添加角色权限
+    // 添加余额记录管理
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iSysTableAuthorityService.methodMaster(request,"add");
+        return iBalanceRecordManagementService.methodMaster(request,"add");
     }
 
-    // 修改角色权限
+    // 修改余额记录管理
    @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
-        return iSysTableAuthorityService.methodMaster(request,"edit");
+        return iBalanceRecordManagementService.methodMaster(request,"edit");
     }
 }

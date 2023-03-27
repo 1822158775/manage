@@ -509,7 +509,7 @@ public class CodeGeneration {
     }
     public static void main(String[] args) {
         try {
-            methodMaster("角色权限","sys_table_authority","SysTableAuthority");
+            methodMaster("余额记录管理","balance_record_management","BalanceRecordManagement");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

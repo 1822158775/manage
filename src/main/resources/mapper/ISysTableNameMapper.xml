@@ -5,13 +5,13 @@
         <result column="id" property="id" />
         <result column="name" property="name" />
         <result column="table_name" property="tableName" />
-<!--        <collection property="sysTableAuthorityS" ofType="com.example.manage.entity.SysTableAuthority">-->
-<!--            <result column="s_id" property="id" />-->
-<!--            <result column="s_table_name_id" property="tableNameId" />-->
-<!--            <result column="s_authority" property="authority" />-->
-<!--            <result column="s_authority_state" property="authorityState" />-->
-<!--            <result column="s_role_id" property="roleId" />-->
-<!--        </collection>-->
+        <collection property="sysTableAuthorityS" ofType="com.example.manage.entity.SysTableAuthority">
+            <result column="s_id" property="id" />
+            <result column="s_table_name_id" property="tableNameId" />
+            <result column="s_authority" property="authority" />
+            <result column="s_authority_state" property="authorityState" />
+            <result column="s_role_id" property="roleId" />
+        </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
@@ -22,21 +22,22 @@
         select
             <include refid="returnSql"/>
         from
-        <include refid="tableSql"/>
+        <include refid="tableSql" />
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
-        <include refid="safeOrderBy"/>
-        <include refid="safeLIMIT"/>
+        <include refid="safeOrderBy" />
+        <include refid="safeLIMIT" />
     </select>
     <sql id="tableSql">
         manage.sys_table_name
     </sql>
     <sql id="returnSql">
         <include refid="tableSql"/>.*
---         ,sys_table_authority.id as s_id
---         ,sys_table_authority.table_name_id as s_table_name_id
---         ,sys_table_authority.authority as s_authority
---         ,sys_table_authority.authority_state as s_authority_state
---         ,sys_table_authority.role_id as s_role_id
+        ,sys_table_authority.id as s_id
+        ,sys_table_authority.table_name_id as s_table_name_id
+        ,sys_table_authority.authority as s_authority
+        ,sys_table_authority.authority_state as s_authority_state
+        ,sys_table_authority.role_id as s_role_id
     </sql>
     <sql id="relevanceSql">
         LEFT JOIN sys_table_authority on sys_table_authority.table_name_id = <include refid="tableSql"/>.id
