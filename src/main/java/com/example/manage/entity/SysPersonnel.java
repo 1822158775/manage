@@ -71,4 +71,11 @@ public class SysPersonnel {
     public String emergencyContactPhone;//紧急联系人手机号
     @TableField(value = "permanent_residence")
     public String permanentResidence;//常住地
+
+    public SysPersonnel() {
+    }
+
+    public SysPersonnel(Integer id) {
+        this.id = id;
+    }
 }

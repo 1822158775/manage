@@ -1,7 +1,6 @@
 package com.example.manage.service.impl;
 
 import com.example.manage.entity.SysPersonnel;
-import com.example.manage.entity.is_not_null.SysManagementNotNull;
 import com.example.manage.entity.is_not_null.SysPersonnelNotNull;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.service.ISysPersonnelService;

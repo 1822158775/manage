@@ -19,7 +19,7 @@ import java.util.List;
 public class LangDu {
     //用电脑自带的语音读字符串str
     public static void main(String[] args) {
-        start(79);
+        start(2);
     }
 
     public static List<String> urlS(String path){
@@ -48,7 +48,7 @@ public class LangDu {
     }
     public static void start(Integer number){
         log.info("播放第" + number + "集");
-        List<String> stringList = urlS("D:\\home\\xiangmu\\wechat-one\\小说\\小神农2\\" + number + ".txt");
+        List<String> stringList = urlS("D:\\home\\xiangmu\\wechat-one\\小说\\民间风水奇谭\\" + number + ".txt");
         //List<String> stringList = Ceshi.urlS("C:\\Users\\Administrator\\AppData\\Local\\Temp\\baiduyunguanjia\\onlinedit\\cache\\efc6c08a899eb6a8a2626c0df8da4800\\1.txt");
         String str = "";
 
@@ -76,5 +76,24 @@ public class LangDu {
         }
         number++;
         start(number);
+    }
+    public static void HuiFu(String str){
+        ActiveXComponent sap = new ActiveXComponent("Sapi.SpVoice");
+        Dispatch sapo = sap.getObject();
+        try {
+            // 音量 0-100
+            sap.setProperty("Volume", new Variant(100));
+            // 语音朗读速度 -10 到 +10
+            sap.setProperty("Rate", new Variant(2));
+            // 执行朗读
+            Dispatch.call(sapo, "Speak", new Variant(str));
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            sapo.safeRelease();
+            sap.safeRelease();
+        }
     }
 }

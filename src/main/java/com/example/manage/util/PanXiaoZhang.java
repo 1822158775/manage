@@ -2,16 +2,13 @@ package com.example.manage.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.example.manage.entity.SysCcManagement;
-import com.example.manage.mapper.ISysCcManagementMapper;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.util.entity.TokenEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -38,9 +35,10 @@ import java.util.regex.Pattern;
  * @avthor 潘小章
  * @date 2021/12/16
  */
+
+@Slf4j
 public class PanXiaoZhang {
     private static final String token = "1";
-    private static final Logger log = LogManager.getLogger(PanXiaoZhang.class);
     public static String ran(Integer integer){
         //随机数创建
         StringBuilder str=new StringBuilder();//定义变长字符串
@@ -151,7 +149,7 @@ public class PanXiaoZhang {
         //WebSocketServer.sendInfo(
         //        token,
         //        sb.toString());
-        System.out.println(sb.toString()+"===============");
+        log.info("请求内容:{}",sb.toString());
         t = JSONObject.parseObject(sb.toString(), eClass);
         // 直接将json信息打印出来
         return t;
@@ -179,7 +177,7 @@ public class PanXiaoZhang {
                 jsonToMap = JSONObject.parseObject(sb.toString());
             }
             // 直接将json信息打印出来
-            System.out.println(sb + "==============");
+            log.info("请求内容:{}",sb.toString());
         } catch (Exception e) {
             log.info("99行异常");
         }
@@ -226,7 +224,7 @@ public class PanXiaoZhang {
                 sb.append(line);
             }
             if (sb.toString().length() > 1){
-                System.out.println(sb.toString()+"===============");
+                log.info(sb.toString());
                 jsonToMap = JSONObject.parseObject(sb.toString());
             }
             // 直接将json信息打印出来
@@ -981,6 +979,20 @@ public class PanXiaoZhang {
                 false
         );
     }
+    //增删改的分类
+    public static String authority_name(Integer integer){
+        if (integer == 1){
+            return "查询";
+        }else if (integer == 2){
+            return "添加";
+        }else if (integer == 2){
+            return "修改";
+        }else if (integer == 2){
+            return "删除";
+        }
+        return "";
+    }
+
     public static void main(String[] args) {
         //System.out.println(DateFormatUtils.format(tomorrow(new Date()),yMd()));
         //String kunming = base64Str("zhangxun");
@@ -1000,10 +1012,5 @@ public class PanXiaoZhang {
         //    e.printStackTrace();
         //}
         //System.out.println(integer);
-        Class<SysCcManagement> sysAuditManagementClass = SysCcManagement.class;
-        Class<ISysCcManagementMapper> iSysAuditManagementMapperClass = ISysCcManagementMapper.class;
-        forEntity(sysAuditManagementClass);
-        System.out.println(sysAuditManagementClass.getName());
-        System.out.println(iSysAuditManagementMapperClass.getName());
     }
 }

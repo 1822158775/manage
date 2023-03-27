@@ -20,6 +20,26 @@ public class SysTableAuthorityNotNull implements Serializable {
     public String id;//
     public String tableNameId;//表名id
     public String authority;//1：查询，2：添加，3：修改，4删除
-    public Integer authorityState;//权限状态
-    public Integer roleId;//权限状态
+    public String authorityState;//权限状态
+    public String roleId;//角色标识
+    public String tableNameIds;//表名id数组
+
+    public SysTableAuthorityNotNull() {
+    }
+
+    public SysTableAuthorityNotNull(String id) {
+        this.id = id;
+    }
+
+    public SysTableAuthorityNotNull(String tableNameIds, String roleId) {
+        this.tableNameIds = tableNameIds;
+        this.roleId = roleId;
+    }
+
+    public SysTableAuthorityNotNull(String tableNameId, String authority, String authorityState, String roleId) {
+        this.tableNameId = tableNameId;
+        this.authority = authority;
+        this.authorityState = authorityState;
+        this.roleId = roleId;
+    }
 }

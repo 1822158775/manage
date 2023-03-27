@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.ToString;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -27,9 +28,25 @@ public class SysTableAuthority implements Serializable {
     @TableField(value = "authority_state")
     public Integer authorityState;//权限状态
     @TableField(value = "role_id")
-    public Integer roleId;
+    public Integer roleId;//角色标识
     @TableField(exist = false)
     public SysTableName sysTableName;//表名称
     @TableField(exist = false)
     public SysRole sysRole;//权限名称
+    @TableField(exist = false)
+    public Integer[] tableNameIds;//表名id数组
+
+    public SysTableAuthority() {
+    }
+
+    public SysTableAuthority(Integer tableNameId, Integer roleId) {
+        this.tableNameId = tableNameId;
+        this.roleId = roleId;
+    }
+
+    public SysTableAuthority(Integer tableNameId, Integer authorityState, Integer roleId) {
+        this.tableNameId = tableNameId;
+        this.authorityState = authorityState;
+        this.roleId = roleId;
+    }
 }

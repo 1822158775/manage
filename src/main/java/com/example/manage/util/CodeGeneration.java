@@ -61,6 +61,7 @@ public class CodeGeneration {
         System.out.print(s);
         return s;
     }
+
     /**
      * 生成指定文件
      * @param fileNames 文件夹路径
@@ -375,7 +376,7 @@ public class CodeGeneration {
         arrayList.add("        }");
         arrayList.add("    }");
         arrayList.add("");
-        arrayList.add("    // 修改角色");
+        arrayList.add("    // 修改" + remark);
         arrayList.add("    private ReturnEntity edit(HttpServletRequest request, " + class_name + " jsonParam) {");
         arrayList.add("        int updateById = i" + class_name + "Mapper.updateById(jsonParam);");
         arrayList.add("        //当返回值不为1的时候判断修改失败\n" +
@@ -389,7 +390,7 @@ public class CodeGeneration {
         arrayList.add("        return new ReturnEntity(CodeEntity.CODE_SUCCEED,jsonParam,request,MsgEntity.CODE_SUCCEED);");
         arrayList.add("    }");
         arrayList.add("");
-        arrayList.add("    // 添加角色");
+        arrayList.add("    // 添加" + remark);
         arrayList.add("    private ReturnEntity add(HttpServletRequest request, " + class_name + " jsonParam) {");
         arrayList.add("        //将数据唯一标识设置为空，由系统生成\n" +
                 "        jsonParam.setId(null);\n" +

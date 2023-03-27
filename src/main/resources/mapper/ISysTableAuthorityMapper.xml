@@ -20,6 +20,7 @@
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
         <include refid="tableSql"/>
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
@@ -49,7 +50,10 @@
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="id != null "> and <include refid="tableSql"/>.`id` = #{id}</if>
+        <if test="id != null "> and <include refid="tableSql"/>.`id` = #{id} </if>
+        <if test="roleId != null "> and <include refid="tableSql"/>.`role_id` = #{roleId} </if>
+        <if test="authorityState != null "> and <include refid="tableSql"/>.`authority_state` = #{authorityState} </if>
+        <if test="tableName != null "> and sys_table_name.`table_name` = #{tableName} </if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

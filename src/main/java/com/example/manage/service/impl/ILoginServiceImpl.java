@@ -52,25 +52,21 @@ public class ILoginServiceImpl implements ILoginService {
             if (ObjectUtils.isEmpty(sysPersonnel)){
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码异常");
             }
-            if (
-                sysPersonnel.getRoleId() == 0
-            ){
-                //添加会话
-                session.setAttribute("user",sysPersonnel.getId());
-                //生成token参数设置
-                Map map = new HashMap();
-                map.put("id",sysPersonnel.getId());
-                map.put("username",sysPersonnel.getUsername());
-                return new ReturnEntity(
-                        CodeEntity.CODE_SUCCEED,
-                        sysPersonnel,//返回用户所有信息
-                        TokenUtil.getoken(map),//进行生成token
-                        MsgEntity.CODE_SUCCEED,//进行生成token
-                        1,//进行生成token
-                        true);
-            }else {
-                return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码异常");
-            }
+            //添加会话
+            session.setAttribute("user",sysPersonnel.getId());
+            //添加添加角色id
+            session.setAttribute("roleId",sysPersonnel.getRoleId());
+            //生成token参数设置
+            Map map = new HashMap();
+            map.put("id",sysPersonnel.getId());
+            map.put("username",sysPersonnel.getUsername());
+            return new ReturnEntity(
+                    CodeEntity.CODE_SUCCEED,
+                    sysPersonnel,//返回用户所有信息
+                    TokenUtil.getoken(map),//进行生成token
+                    MsgEntity.CODE_SUCCEED,//进行生成token
+                    1,//进行生成token
+                    true);
         }catch (Exception e){
             log.info("捕获异常{}",e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
