@@ -979,6 +979,34 @@ public class PanXiaoZhang {
                 false
         );
     }
+
+    public static String JsonZiFuChuLi(String string){
+        String[] split = string.split("\\\\");
+        String str = "";
+        for (String s : split){
+            str += s;
+        }
+
+        String[] split_one = str.split("\"\\{");
+        String str_one = "";
+        for (Integer i = 0;i < split_one.length;i++){
+            if (i + 1 < split_one.length){
+                str_one += split_one[i]+"{";
+            }else {
+                str_one += split_one[i];
+            }
+        }
+        String[] split_two = str_one.split("}\"");
+        String str_two = "";
+        for (Integer i = 0;i < split_two.length;i++){
+            if (i + 1 < split_two.length){
+                str_two += split_two[i]+"}";
+            }else {
+                str_two += split_two[i];
+            }
+        }
+        return str_two;
+    }
     //增删改的分类
     public static String authority_name(Integer integer){
         if (integer == 1){
@@ -992,7 +1020,17 @@ public class PanXiaoZhang {
         }
         return "";
     }
-
+    //传入指定的日期beginDay和时间间隔days，往前为负数，往后为正数
+    public static Date calculationDate(Date beginDay,long days){
+        //获取指定日期的时间戳
+        long beginTime= beginDay.getTime();
+        //计算时间间隔的时间戳
+        long intervalTime = days*24*60*60*1000;
+        //用指定日期时间戳加上时间间隔得到所求的日期
+        long lastTime = beginTime + intervalTime;
+        //将所求日期的时间戳转为日期并返回
+        return new Date(lastTime);
+    }
     public static void main(String[] args) {
         //System.out.println(DateFormatUtils.format(tomorrow(new Date()),yMd()));
         //String kunming = base64Str("zhangxun");

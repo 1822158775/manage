@@ -1,10 +1,11 @@
 package com.example.manage.service.impl;
 
+import com.example.manage.entity.is_not_null.ManageDimissionNotNull;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.ReturnEntity;
-import com.example.manage.entity.BalanceRecordManagement;
-import com.example.manage.mapper.IBalanceRecordManagementMapper;
-import com.example.manage.service.IBalanceRecordManagementService;
+import com.example.manage.entity.ManageDimission;
+import com.example.manage.mapper.IManageDimissionMapper;
+import com.example.manage.service.IManageDimissionService;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -15,15 +16,15 @@ import java.util.Map;
 
 /**
  * @avthor 潘小章
- * @date 2023-03-27 11:16:09
- * 余额记录管理
+ * @date 2023-03-29 11:16:51
+ * 离职申请管理
  */
 
 @Slf4j
 @Service
-public class BalanceRecordManagementServiceImpl implements IBalanceRecordManagementService {
+public class ManageDimissionServiceImpl implements IManageDimissionService {
     @Resource
-    private IBalanceRecordManagementMapper iBalanceRecordManagementMapper;
+    private IManageDimissionMapper iManageDimissionMapper;
 
     //方法总管
     @Override
@@ -32,10 +33,10 @@ public class BalanceRecordManagementServiceImpl implements IBalanceRecordManagem
             if (name.equals("cat")){
                 return cat(request);
             }else if (name.equals("add")){
-                BalanceRecordManagement jsonParam = PanXiaoZhang.getJSONParam(request, BalanceRecordManagement.class);
+                ManageDimission jsonParam = PanXiaoZhang.getJSONParam(request, ManageDimission.class);
                 return add(request,jsonParam);
             }else if (name.equals("edit")){
-                BalanceRecordManagement jsonParam = PanXiaoZhang.getJSONParam(request, BalanceRecordManagement.class);
+                ManageDimission jsonParam = PanXiaoZhang.getJSONParam(request, ManageDimission.class);
                 return edit(request,jsonParam);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
@@ -45,9 +46,31 @@ public class BalanceRecordManagementServiceImpl implements IBalanceRecordManagem
         }
     }
 
-    // 修改角色
-    private ReturnEntity edit(HttpServletRequest request, BalanceRecordManagement jsonParam) {
-        int updateById = iBalanceRecordManagementMapper.updateById(jsonParam);
+    // 修改离职申请管理
+    private ReturnEntity edit(HttpServletRequest request, ManageDimission jsonParam) {
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(
+                jsonParam,
+                new ManageDimissionNotNull(
+                        "isNotNullAndIsLengthNot0"
+                ));
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+        //判断状态是否待审批
+        if (jsonParam.getApplicantState() != null){
+            ManageDimission manageDimission = iManageDimissionMapper.selectById(jsonParam.getId());
+            if (!manageDimission.getApplicantState().equals("pending")){
+                return new ReturnEntity(
+                        CodeEntity.CODE_ERROR,
+                        jsonParam,
+                        MsgEntity.CODE_ERROR
+                );
+            }
+        }
+        int updateById = iManageDimissionMapper.updateById(new ManageDimission(
+            jsonParam.getId(),
+            jsonParam.getApplicantState()
+        ));
         //当返回值不为1的时候判断修改失败
         if (updateById != 1){
             return new ReturnEntity(
@@ -59,12 +82,12 @@ public class BalanceRecordManagementServiceImpl implements IBalanceRecordManagem
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,jsonParam,request,MsgEntity.CODE_SUCCEED);
     }
 
-    // 添加角色
-    private ReturnEntity add(HttpServletRequest request, BalanceRecordManagement jsonParam) {
+    // 添加离职申请管理
+    private ReturnEntity add(HttpServletRequest request, ManageDimission jsonParam) {
         //将数据唯一标识设置为空，由系统生成
         jsonParam.setId(null);
         //没有任何问题将数据录入进数据库
-        int insert = iBalanceRecordManagementMapper.insert(jsonParam);
+        int insert = iManageDimissionMapper.insert(jsonParam);
         //如果返回值不能鱼1则判断失败
         if (insert != 1){
             return new ReturnEntity(
@@ -79,6 +102,6 @@ public class BalanceRecordManagementServiceImpl implements IBalanceRecordManagem
     // 查询模块
     private ReturnEntity cat(HttpServletRequest request) {
         Map map = PanXiaoZhang.getJsonMap(request);
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,iBalanceRecordManagementMapper.queryAll(map),request,MsgEntity.CODE_SUCCEED,iBalanceRecordManagementMapper.queryCount(map));
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,iManageDimissionMapper.queryAll(map),request,MsgEntity.CODE_SUCCEED,iManageDimissionMapper.queryCount(map));
     }
 }

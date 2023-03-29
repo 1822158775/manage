@@ -1,6 +1,11 @@
 server:
   port: 9528
 spring:
+  redis:
+    host: 106.15.56.132
+    port: 6379
+    password: znrlsp123
+    database: 4
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
     username: root
@@ -34,7 +39,17 @@ magicalcoder:
     autoStartExplorer: true
     explorerPath: C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe
 #mybatis-plus配置控制台打印完整带参数SQL语句
-#mybatis-plus:
-#  configuration:
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+wechat:
+  xin:
+    yong:
+      fen:
+        get:
+          api_name: FlySecUserCreditJudgment
+          service_id: wx47ed83644a612440
+          client_msg_id: zhangxun123
+          uri: https://api.weixin.qq.com/wxa/servicemarket
 

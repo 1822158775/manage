@@ -6,7 +6,7 @@
         <result column="phone" property="phone" />
         <result column="place_of_domicile" property="placeOfDomicile" />
         <result column="personnel_code" property="personnelCode" />
-        <result column="user_name" property="username" />
+        <result column="username" property="username" />
         <result column="role_id" property="roleId" />
         <result column="password" property="password" />
         <result column="name" property="name" />
@@ -26,6 +26,18 @@
         <result column="emergency_contact_name" property="emergencyContactName" />
         <result column="emergency_contact_phone" property="emergencyContactPhone" />
         <result column="permanent_residence" property="permanentResidence" />
+        <association property="sysRole" javaType="com.example.manage.entity.SysRole">
+            <result column="r_id" property="id" />
+            <result column="r_name" property="name" />
+        </association>
+        <association property="sysManagement" javaType="com.example.manage.entity.SysManagement">
+            <result column="m_id" property="id" />
+            <result column="m_name" property="name" />
+            <result column="m_project_address" property="projectAddress" />
+            <result column="m_available_balance" property="availableBalance" />
+            <result column="m_monthly_indicators" property="monthlyIndicators" />
+            <result column="m_management_state" property="managementState" />
+        </association>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
@@ -33,9 +45,11 @@
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select <include refid="tableSql"/>.*
+        select
+            <include refid="returnSql"/>
         from
         <include refid="tableSql"/>
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
@@ -43,9 +57,29 @@
     <sql id="tableSql">
         manage.sys_personnel
     </sql>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSql"/>.*
+        ,sys_role.name as r_name
+        ,sys_role.id as r_id
+        ,sys_management.id as m_id
+        ,sys_management.name as m_name
+        ,sys_management.project_address as m_project_address
+        ,sys_management.available_balance as m_available_balance
+        ,sys_management.monthly_indicators as m_monthly_indicators
+        ,sys_management.management_state as m_management_state
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN sys_role on sys_role.id = <include refid="tableSql"/>.role_id
+        LEFT JOIN sys_management on sys_management.id = <include refid="tableSql"/>.management_id
+    </sql>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="id != null "> and `id` = #{id}</if>
+        <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
+        <if test="keyWord != null "> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="managementId != null and managementId != ''"> and <include refid="tableSql" />.`management_id` = #{managementId}</if>
+        <if test="dateFormatBirthday == 'start' "> and DATE_FORMAT(<include refid="tableSql" />.birthday,"%m-%d") BETWEEN #{agoBirthday} AND #{backBirthday}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

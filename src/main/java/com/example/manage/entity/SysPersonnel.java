@@ -71,6 +71,10 @@ public class SysPersonnel {
     public String emergencyContactPhone;//紧急联系人手机号
     @TableField(value = "permanent_residence")
     public String permanentResidence;//常住地
+    @TableField(exist = false)
+    public SysRole sysRole;//权限名称
+    @TableField(exist = false)
+    public SysManagement sysManagement;//项目组名称
 
     public SysPersonnel() {
     }

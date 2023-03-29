@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.IManageDimissionMapper">
+    <resultMap id="entity" type="com.example.manage.entity.ManageDimission">
+        <result column="id" property="id" />
+        <result column="applicant" property="applicant" />
+        <result column="personnel_code" property="personnelCode" />
+        <result column="reasons_for_leaving" property="reasonsForLeaving" />
+        <result column="submission_time" property="submissionTime" />
+        <result column="resignation_time" property="resignationTime" />
+        <result column="applicant_state" property="applicantState" />
+        <association property="sysManagement" javaType="com.example.manage.entity.SysManagement">
+            <result column="m_id" property="id" />
+            <result column="m_name" property="name" />
+            <result column="m_project_address" property="projectAddress" />
+            <result column="m_available_balance" property="availableBalance" />
+            <result column="m_monthly_indicators" property="monthlyIndicators" />
+            <result column="m_management_state" property="managementState" />
+        </association>
+    </resultMap>
+    <select id="queryCount" resultType="int" parameterType="hashmap">
+        select count(<include refid="tableSql"/>.id) as id from
+        <include refid="tableSql"/>
+        <include refid="relevanceSql"/>
+        <include refid="whereSqlModel"/>
+    </select>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+            <include refid="returnSql"/>
+        from
+        <include refid="tableSql"/>
+        <include refid="relevanceSql"/>
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </select>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSql"/>.*
+        ,sys_management.id as m_id
+        ,sys_management.name as m_name
+        ,sys_management.project_address as m_project_address
+        ,sys_management.available_balance as m_available_balance
+        ,sys_management.monthly_indicators as m_monthly_indicators
+        ,sys_management.management_state as m_management_state
+    </sql>
+    <sql id="tableSql">
+        manage.manage_dimission
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN sys_personnel on sys_personnel.personnel_code = <include refid="tableSql"/>.personnel_code
+        LEFT JOIN sys_management on sys_management.id = sys_personnel.management_id
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
+        <if test="keyWord != null "> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
+        <if test="applicantState != null and applicantState != ''"> and <include refid="tableSql" />.`applicant_state` = #{applicantState}</if>
+    </sql>
+    <sql id="safeLIMIT">
+        <if test="queryAll != 'yes'">
+            <if test="pageNum != null and pageNum != ''">
+                LIMIT #{index},#{pageNum}
+            </if>
+        </if>
+    </sql>
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.id desc
+    </sql>
+</mapper>

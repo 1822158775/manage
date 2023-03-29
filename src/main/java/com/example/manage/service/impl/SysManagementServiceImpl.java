@@ -73,7 +73,7 @@ public class SysManagementServiceImpl implements ISysManagementService {
         wrapper.eq("name",jsonParam.getName());
         SysManagement management = iSysManagementMapper.selectOne(wrapper);
         //将可用余额设置为空，进行不修改操作
-        jsonParam.setManagementState(null);
+        jsonParam.setAvailableBalance(null);
         //如果这条数据不存在并且两条数据id相同则返回项目名称已存在
         if (!ObjectUtils.isEmpty(management) && !management.getId().equals(sysManagement.getId())){
             return new ReturnEntity(

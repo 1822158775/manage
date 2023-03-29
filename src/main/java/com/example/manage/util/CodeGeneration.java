@@ -510,7 +510,7 @@ public class CodeGeneration {
     }
     public static void main(String[] args) {
         try {
-            methodMaster("余额记录管理","balance_record_management","BalanceRecordManagement");
+            methodMaster("业绩记录管理","performance_report","PerformanceReport");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

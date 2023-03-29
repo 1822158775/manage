@@ -29,12 +29,13 @@ public class SysManagement implements Serializable {
     @TableField(value = "monthly_indicators")
     public Integer monthlyIndicators;//每月指标
     @TableField(value = "management_state")
-    public Boolean managementState;//项目运行状态
+    public Integer managementState;//项目运行状态
+
 
     public SysManagement() {
     }
 
-    public SysManagement(String name, String projectAddress, Double availableBalance, Integer monthlyIndicators, Boolean managementState) {
+    public SysManagement(String name, String projectAddress, Double availableBalance, Integer monthlyIndicators, Integer managementState) {
         this.name = name;
         this.projectAddress = projectAddress;
         this.availableBalance = availableBalance;

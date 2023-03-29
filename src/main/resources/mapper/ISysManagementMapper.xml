@@ -29,6 +29,7 @@
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
         <if test="keyWord != null "> and `name` like concat('%',#{keyWord},'%')</if>
+        <if test="managementState != null "> and `management_state` = #{managementState}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

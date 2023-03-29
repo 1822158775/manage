@@ -1,5 +1,6 @@
 package com.example.manage.util.ai;
 
+import com.example.manage.util.CodeGeneration;
 import lombok.extern.slf4j.Slf4j;
 import javax.sound.sampled.*;
 import java.io.File;
@@ -15,9 +16,9 @@ public class FindLine extends Thread {
     public static void main(String[] args) throws InterruptedException {
         //新建录音线程，并存入test.wav文件里
         FindLine audioRecorder = new FindLine("test.wav");
-        audioRecorder.start();
-        Thread.sleep(5000);//这里是设置录音的时长
-        audioRecorder.stopRecording();
+        //audioRecorder.start();
+        //Thread.sleep(5000);//这里是设置录音的时长
+        //audioRecorder.stopRecording();
         audioRecorder.play("test.wav");//根据文件路径播放音频
     }
     private static TargetDataLine mic;
@@ -99,7 +100,14 @@ public class FindLine extends Thread {
             byte[] b = new byte[256];
             try {
                 while(fis.read(b)>0) {
+                    log.info("b:{}",b);
                     auline.write(b, 0, b.length);
+                    CodeGeneration.addValue(
+                            "D:\\home\\equity\\equity_sys\\",
+                            "ceshi",
+                            String.valueOf(b),
+                            "txt"
+                    );
                 }
                 auline.close();
             } catch (IOException e) {

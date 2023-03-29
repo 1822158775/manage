@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.IDispatchApplicationManagementMapper">
+    <resultMap id="entity" type="com.example.manage.entity.DispatchApplicationManagement">
+        <result column="id" property="id" />
+        <result column="applicant" property="applicant" />
+        <result column="phone" property="phone" />
+        <result column="personnel_code" property="personnelCode" />
+        <result column="remark" property="remark" />
+        <result column="ago_management_id" property="agoManagementId" />
+        <result column="later_management_id" property="laterManagementId" />
+        <result column="ago_audit_time" property="agoAuditTime" />
+        <result column="ago_personnel_id" property="agoPersonnelId" />
+        <result column="ago_verifier_remark" property="agoVerifierRemark" />
+        <result column="ago_verifier_state" property="agoVerifierState" />
+        <result column="later_audit_time" property="laterAuditTime" />
+        <result column="later_personnel_id" property="laterPersonnelId" />
+        <result column="later_verifier_remark" property="laterVerifierRemark" />
+        <result column="later_verifier_state" property="laterVerifierState" />
+        <result column="dispathch_time" property="dispathchTime" />
+        <result column="applicant_time" property="applicantTime" />
+        <association property="agoVerifierSysPersonnel" javaType="com.example.manage.entity.SysPersonnel">
+            <result column="p_1_name" property="name" />
+        </association>
+        <association property="laterVerifierSysPersonnel" javaType="com.example.manage.entity.SysPersonnel">
+            <result column="p_2_name" property="name" />
+        </association>
+        <association property="agoVerifierSysManagement" javaType="com.example.manage.entity.SysManagement">
+            <result column="m_1_name" property="name" />
+        </association>
+        <association property="laterVerifierSysManagement" javaType="com.example.manage.entity.SysManagement">
+            <result column="m_2_name" property="name" />
+        </association>
+    </resultMap>
+    <select id="queryCount" resultType="int" parameterType="hashmap">
+        select count(<include refid="tableSql"/>.id) as id from
+        <include refid="tableSql"/>
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel"/>
+    </select>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+            <include refid="returnSql"/>
+        from
+        <include refid="tableSql"/>
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </select>
+    <sql id="tableSql">
+        manage.dispatch_application_management
+    </sql>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSql"/>.*
+        ,sys_m_1.`name` as m_1_name
+        ,sys_m_2.`name` as m_2_name
+        ,sys_p_1.`name` as p_1_name
+        ,sys_p_2.`name` as p_2_name
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN sys_management as sys_m_1 on sys_m_1.id = <include refid="tableSql" />.ago_management_id
+        LEFT JOIN sys_management as sys_m_2 on sys_m_2.id = <include refid="tableSql" />.later_management_id
+        LEFT JOIN sys_personnel as sys_p_1 on sys_p_1.id = <include refid="tableSql" />.ago_personnel_id
+        LEFT JOIN sys_personnel as sys_p_2 on sys_p_2.id = <include refid="tableSql" />.later_personnel_id
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="id != null "> and <include refid="tableSql"/>.`id` = #{id}</if>
+        <if test="keyWord != null "> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
+    </sql>
+    <sql id="safeLIMIT">
+        <if test="queryAll != 'yes'">
+            <if test="pageNum != null and pageNum != ''">
+                LIMIT #{index},#{pageNum}
+            </if>
+        </if>
+    </sql>
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.id desc
+    </sql>
+</mapper>

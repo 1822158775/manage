@@ -58,9 +58,11 @@ public class RecordAndPlay {
             int nByte = 0;
             final int bufSize = 4*100;
             byte[] buffer = new byte[bufSize];
-
             while (nByte != -1) {
                 nByte = targetDataLine.read(buffer, 0, bufSize);
+                if (buffer[0] > 3){
+                    log.info("buffer:{}",buffer.length);
+                }
                 sourceDataLine.write(buffer, 0, nByte);
                 waveformGraph.put((short) ((buffer[1]) | buffer[0]));
             }

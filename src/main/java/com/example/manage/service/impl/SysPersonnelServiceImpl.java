@@ -10,6 +10,7 @@ import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -57,6 +58,10 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                 ));
         if (returnEntity.getState()){
             return returnEntity;
+        }
+        if (!ObjectUtils.isEmpty(jsonParam.getPassword())){
+            //密码进行加密
+            jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));
         }
         int updateById = iSysPersonnelMapper.updateById(jsonParam);
         if (updateById != 1){
@@ -107,6 +112,8 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
             return returnEntity;
         }
         jsonParam.setId(null);
+        //密码进行加密
+        jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));
         int insert = iSysPersonnelMapper.insert(jsonParam);
         if (insert != 1){
             return new ReturnEntity(

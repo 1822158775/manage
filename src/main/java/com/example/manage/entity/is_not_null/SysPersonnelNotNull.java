@@ -61,7 +61,6 @@ public class SysPersonnelNotNull {
         this.positionPost = positionPost;
         this.birthday = birthday;
         this.employmentStatus = employmentStatus;
-        this.chiefStewardId = chiefStewardId;
         this.salary = salary;
         this.managementId = managementId;
         this.officialOrTraineeStaff = officialOrTraineeStaff;
@@ -74,7 +73,7 @@ public class SysPersonnelNotNull {
         this.permanentResidence = permanentResidence;
     }
 
-    public SysPersonnelNotNull(String id, String phone, String placeOfDomicile, String personnelCode, String username, String roleId, String password, String name, String positionPost, String image, String birthday, String employmentStatus, String chiefStewardId, String salary, String managementId, String standbyApplication, String officialOrTraineeStaff, String socialSecurityPayment, String commercialInsurance, String entryTime, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence) {
+    public SysPersonnelNotNull(String id, String phone, String placeOfDomicile, String personnelCode, String username, String roleId, String password, String name, String positionPost, String image, String birthday, String employmentStatus,  String salary, String managementId, String standbyApplication, String officialOrTraineeStaff, String socialSecurityPayment, String commercialInsurance, String entryTime, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence) {
         this.id = id;
         this.phone = phone;
         this.placeOfDomicile = placeOfDomicile;
