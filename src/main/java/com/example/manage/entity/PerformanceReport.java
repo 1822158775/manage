@@ -38,10 +38,14 @@ public class PerformanceReport implements Serializable {
     public String commentsFromReviewers;//审核人的留言
     @TableField(value = "approver_state")
     public String approverState;//状态
+    @TableField(value = "card_type_id")
+    public Integer cardTypeId;//办卡类型id
     @TableField(exist = false)
-    public SysPersonnel sysPersonnel;
+    public SysPersonnel sysPersonnel;//申请人信息
     @TableField(exist = false)
-    public SysManagement sysManagement;
+    public SysManagement sysManagement;//申请人所属项目信息
     @TableField(exist = false)
-    public SysPersonnel approverSysPersonnel;
+    public SysPersonnel approverSysPersonnel;//审核人信息
+    @TableField(exist = false)
+    public CardType cardType;//卡种信息
 }

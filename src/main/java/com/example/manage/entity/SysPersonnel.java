@@ -75,7 +75,6 @@ public class SysPersonnel {
     public SysRole sysRole;//权限名称
     @TableField(exist = false)
     public SysManagement sysManagement;//项目组名称
-
     public SysPersonnel() {
     }
 

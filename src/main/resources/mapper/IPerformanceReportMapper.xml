@@ -12,6 +12,12 @@
         <result column="remark" property="remark" />
         <result column="comments_from_reviewers" property="commentsFromReviewers" />
         <result column="approver_state" property="approverState" />
+        <result column="card_type_id" property="cardTypeId" />
+        <association property="cardType" javaType="com.example.manage.entity.CardType">
+            <result column="c_id" property="id" />
+            <result column="c_name" property="name" />
+            <result column="c_amount" property="amount" />
+        </association>
         <association property="sysPersonnel" javaType="com.example.manage.entity.SysPersonnel">
             <result column="p_name" property="name" />
         </association>
@@ -54,6 +60,9 @@
         ,sys_management.available_balance as m_available_balance
         ,sys_management.monthly_indicators as m_monthly_indicators
         ,sys_management.management_state as m_management_state
+        ,card_type.id as c_id
+        ,card_type.name as c_name
+        ,card_type.amount as c_amount
     </sql>
     <sql id="tableSql">
         manage.performance_report
@@ -63,10 +72,14 @@
         LEFT JOIN sys_personnel on sys_personnel.personnel_code = <include refid="tableSql"/>.personnel_code
         LEFT JOIN sys_management on sys_management.id = <include refid="tableSql"/>.management_id
         LEFT JOIN sys_personnel as sys_personnel_1 on sys_personnel_1.id = <include refid="tableSql"/>.approver_personnel_id
+        LEFT JOIN card_type on card_type.id = <include refid="tableSql"/>.card_type_id
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
+        <if test="keyWord != null "> and sys_personnel.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="approverState != null and approverState != ''"> and <include refid="tableSql" />.`approver_state` = #{approverState}</if>
+        <if test="managementId != null and managementId != ''"> and <include refid="tableSql" />.`management_id` = #{managementId}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

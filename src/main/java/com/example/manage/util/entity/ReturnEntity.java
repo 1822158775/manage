@@ -17,6 +17,7 @@ import java.util.List;
 public class ReturnEntity<T> implements Serializable {
     private String code;
     private T value;
+    private T data;
     private String token;
     private String msg;
     private Integer count;
@@ -57,6 +58,15 @@ public class ReturnEntity<T> implements Serializable {
     public ReturnEntity(String code, T value, HttpServletRequest request, String msg, Integer count) {
         this.code = code;
         this.value = value;
+        this.token = PanXiaoZhang.judgmentToken(request);
+        this.msg = msg;
+        this.count = count;
+    }
+
+    public ReturnEntity(String code, T value, T data, HttpServletRequest request, String msg, Integer count) {
+        this.code = code;
+        this.value = value;
+        this.data = data;
         this.token = PanXiaoZhang.judgmentToken(request);
         this.msg = msg;
         this.count = count;

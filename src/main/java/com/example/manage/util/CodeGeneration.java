@@ -510,7 +510,7 @@ public class CodeGeneration {
     }
     public static void main(String[] args) {
         try {
-            methodMaster("业绩记录管理","performance_report","PerformanceReport");
+            methodMaster("项目关联卡种","manage_card_type","ManageCardType");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

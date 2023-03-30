@@ -3,6 +3,7 @@ package com.example.manage.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.SysPersonnel;
+import com.example.manage.entity.is_not_null.SysPersonnelNotNull;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.service.ILoginService;
 import com.example.manage.util.PanXiaoZhang;
@@ -43,11 +44,12 @@ public class ILoginServiceImpl implements ILoginService {
             if (!PanXiaoZhang.isAccount(jsonParam.getUsername()) || !PanXiaoZhang.isPassword(jsonParam.getPassword())){
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码不存在");
             }
-            QueryWrapper<SysPersonnel> wrapper = new QueryWrapper<>();
-            wrapper.eq("username",jsonParam.getUsername());
-            wrapper.eq("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
+            Map<String,Object> map = new HashMap<>();
+            map.put("username",jsonParam.getUsername());
+            map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
             //查询账号信息
-            SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
+            List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
+            SysPersonnel sysPersonnel = sysPersonnels.get(0);
             //判断如果账号查到唯一个就成功登录
             if (ObjectUtils.isEmpty(sysPersonnel)){
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码异常");
@@ -57,7 +59,6 @@ public class ILoginServiceImpl implements ILoginService {
             //添加添加角色id
             session.setAttribute("roleId",sysPersonnel.getRoleId());
             //生成token参数设置
-            Map map = new HashMap();
             map.put("id",sysPersonnel.getId());
             map.put("username",sysPersonnel.getUsername());
             return new ReturnEntity(
@@ -67,6 +68,44 @@ public class ILoginServiceImpl implements ILoginService {
                     MsgEntity.CODE_SUCCEED,//进行生成token
                     1,//进行生成token
                     true);
+        }catch (Exception e){
+            log.info("捕获异常{}",e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
+        }
+    }
+
+    @Override
+    public ReturnEntity whiteListLogin(HttpServletRequest request) {
+        try {
+            SysPersonnel jsonParam = PanXiaoZhang.getJSONParam(request, SysPersonnel.class);
+            ReturnEntity returnEntity = PanXiaoZhang.isNull(
+                    jsonParam,
+                    new SysPersonnelNotNull(
+                            "isNotNullAndIsLengthNot0",
+                            "isNotNullAndIsLengthNot0")
+            );
+            if (returnEntity.getState()){
+                return returnEntity;
+            }
+            //判断账号和密码是否符合条件
+            if (!PanXiaoZhang.isAccount(jsonParam.getUsername()) || !PanXiaoZhang.isPassword(jsonParam.getPassword())){
+                return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码不存在");
+            }
+            Map<String,Object> map = new HashMap<>();
+            map.put("username",jsonParam.getUsername());
+            map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
+            //查询账号信息
+            List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
+            //判断如果账号查到唯一个就成功登录
+            if (sysPersonnels.size() != 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码错误");
+            }
+            SysPersonnel sysPersonnel = sysPersonnels.get(0);
+            return new ReturnEntity(
+                    CodeEntity.CODE_SUCCEED,
+                    sysPersonnel,//返回用户所有信息
+                    "登入成功"
+            );
         }catch (Exception e){
             log.info("捕获异常{}",e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);

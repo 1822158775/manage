@@ -50,6 +50,11 @@ public class SysPersonnelNotNull {
         this.id = id;
     }
 
+    public SysPersonnelNotNull(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
     public SysPersonnelNotNull(String phone, String placeOfDomicile, String personnelCode, String username, String roleId, String password, String name, String positionPost, String birthday, String employmentStatus, String chiefStewardId, String salary, String managementId, String officialOrTraineeStaff, String socialSecurityPayment, String commercialInsurance, String entryTime, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence) {
         this.phone = phone;
         this.placeOfDomicile = placeOfDomicile;

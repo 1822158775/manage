@@ -2,9 +2,9 @@ package com.example.manage.service.impl;
 
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.ReturnEntity;
-import com.example.manage.entity.PerformanceReport;
-import com.example.manage.mapper.IPerformanceReportMapper;
-import com.example.manage.service.IPerformanceReportService;
+import com.example.manage.entity.ManageCardType;
+import com.example.manage.mapper.IManageCardTypeMapper;
+import com.example.manage.service.IManageCardTypeService;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -15,15 +15,15 @@ import java.util.Map;
 
 /**
  * @avthor 潘小章
- * @date 2023-03-29 16:50:54
- * 业绩记录管理
+ * @date 2023-03-30 16:23:53
+ * 项目关联卡种
  */
 
 @Slf4j
 @Service
-public class PerformanceReportServiceImpl implements IPerformanceReportService {
+public class ManageCardTypeServiceImpl implements IManageCardTypeService {
     @Resource
-    private IPerformanceReportMapper iPerformanceReportMapper;
+    private IManageCardTypeMapper iManageCardTypeMapper;
 
     //方法总管
     @Override
@@ -32,10 +32,10 @@ public class PerformanceReportServiceImpl implements IPerformanceReportService {
             if (name.equals("cat")){
                 return cat(request);
             }else if (name.equals("add")){
-                PerformanceReport jsonParam = PanXiaoZhang.getJSONParam(request, PerformanceReport.class);
+                ManageCardType jsonParam = PanXiaoZhang.getJSONParam(request, ManageCardType.class);
                 return add(request,jsonParam);
             }else if (name.equals("edit")){
-                PerformanceReport jsonParam = PanXiaoZhang.getJSONParam(request, PerformanceReport.class);
+                ManageCardType jsonParam = PanXiaoZhang.getJSONParam(request, ManageCardType.class);
                 return edit(request,jsonParam);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
@@ -45,9 +45,9 @@ public class PerformanceReportServiceImpl implements IPerformanceReportService {
         }
     }
 
-    // 修改业绩记录管理
-    private ReturnEntity edit(HttpServletRequest request, PerformanceReport jsonParam) {
-        int updateById = iPerformanceReportMapper.updateById(jsonParam);
+    // 修改项目关联卡种
+    private ReturnEntity edit(HttpServletRequest request, ManageCardType jsonParam) {
+        int updateById = iManageCardTypeMapper.updateById(jsonParam);
         //当返回值不为1的时候判断修改失败
         if (updateById != 1){
             return new ReturnEntity(
@@ -59,12 +59,12 @@ public class PerformanceReportServiceImpl implements IPerformanceReportService {
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,jsonParam,request,MsgEntity.CODE_SUCCEED);
     }
 
-    // 添加业绩记录管理
-    private ReturnEntity add(HttpServletRequest request, PerformanceReport jsonParam) {
+    // 添加项目关联卡种
+    private ReturnEntity add(HttpServletRequest request, ManageCardType jsonParam) {
         //将数据唯一标识设置为空，由系统生成
         jsonParam.setId(null);
         //没有任何问题将数据录入进数据库
-        int insert = iPerformanceReportMapper.insert(jsonParam);
+        int insert = iManageCardTypeMapper.insert(jsonParam);
         //如果返回值不能鱼1则判断失败
         if (insert != 1){
             return new ReturnEntity(
@@ -79,11 +79,6 @@ public class PerformanceReportServiceImpl implements IPerformanceReportService {
     // 查询模块
     private ReturnEntity cat(HttpServletRequest request) {
         Map map = PanXiaoZhang.getJsonMap(request);
-        return new ReturnEntity(
-                CodeEntity.CODE_SUCCEED,
-                iPerformanceReportMapper.queryAll(map),
-                request,
-                MsgEntity.CODE_SUCCEED,
-                iPerformanceReportMapper.queryCount(map));
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,iManageCardTypeMapper.queryAll(map),request,MsgEntity.CODE_SUCCEED,iManageCardTypeMapper.queryCount(map));
     }
 }

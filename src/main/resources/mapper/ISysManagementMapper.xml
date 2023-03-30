@@ -8,22 +8,43 @@
         <result column="available_balance" property="availableBalance" />
         <result column="monthly_indicators" property="monthlyIndicators" />
         <result column="management_state" property="managementState" />
+        <result column="management_code" property="managementCode" />
+        <collection property="cardTypeS" ofType="com.example.manage.entity.CardType">
+            <result column="c_id" property="id" />
+            <result column="c_name" property="name" />
+            <result column="c_amount" property="amount" />
+        </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
         <include refid="tableSql"/>
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select <include refid="tableSql"/>.*
-            from
+        select
+            <include refid="returnSql"/>
+        from
         <include refid="tableSql"/>
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
     </select>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSql"/>.*
+        ,card_type.id as c_id
+        ,card_type.name as c_name
+        ,card_type.amount as c_amount
+    </sql>
     <sql id="tableSql">
         manage.sys_management
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN manage_card_type on manage_card_type.manage_code = <include refid="tableSql"/>.management_code
+        LEFT JOIN card_type on card_type.id = manage_card_type.card_type_id
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1

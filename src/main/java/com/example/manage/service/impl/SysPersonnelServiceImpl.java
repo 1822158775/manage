@@ -59,6 +59,8 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         if (returnEntity.getState()){
             return returnEntity;
         }
+        //账号不可修改
+        jsonParam.setUsername(null);
         if (!ObjectUtils.isEmpty(jsonParam.getPassword())){
             //密码进行加密
             jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));

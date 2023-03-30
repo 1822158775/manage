@@ -77,6 +77,8 @@
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
+        <if test="username != null "> and <include refid="tableSql" />.`username` = #{username}</if>
+        <if test="password != null "> and <include refid="tableSql" />.`password` = #{password}</if>
         <if test="keyWord != null "> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
         <if test="managementId != null and managementId != ''"> and <include refid="tableSql" />.`management_id` = #{managementId}</if>
         <if test="dateFormatBirthday == 'start' "> and DATE_FORMAT(<include refid="tableSql" />.birthday,"%m-%d") BETWEEN #{agoBirthday} AND #{backBirthday}</if>

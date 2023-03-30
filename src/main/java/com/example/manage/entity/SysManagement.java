@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -30,7 +31,14 @@ public class SysManagement implements Serializable {
     public Integer monthlyIndicators;//每月指标
     @TableField(value = "management_state")
     public Integer managementState;//项目运行状态
-
+    @TableField(value = "management_code")
+    public String managementCode;//项目编码
+    @TableField(exist = false)
+    public List<CardType> cardTypeS;//卡种管理
+    @TableField(exist = false)
+    public List<CardType> allCardType;//所有卡种管理
+    @TableField(exist = false)
+    public Integer[] integers;//卡种操作数组
 
     public SysManagement() {
     }
