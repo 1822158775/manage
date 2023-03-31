@@ -52,4 +52,11 @@ wechat:
           service_id: wx47ed83644a612440
           client_msg_id: zhangxun123
           uri: https://api.weixin.qq.com/wxa/servicemarket
+  cp:
+    corpId: ww3c33a38a28a619a1
+    appConfigs:
+      - agentId: 1000004
+        secret: Fld7vz3MLwYZJYS1hzKHR7bdXp-gboI_iPHdCA84MOg
+        token: 52oOTAnfd373WfGUoEHyg
+        aesKey: f1Wy2CjWtaLwKQ6C88AYFSqhAPbadT4LUWLGhlraMTw
 

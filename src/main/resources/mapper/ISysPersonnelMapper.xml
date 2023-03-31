@@ -93,4 +93,9 @@
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc
     </sql>
+
+    <!--  根据人员查询卡种  -->
+    <select id="queryCard" resultMap="entity" parameterType="hashmap">
+
+    </select>
 </mapper>

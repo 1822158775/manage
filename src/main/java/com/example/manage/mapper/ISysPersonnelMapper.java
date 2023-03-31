@@ -14,4 +14,5 @@ import java.util.Map;
 public interface ISysPersonnelMapper extends BaseMapper<SysPersonnel> {
     List<SysPersonnel> queryAll(Map map);
     Integer queryCount(Map map);
+    List<SysPersonnel> queryCard(Map jsonMap);
 }

@@ -1,8 +1,6 @@
-package com.example.manage.controller.white_list;
+package com.example.manage.white_list.controller;
 
 import com.example.manage.service.ILoginService;
-import com.example.manage.util.entity.CodeEntity;
-import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

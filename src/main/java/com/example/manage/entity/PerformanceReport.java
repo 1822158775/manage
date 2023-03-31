@@ -31,7 +31,7 @@ public class PerformanceReport implements Serializable {
     @TableField(value = "report_coding")
     public String reportCoding;//报告编码
     @TableField(value = "approver_personnel_id")
-    public String approverPersonnelId;//审批人数据编码
+    public Integer approverPersonnelId;//审批人数据编码
     @TableField(value = "remark")
     public String remark;//报告备注
     @TableField(value = "comments_from_reviewers")
@@ -42,6 +42,8 @@ public class PerformanceReport implements Serializable {
     public Integer cardTypeId;//办卡类型id
     @TableField(exist = false)
     public SysPersonnel sysPersonnel;//申请人信息
+    @TableField(exist = false)
+    public Integer personnelId;//申请人信息
     @TableField(exist = false)
     public SysManagement sysManagement;//申请人所属项目信息
     @TableField(exist = false)

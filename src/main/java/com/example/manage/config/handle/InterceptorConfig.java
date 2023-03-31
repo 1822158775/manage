@@ -18,7 +18,7 @@ public class InterceptorConfig  implements WebMvcConfigurer {
         };
         //excludePathPatterns排除的路径
         String[] excludePathPatterns = {
-                "/api/login/sign","/api/websocket","/api/error/getBack","/api/error/getRight","/api/white_list/**"
+                "/api/login/sign","/api/websocket","/api/error/getBack","/api/error/getRight","/api/white_list/**","/wx/cp/**"
         };
         //创建用户拦截器对象并指定其拦截的路径和排除的路径
         registry.addInterceptor(new UserInterceptor()).addPathPatterns(addPathPatterns).excludePathPatterns(excludePathPatterns);

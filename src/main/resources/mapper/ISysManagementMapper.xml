@@ -16,41 +16,55 @@
         </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
-        select count(<include refid="tableSql"/>.id) as id from
-        <include refid="tableSql"/>
-        <include refid="relevanceSql" />
-        <include refid="whereSqlModel"/>
+        select count(DISTINCT <include refid="tableSqlAs" />.id) as id from
+            (<include refid="tableReturn" />)
+        as
+            <include refid="tableSqlAs" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
             <include refid="returnSql"/>
         from
-        <include refid="tableSql"/>
-        <include refid="relevanceSql" />
-        <include refid="whereSqlModel" />
-        <include refid="safeOrderBy"/>
-        <include refid="safeLIMIT"/>
+            (<include refid="tableReturn" />)
+        as
+            <include refid="tableSqlAs" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
     </select>
     <!--  返回  -->
     <sql id="returnSql">
-        <include refid="tableSql"/>.*
+        <include refid="tableSqlAs" />.*
         ,card_type.id as c_id
         ,card_type.name as c_name
         ,card_type.amount as c_amount
+    </sql>
+    <!--  子表  -->
+    <sql id="tableReturn">
+        select
+        <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql"/>
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </sql>
+    <sql id="tableSqlAs">
+        sys_mm
     </sql>
     <sql id="tableSql">
         manage.sys_management
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
-        LEFT JOIN manage_card_type on manage_card_type.manage_code = <include refid="tableSql"/>.management_code
+        LEFT JOIN manage_card_type on manage_card_type.manage_code = <include refid="tableSqlAs" />.management_code
         LEFT JOIN card_type on card_type.id = manage_card_type.card_type_id
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="id != null "> and `id` = #{id}</if>
-        <if test="keyWord != null "> and `name` like concat('%',#{keyWord},'%')</if>
-        <if test="managementState != null "> and `management_state` = #{managementState}</if>
+        <if test="id != null "> and <include refid="tableSqlAs" />.`id` = #{id}</if>
+        <if test="keyWord != null "> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="managementState != null "> and <include refid="tableSqlAs" />.`management_state` = #{managementState}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

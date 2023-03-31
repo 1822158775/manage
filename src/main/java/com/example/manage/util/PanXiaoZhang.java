@@ -1031,6 +1031,16 @@ public class PanXiaoZhang {
         //将所求日期的时间戳转为日期并返回
         return new Date(lastTime);
     }
+    //获取token
+    public static String getToken(){
+        return HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_access_token", "", "");
+    }
+    //获取token
+    public static String getOpenId(String phone){
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("mobile",phone);
+        return HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid", jsonObject.toString(), "");
+    }
     public static void main(String[] args) {
         //System.out.println(DateFormatUtils.format(tomorrow(new Date()),yMd()));
         //String kunming = base64Str("zhangxun");

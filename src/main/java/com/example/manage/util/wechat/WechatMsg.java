@@ -2,6 +2,7 @@ package com.example.manage.util.wechat;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.util.wechat.entity.DataEntity;
 import com.example.manage.util.wechat.entity.StateCode;
 import org.springframework.stereotype.Component;
@@ -25,16 +26,16 @@ import java.util.TreeMap;
 public class WechatMsg {
 
     public static void main(String[] args) {
-        String token = "67_AukzFeFADsw83xuDS08H9dB04gFPkwJf7LaVlAS9_pqca7xX7Un9Ax87MZd3-NcaJChdBXd-PlO9NxzFAsejTslJ5SPezfEdN7nkwj-IU8C3P7HOCCou-ri2OKsEKBjAEAKQH";
-        String s = tuiSongXiaoXi(
-                "o_QtX5qJzKGc3YmCG2eUb-v5ZEm8",
-                "任务完成通知",
-                "延禧攻略下载完成",
-                "请前往家庭主机查看",
-                "",
-                "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
-                token
-        );
+        //String token = "67_AukzFeFADsw83xuDS08H9dB04gFPkwJf7LaVlAS9_pqca7xX7Un9Ax87MZd3-NcaJChdBXd-PlO9NxzFAsejTslJ5SPezfEdN7nkwj-IU8C3P7HOCCou-ri2OKsEKBjAEAKQH";
+        //String s = tuiSongXiaoXi(
+        //        "o_QtX5qJzKGc3YmCG2eUb-v5ZEm8",
+        //        "任务完成通知",
+        //        "延禧攻略下载完成",
+        //        "请前往家庭主机查看",
+        //        "",
+        //        "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
+        //        token
+        //);
     }
 
     /**
@@ -42,17 +43,13 @@ public class WechatMsg {
      *
      * @return token
      */
-    public static String tuiSongXiaoXi(String openId,String keyword1,String keyword2,String keyword3,String keyword4,String templateId,String token) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code","2");
-        jsonObject.put("value","模板ID不正确");
-        String s = jsonObject.toString();
+    public ReturnEntity tuiSongXiaoXi(String openId, String keyword1, String keyword2, String keyword3, String keyword4, String templateId, String token) {
         //消息主题显示相关map
         Map<String, Object> dataMap = new HashMap<String, Object>();
         if("5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg".equals(templateId)){
-            s = SendWeChatSignificance(token, openId, keyword1, keyword2, keyword3, keyword4, templateId);
+            return new ReturnEntity("2", SendWeChatSignificance(token, openId, keyword1, keyword2, keyword3, keyword4, templateId));
         }
-        return s;
+        return new ReturnEntity("2","模板ID不正确");
     }
     /**
      * 获取token

@@ -216,6 +216,7 @@ public class SysManagementServiceImpl implements ISysManagementService {
     // 查询模块
     public ReturnEntity cat(HttpServletRequest request) {
         Map map = PanXiaoZhang.getJsonMap(request);
+        System.out.println(iSysManagementMapper.queryAll(map) + "====================");
         return new ReturnEntity(
                 CodeEntity.CODE_SUCCEED,
                 iSysManagementMapper.queryAll(map),

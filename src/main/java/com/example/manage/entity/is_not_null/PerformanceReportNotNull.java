@@ -27,4 +27,15 @@ public class PerformanceReportNotNull implements Serializable {
     public String remark;//报告备注
     public String commentsFromReviewers;//审核人的留言
     public String approverState;//状态
+    public String cardTypeId;//办卡类型id
+    public String personnelId;//当前人员的数据编码
+
+    public PerformanceReportNotNull() {
+    }
+
+    public PerformanceReportNotNull(String reportStatus, String cardTypeId, String personnelId) {
+        this.reportStatus = reportStatus;
+        this.cardTypeId = cardTypeId;
+        this.personnelId = personnelId;
+    }
 }
