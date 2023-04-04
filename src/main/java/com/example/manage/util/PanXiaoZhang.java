@@ -14,6 +14,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.springframework.util.DigestUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -186,21 +187,20 @@ public class PanXiaoZhang {
         //        JSON.toJSONString(subjoinValue(jsonToMap)));
         return subjoinValue(jsonToMap,request);
     }
-    public static Map subjoinValue(Map map,HttpServletRequest request){
-        Object index = map.get("index");
-        Object pageNum = map.get("pageNum");
-        if (isNull(index) || !pureNumber(index)){
-            map.put("index",0);
-        }else {
-            map.put("index",(Integer.valueOf(index.toString()) - 1) * 10);
-        }
-        if (isNull(pageNum) || !pureNumber(pageNum)){
+    public static Map subjoinValue(Map<String,Integer> map,HttpServletRequest request){
+        Integer index = map.get("index");
+        Integer pageNum = map.get("pageNum");
+        if (ObjectUtils.isEmpty(pageNum)){
             map.put("pageNum",10);
         }else {
             if (Integer.valueOf(pageNum.toString()) > 100){
-                pageNum = 100;
+                map.put("pageNum",100);
             }
-            map.put("pageNum",Integer.valueOf(pageNum.toString()));
+        }
+        if (ObjectUtils.isEmpty(index)){
+            map.put("index",0);
+        }else {
+            map.put("index",(Integer.valueOf(index.toString()) - 1) * map.get("pageNum"));
         }
         return map;
     }

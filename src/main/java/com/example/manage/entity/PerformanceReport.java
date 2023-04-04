@@ -50,4 +50,13 @@ public class PerformanceReport implements Serializable {
     public SysPersonnel approverSysPersonnel;//审核人信息
     @TableField(exist = false)
     public CardType cardType;//卡种信息
+
+    public PerformanceReport() {
+    }
+
+    public PerformanceReport(Integer id, String commentsFromReviewers, String approverState) {
+        this.id = id;
+        this.commentsFromReviewers = commentsFromReviewers;
+        this.approverState = approverState;
+    }
 }

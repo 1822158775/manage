@@ -32,8 +32,22 @@ public class ManageDimission implements Serializable {
     public String resignationTime;//离职时间
     @TableField(value = "applicant_state")
     public String applicantState;//审核状态
+    @TableField(value = "management_id")
+    public Integer managementId;//项目数据编码
+    @TableField(value = "approver_personnel_id")
+    public Integer approverPersonnelId;//审批人数据编码
+    @TableField(value = "comments_from_reviewers")
+    public String commentsFromReviewers;//审核人的留言
+    @TableField(value = "approver_state")
+    public String approverState;//状态
+    @TableField(value = "report_coding")
+    public String reportCoding;//报告编码
     @TableField(exist = false)
-    public SysManagement sysManagement;
+    public SysManagement sysManagement;//项目信息
+    @TableField(exist = false)
+    public Integer personnelId;//申请人信息
+    @TableField(exist = false)
+    public SysPersonnel sysPersonnel;//申请人信息
 
     public ManageDimission() {
     }

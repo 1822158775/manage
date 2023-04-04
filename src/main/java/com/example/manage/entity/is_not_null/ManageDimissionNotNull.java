@@ -23,6 +23,7 @@ public class ManageDimissionNotNull implements Serializable {
     public String reasonsForLeaving;//离职原因
     public String submissionTime;//提交时间
     public String resignationTime;//离职时间
+    public String personnelId;//当前人员的数据编码
 
     public ManageDimissionNotNull(String id) {
         this.id = id;
@@ -31,4 +32,10 @@ public class ManageDimissionNotNull implements Serializable {
     public ManageDimissionNotNull() {
     }
 
+    public ManageDimissionNotNull(String applicant, String personnelCode, String resignationTime, String personnelId) {
+        this.applicant = applicant;
+        this.personnelCode = personnelCode;
+        this.resignationTime = resignationTime;
+        this.personnelId = personnelId;
+    }
 }

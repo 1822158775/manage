@@ -43,11 +43,11 @@ public class WechatMsg {
      *
      * @return token
      */
-    public ReturnEntity tuiSongXiaoXi(String openId, String keyword1, String keyword2, String keyword3, String keyword4, String templateId, String token) {
+    public ReturnEntity tuiSongXiaoXi(String openId, String keyword1, String keyword2, String keyword3, String keyword4, String templateId, String token, String pagepath) {
         //消息主题显示相关map
         Map<String, Object> dataMap = new HashMap<String, Object>();
         if("5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg".equals(templateId)){
-            return new ReturnEntity("2", SendWeChatSignificance(token, openId, keyword1, keyword2, keyword3, keyword4, templateId));
+            return new ReturnEntity("2", SendWeChatSignificance(token, openId, keyword1, keyword2, keyword3, keyword4, templateId,pagepath));
         }
         return new ReturnEntity("2","模板ID不正确");
     }
@@ -80,7 +80,7 @@ public class WechatMsg {
      * 重要事件通知消息模版
      * @param token
      */
-    public static String SendWeChatSignificance(String token, String openId, String keyword1, String keyword2, String keyword3, String keyword4, String templateId) {
+    public static String SendWeChatSignificance(String token, String openId, String keyword1, String keyword2, String keyword3, String keyword4, String templateId,String pagepath) {
         try {
             // 接口地址
             String sendMsgApi = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+token;
@@ -90,6 +90,11 @@ public class WechatMsg {
             String template_id = templateId;
             //整体参数map
             Map<String, Object> paramMap = new HashMap<String, Object>();
+            // 主要是这里， 设置小程序的appid和转发的页面
+            TreeMap<String, String> miniprograms = new TreeMap<String, String>();
+            miniprograms.put("appid","wx410b1b17de879b8d");
+            miniprograms.put("pagepath",pagepath);// 注意，这里是支持传参的！！！
+            paramMap.put("miniprogram",miniprograms);
             //消息主题显示相关map
             Map<String, Object> dataMap = new HashMap<String, Object>();
             //根据自己的模板定义内容和颜色

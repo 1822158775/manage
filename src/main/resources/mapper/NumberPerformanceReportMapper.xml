@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.NumberPerformanceReportMapper">
+    <resultMap id="entity" type="com.example.manage.entity.number.PerformanceReportNumber">
+        <result column="all" property="all" />
+        <result column="approve" property="approve" />
+        <result column="active" property="active" />
+        <result column="refuse" property="refuse" />
+        <result column="pendding" property="pendding" />
+        <result column="this_month_active" property="thisMonthActive" />
+        <result column="this_month_approve" property="thisMonthApprove" />
+        <result column="approverState" property="approverState" />
+        <collection property="performanceReport" ofType="com.example.manage.entity.number.PerformanceReportNumber">
+
+        </collection>
+    </resultMap>
+    <select id="queryOne" resultMap="entity" parameterType="hashmap">
+        select
+            (<include refid="countSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel"/>)
+        as
+            `all`
+        ,
+           (<include refid="countSql"/>
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel"/>
+            <include refid="approve" />)
+        as
+            `approve`
+        ,
+            (<include refid="countSql"/>
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel"/>
+            <include refid="active" />)
+        as
+            `active`
+        ,
+            (<include refid="countSql"/>
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel"/>
+            <include refid="refuse" />)
+        as
+            `refuse`
+        ,
+            (<include refid="countSql"/>
+            <include refid="relevanceSql" />
+                <include refid="whereSqlModel"/>
+                <include refid="pendding" />)
+            as
+            `pendding`
+        ,
+            (<include refid="countSql"/>
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel2"/>
+            <include refid="active" />
+            <include refid="curdateTime" />)
+        as
+            `this_month_active`
+        ,
+            (<include refid="countSql"/>
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel2"/>
+            <include refid="approve" />
+            <include refid="curdateTime" />)
+        as
+            `this_month_approve`,
+        COUNT(1)
+        from
+        <include refid="tableSql" />
+    </select>
+    <!--  表名  -->
+    <sql id="tableSql">
+        manage.performance_report
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN sys_personnel on sys_personnel.personnel_code = <include refid="tableSql"/>.personnel_code
+    </sql>
+    <!--  查询总数  -->
+    <sql id="countSql">
+        SELECT
+            COUNT(DISTINCT <include refid="tableSql" />.id)
+        FROM
+            <include refid="tableSql" />
+    </sql>
+    <!--  条件  -->
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="personnelId != null"> and sys_personnel.`id` = #{personnelId}</if>
+        <if test="approverState != null and approverState != ''"> and <include refid="tableSql" />.`approver_state` = #{approverState}</if>
+    </sql>
+    <!--  条件2  -->
+    <sql id="whereSqlModel2">
+        where 1 = 1
+        <if test="personnelId != null"> and sys_personnel.`id` = #{personnelId}</if>
+    </sql>
+    <!--  批核  -->
+    <sql id="approve">
+        and <include refid="tableSql" />.report_status = '批核'
+    </sql>
+    <!--  激活  -->
+    <sql id="active">
+        and <include refid="tableSql" />.report_status = '激活'
+    </sql>
+    <!--  拒绝  -->
+    <sql id="refuse">
+        and <include refid="tableSql" />.report_status = '拒绝'
+    </sql>
+    <!--  转人工  -->
+    <sql id="pendding">
+        and <include refid="tableSql" />.report_status = '转人工'
+    </sql>
+    <!--  当前本月时间  -->
+    <sql id="curdateTime">
+        and DATE_FORMAT( <include refid="tableSql" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+    </sql>
+</mapper>

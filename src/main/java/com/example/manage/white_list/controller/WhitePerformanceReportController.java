@@ -21,8 +21,27 @@ public class WhitePerformanceReportController {
     @Resource
     private IWhitePerformanceReportService iWhitePerformanceReportService;
 
+    //提交业绩数据
     @PostMapping(value = "add")
     private ReturnEntity add(HttpServletRequest request){
         return iWhitePerformanceReportService.methodMaster(request,"add");
+    }
+
+    //查询业绩数据
+    @PostMapping(value = "cat")
+    private ReturnEntity cat(HttpServletRequest request){
+        return iWhitePerformanceReportService.methodMaster(request,"cat");
+    }
+
+    //审批业绩
+    @PostMapping(value = "edit")
+    private ReturnEntity edit(HttpServletRequest request){
+        return iWhitePerformanceReportService.methodMaster(request,"edit");
+    }
+
+    //查询各项状态的数据
+    @PostMapping(value = "cat_number")
+    public ReturnEntity cat_number(HttpServletRequest request){
+        return iWhitePerformanceReportService.methodMaster(request,"cat_number");
     }
 }
