@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.INumberAuditDataMapper">
+    <resultMap id="entity" type="com.example.manage.entity.number.AuditDataNumber">
+        <result column="all" property="all" />
+        <result column="pending" property="pending" />
+        <result column="agree" property="agree" />
+        <result column="refuse" property="refuse" />
+    </resultMap>
+    <select id="queryOne" resultMap="entity" parameterType="hashmap">
+        select
+            (<include refid="countSql"/>
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel"/>
+            <include refid="pending" />)
+        as
+            `pending`
+        ,
+            (<include refid="countSql"/>
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel"/>
+            <include refid="agree" />)
+        as
+            `agree`
+        ,
+            (<include refid="countSql"/>
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel"/>
+            <include refid="refuse" />)
+        as
+            `refuse`
+        ,
+            COUNT(DISTINCT <include refid="tableSql" />.id)
+        as
+            `all`
+        from
+        <include refid="tableSql" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel"/>
+    </select>
+    <!--  表名  -->
+    <sql id="tableSql">
+        manage.performance_report
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN sys_personnel on sys_personnel.personnel_code = <include refid="tableSql"/>.personnel_code
+    </sql>
+    <!--  查询总数  -->
+    <sql id="countSql">
+        SELECT
+        COUNT(DISTINCT <include refid="tableSql" />.id)
+        FROM
+        <include refid="tableSql" />
+    </sql>
+    <!--  条件  -->
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="personnelId != null"> and <include refid="tableSql" />.`approver_personnel_id` = #{personnelId}</if>
+        <if test="approverState != null and approverState != ''"> and <include refid="tableSql" />.`approver_state` = #{approverState}</if>
+    </sql>
+    <!--  条件2  -->
+    <sql id="whereSqlModel2">
+        where 1 = 1
+        <if test="personnelId != null"> and sys_personnel.`id` = #{personnelId}</if>
+    </sql>
+    <!--  审核通过  -->
+    <sql id="agree">
+        and <include refid="tableSql" />.approver_state = 'agree'
+    </sql>
+    <!--  审核拒绝  -->
+    <sql id="refuse">
+        and <include refid="tableSql" />.approver_state = 'refuse'
+    </sql>
+    <!--  待审核  -->
+    <sql id="pending">
+        and <include refid="tableSql" />.approver_state = 'pending'
+    </sql>
+    <!--  当前本月时间  -->
+    <sql id="curdateTime">
+        and DATE_FORMAT( <include refid="tableSql" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+    </sql>
+</mapper>

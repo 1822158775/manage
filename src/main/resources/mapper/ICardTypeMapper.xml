@@ -29,7 +29,8 @@
     <sql id="relevanceSql">
         LEFT JOIN manage_card_type on manage_card_type.card_type_id = <include refid="tableSql"/>.id
         LEFT JOIN sys_management on sys_management.management_code = manage_card_type.manage_code
-        LEFT JOIN sys_personnel on sys_personnel.management_id = sys_management.id
+        LEFT JOIN management_personnel on management_personnel.management_id = sys_management.id
+        LEFT JOIN sys_personnel on sys_personnel.personnel_code = management_personnel.personnel_code
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1

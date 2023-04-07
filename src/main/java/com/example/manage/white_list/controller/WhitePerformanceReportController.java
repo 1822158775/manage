@@ -33,10 +33,22 @@ public class WhitePerformanceReportController {
         return iWhitePerformanceReportService.methodMaster(request,"cat");
     }
 
+    //查询业绩数据
+    @PostMapping(value = "cat_audit")
+    private ReturnEntity cat_audit(HttpServletRequest request){
+        return iWhitePerformanceReportService.methodMaster(request,"cat_audit");
+    }
+
     //审批业绩
     @PostMapping(value = "edit")
     private ReturnEntity edit(HttpServletRequest request){
         return iWhitePerformanceReportService.methodMaster(request,"edit");
+    }
+
+    //查询业绩审批激活数据
+    @PostMapping(value = "cat_audit_number")
+    public ReturnEntity cat_audit_number(HttpServletRequest request){
+        return iWhitePerformanceReportService.methodMaster(request,"cat_audit_number");
     }
 
     //查询各项状态的数据

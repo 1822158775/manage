@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @avthor 潘小章
  * @date 2023/4/3
+ * 离职申请管理
  */
 
 @RestController
@@ -25,5 +26,16 @@ public class WhiteManageDimissionController {
     @PostMapping(value = "cat")
     public ReturnEntity cat(HttpServletRequest request){
         return iWhiteManageDimissionService.methodMaster(request,"cat");
+    }
+    // 查询离职申请管理
+    @PostMapping(value = "cat_leave")
+    public ReturnEntity cat_leave(HttpServletRequest request){
+        return iWhiteManageDimissionService.methodMaster(request,"cat_leave");
+    }
+
+    // 提交离职申请
+    @PostMapping(value = "add")
+    public ReturnEntity add(HttpServletRequest request){
+        return iWhiteManageDimissionService.methodMaster(request,"add");
     }
 }

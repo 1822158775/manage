@@ -22,7 +22,6 @@ import java.util.TreeMap;
  * @avthor 潘小章
  * @date 2021/11/24
  */
-@Component
 public class WechatMsg {
 
     public static void main(String[] args) {
@@ -43,7 +42,7 @@ public class WechatMsg {
      *
      * @return token
      */
-    public ReturnEntity tuiSongXiaoXi(String openId, String keyword1, String keyword2, String keyword3, String keyword4, String templateId, String token, String pagepath) {
+    public static ReturnEntity tuiSongXiaoXi(String openId, String keyword1, String keyword2, String keyword3, String keyword4, String templateId, String token, String pagepath) {
         //消息主题显示相关map
         Map<String, Object> dataMap = new HashMap<String, Object>();
         if("5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg".equals(templateId)){

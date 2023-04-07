@@ -2,10 +2,8 @@ package com.example.manage.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.example.manage.util.entity.CodeEntity;
-import com.example.manage.util.entity.MsgEntity;
-import com.example.manage.util.entity.ReturnEntity;
-import com.example.manage.util.entity.TokenEntity;
+import com.example.manage.util.entity.*;
+import com.example.manage.util.wechat.WechatMsg;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -1039,7 +1037,36 @@ public class PanXiaoZhang {
     public static String getOpenId(String phone){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("mobile",phone);
-        return HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid", jsonObject.toString(), "");
+        String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid", jsonObject.toString(), "");
+        System.out.println(send);
+        return send;
+    }
+    //发送消息
+    public static ReturnEntity postWechat(String phone,String keyword1,String keyword2,String keyword3,String keyword4,String pagepath){
+        Token token = JSONObject.parseObject(PanXiaoZhang.getToken(), Token.class);
+        Token object = JSONObject.parseObject(PanXiaoZhang.getOpenId(phone), Token.class);
+        if (object.getSuccess() != false && token.getSuccess() != false) {
+            ReturnEntity entity = WechatMsg.tuiSongXiaoXi(
+                    object.getResponse().getOpenid(),
+                    keyword1,
+                    keyword2,
+                    keyword3,
+                    keyword4,
+                    "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
+                    token.getResponse().getAccess_token(),
+                    pagepath
+            );
+            return entity;
+        }
+        log.info("消息发送失败:{},{}",object,token);
+        return new ReturnEntity(
+                CodeEntity.CODE_SUCCEED,
+                "",
+                "",
+                MsgEntity.CODE_SUCCEED,
+                0,
+                false
+        );
     }
     public static void main(String[] args) {
         //System.out.println(DateFormatUtils.format(tomorrow(new Date()),yMd()));
@@ -1060,5 +1087,7 @@ public class PanXiaoZhang {
         //    e.printStackTrace();
         //}
         //System.out.println(integer);
+        Token phone = JSONObject.parseObject(getOpenId("15297599442"), Token.class);
+        System.out.println(phone);
     }
 }

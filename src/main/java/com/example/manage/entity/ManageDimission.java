@@ -4,9 +4,14 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -28,8 +33,10 @@ public class ManageDimission implements Serializable {
     public String reasonsForLeaving;//离职原因
     @TableField(value = "submission_time")
     public String submissionTime;//提交时间
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "resignation_time")
-    public String resignationTime;//离职时间
+    public Date resignationTime;//离职时间
     @TableField(value = "applicant_state")
     public String applicantState;//审核状态
     @TableField(value = "management_id")
@@ -42,12 +49,16 @@ public class ManageDimission implements Serializable {
     public String approverState;//状态
     @TableField(value = "report_coding")
     public String reportCoding;//报告编码
+    @TableField(value = "approver_time")
+    public String approverTime;//审核时间
     @TableField(exist = false)
-    public SysManagement sysManagement;//项目信息
+    public List<SysManagement> sysManagement;//项目信息
     @TableField(exist = false)
     public Integer personnelId;//申请人信息
     @TableField(exist = false)
     public SysPersonnel sysPersonnel;//申请人信息
+    @TableField(exist = false)
+    public SysPersonnel approverSysPersonnel;//审核人信息
 
     public ManageDimission() {
     }

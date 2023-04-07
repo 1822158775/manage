@@ -1,8 +1,15 @@
 package com.example.manage.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.manage.entity.ManagementPersonnel;
+import com.example.manage.entity.SysManagement;
 import com.example.manage.entity.SysPersonnel;
+import com.example.manage.entity.SysRole;
 import com.example.manage.entity.is_not_null.SysPersonnelNotNull;
+import com.example.manage.mapper.IManagementPersonnelMapper;
+import com.example.manage.mapper.ISysManagementMapper;
 import com.example.manage.mapper.ISysPersonnelMapper;
+import com.example.manage.mapper.ISysRoleMapper;
 import com.example.manage.service.ISysPersonnelService;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.CodeEntity;
@@ -15,6 +22,8 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,6 +35,15 @@ import java.util.Map;
 public class SysPersonnelServiceImpl implements ISysPersonnelService {
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
+
+    @Resource
+    private IManagementPersonnelMapper iManagementPersonnelMapper;
+
+    @Resource
+    private ISysManagementMapper iSysManagementMapper;
+
+    @Resource
+    private ISysRoleMapper iSysRoleMapper;
 
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -58,6 +76,47 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                 ));
         if (returnEntity.getState()){
             return returnEntity;
+        }
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getId());
+        SysRole sysRole = iSysRoleMapper.selectById(sysPersonnel.getRoleId());
+        if (sysRole.getLevelSorting() > 2 && jsonParam.getManagementId().length > 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该角色不可以拥有多个项目");
+        }
+        //存储已有的内容
+        Map<Integer,ManagementPersonnel> map = new HashMap<>();
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",jsonParam.getPersonnelCode());
+        List<ManagementPersonnel> selectList = iManagementPersonnelMapper.selectList(wrapper);
+        //已有的关联
+        for (int i = 0; i < selectList.size(); i++) {
+            ManagementPersonnel managementPersonnel = selectList.get(i);
+            map.put(managementPersonnel.getManagementId(),managementPersonnel);
+        }
+        //传的关联
+        for (int i = 0; i < jsonParam.getManagementId().length; i++) {
+            Integer integer = jsonParam.getManagementId()[i];
+            map.put(integer * -1,new ManagementPersonnel(
+                    integer,
+                    jsonParam.getPersonnelCode()
+            ));
+        }
+        //查询所有项目
+        List<SysManagement> sysManagements = iSysManagementMapper.selectList(null);
+        for (int i = 0; i < sysManagements.size(); i++) {
+            SysManagement management = sysManagements.get(i);
+            Integer id = management.getId();
+            ManagementPersonnel managementPersonnel = map.get(id);
+            ManagementPersonnel personnel = map.get(id * -1);
+            if (ObjectUtils.isEmpty(managementPersonnel) && !ObjectUtils.isEmpty(personnel)){
+                //不存在进行添加
+                iManagementPersonnelMapper.insert(personnel);
+            }else if (!ObjectUtils.isEmpty(managementPersonnel) && ObjectUtils.isEmpty(personnel)){
+                //存在但是现传数据里没有需要删除
+                QueryWrapper queryWrapper = new QueryWrapper();
+                queryWrapper.eq("management_id",managementPersonnel.getManagementId());
+                queryWrapper.eq("personnel_code",managementPersonnel.getPersonnelCode());
+                iManagementPersonnelMapper.delete(queryWrapper);
+            }
         }
         //账号不可修改
         jsonParam.setUsername(null);
@@ -107,11 +166,24 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0"
                 ));
         if (returnEntity.getState()){
             return returnEntity;
+        }
+        SysRole sysRole = iSysRoleMapper.selectById(jsonParam.getRoleId());
+        if (sysRole.getLevelSorting() > 2 && jsonParam.getManagementId().length > 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该角色不可以拥有多个项目");
+        }
+        if (jsonParam.getManagementId().length < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"请选择所属项目");
+        }
+        for (int i = 0; i < jsonParam.getManagementId().length; i++) {
+            Integer integer = jsonParam.getManagementId()[i];
+            iManagementPersonnelMapper.insert(new ManagementPersonnel(
+                    integer,
+                    jsonParam.getPersonnelCode()
+            ));
         }
         jsonParam.setId(null);
         //密码进行加密

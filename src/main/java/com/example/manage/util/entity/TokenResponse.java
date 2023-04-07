@@ -11,4 +11,5 @@ import lombok.ToString;
 @ToString
 public class TokenResponse {
     public String access_token;
+    public String openid;
 }

@@ -3,11 +3,11 @@ package com.example.manage.white_list.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.ManageDimission;
+import com.example.manage.entity.ManagementPersonnel;
 import com.example.manage.entity.SysPersonnel;
+import com.example.manage.entity.SysRole;
 import com.example.manage.entity.is_not_null.ManageDimissionNotNull;
-import com.example.manage.mapper.IManageDimissionMapper;
-import com.example.manage.mapper.ISysPersonnelMapper;
-import com.example.manage.service.IManageDimissionService;
+import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
@@ -24,7 +24,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @avthor 潘小章
@@ -44,6 +46,18 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
     @Resource
     private WechatMsg wechatMsg;
 
+    @Resource
+    private WhiteManageDimissionMapper whiteManageDimissionMapper;
+
+    @Resource
+    private ISysRoleMapper iSysRoleMapper;
+
+    @Resource
+    private IManagementPersonnelMapper iManagementPersonnelMapper;
+
+    @Resource
+    private WhiteSysPersonnelMapper whiteSysPersonnelMapper;
+
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
         try {
@@ -51,6 +65,8 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
                 return cat(request);
             }else if (name.equals("add")){
                 return add(request);
+            }else if (name.equals("cat_leave")){
+                return cat_leave(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
@@ -58,6 +74,11 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
             return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
         }
     }
+
+    private ReturnEntity cat_leave(HttpServletRequest request) {
+        return null;
+    }
+
     //添加数据
     private ReturnEntity add(HttpServletRequest request) throws IOException {
         ManageDimission jsonParam = PanXiaoZhang.getJSONParam(request, ManageDimission.class);
@@ -66,36 +87,47 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
                 new ManageDimissionNotNull(
                         "isNotNullAndIsLengthNot0"
                         ,"isNotNullAndIsLengthNot0"
-                        ,"isNotNullAndIsLengthNot0"
-                        ,"isNotNullAndIsLengthNot0"
                 )
         );
         if (returnEntity.getState()){
             return returnEntity;
         }
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
-
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+        ManageDimission manageDimission = iManageDimissionMapper.selectOne(wrapper);
+        if (!ObjectUtils.isEmpty(manageDimission)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"不可重复提交");
+        }
         //查询当前个人的信息
         if (!returnEntity.getState()){
             //如果查不到人员信息
             if (ObjectUtils.isEmpty(sysPersonnel)){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"人员信息不存在");
             }
+            //申请人
+            jsonParam.setApplicant(sysPersonnel.getName());
             //将人员资源代码加入进去
             jsonParam.setPersonnelCode(sysPersonnel.getPersonnelCode());
             //将当前所属项目加入
-            jsonParam.setManagementId(sysPersonnel.getManagementId());
+            QueryWrapper<ManagementPersonnel> personnelQueryWrapper = new QueryWrapper<>();
+            personnelQueryWrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+            ManagementPersonnel managementPersonnel = iManagementPersonnelMapper.selectOne(personnelQueryWrapper);
+            jsonParam.setManagementId(managementPersonnel.getManagementId());
             //查询该项目主管
-            QueryWrapper wrapper = new QueryWrapper();
-            wrapper.eq("management_id",jsonParam.getManagementId());
-            wrapper.eq("role_id","1");
-            List<SysPersonnel> selectList = iSysPersonnelMapper.selectList(wrapper);
-            if (selectList.size() < 1){
+            Map map = new HashMap();
+            map.put("managementId",jsonParam.getManagementId());
+            map.put("roleId","1");
+            map.put("employmentStatus","1");
+            List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
+            if (sysPersonnels.size() < 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"当前项目无人审核，无法提交");
             }
-            SysPersonnel personnel = selectList.get(0);
+            SysPersonnel personnel = sysPersonnels.get(0);
             //添加审核人编码
             jsonParam.setApproverPersonnelId(personnel.getId());
+            //审核人数据
+            jsonParam.setSysPersonnel(personnel);
             //设置该条数据唯一编码
             jsonParam.setReportCoding("coding" + System.currentTimeMillis() + PanXiaoZhang.ran(2));
         }
@@ -113,22 +145,47 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
                     MsgEntity.CODE_ERROR
             );
         }
-        Token token = JSONObject.parseObject(PanXiaoZhang.getToken(), Token.class);
-        Token phone = JSONObject.parseObject(PanXiaoZhang.getOpenId(jsonParam.getSysPersonnel().getPhone()), Token.class);
-        wechatMsg.tuiSongXiaoXi(
-                phone.getResponse().getAccess_token(),
-                sysPersonnel.getName() + "提交信息",
-                "离职审核信息",
-                "请前往审核",
+        // 发送人事
+        ReturnEntity entity = PanXiaoZhang.postWechat(
+                jsonParam.getSysPersonnel().getPhone(),
+                sysPersonnel.getName() + "提交了离职申请",
                 "",
-                "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
-                token.getResponse().getAccess_token(),
+                "请及时核实",
+                "",
                 "/pages/activities/show/show?id=" + jsonParam.getReportCoding()
         );
+        // 如果有上一级
+        if (!ObjectUtils.isEmpty(jsonParam.getSysPersonnel().getPhone())){
+            // 发送人事
+            PanXiaoZhang.postWechat(
+                    jsonParam.getSysPersonnel().getPhone(),
+                    sysPersonnel.getName() + "提交了离职申请",
+                    "",
+                    "请及时核实",
+                    "",
+                    "/pages/activities/show/show?id=" + jsonParam.getReportCoding()
+            );
+        }
+        log.info("entity:{}",entity);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"上报成功");
     }
 
-    private ReturnEntity cat(HttpServletRequest request) {
-        return null;
+    private ReturnEntity cat(HttpServletRequest request) throws IOException {
+        ManageDimission jsonParam = PanXiaoZhang.getJSONParam(request, ManageDimission.class);
+        if (ObjectUtils.isEmpty(jsonParam.getPersonnelId())){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //查询当前用户是否存在
+        if (ObjectUtils.isEmpty(sysPersonnel)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前用户不存在");
+        }
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+        ManageDimission manageDimission = iManageDimissionMapper.selectOne(wrapper);
+        if (!ObjectUtils.isEmpty(manageDimission)){
+            sysPersonnel.setLeaveTime(manageDimission.getResignationTime());
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED, sysPersonnel,"");
     }
 }

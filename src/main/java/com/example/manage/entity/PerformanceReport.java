@@ -40,6 +40,8 @@ public class PerformanceReport implements Serializable {
     public String approverState;//状态
     @TableField(value = "card_type_id")
     public Integer cardTypeId;//办卡类型id
+    @TableField(value = "approver_time")
+    public String approverTime;//审核时间
     @TableField(exist = false)
     public SysPersonnel sysPersonnel;//申请人信息
     @TableField(exist = false)
@@ -54,9 +56,10 @@ public class PerformanceReport implements Serializable {
     public PerformanceReport() {
     }
 
-    public PerformanceReport(Integer id, String commentsFromReviewers, String approverState) {
+    public PerformanceReport(Integer id, String commentsFromReviewers, String approverState, String approverTime) {
         this.id = id;
         this.commentsFromReviewers = commentsFromReviewers;
         this.approverState = approverState;
+        this.approverTime = approverTime;
     }
 }

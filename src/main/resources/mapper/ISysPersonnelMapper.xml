@@ -16,7 +16,6 @@
         <result column="employment_status" property="employmentStatus" />
         <result column="chief_steward_id" property="chiefStewardId" />
         <result column="salary" property="salary" />
-        <result column="management_id" property="managementId" />
         <result column="standby_application" property="standbyApplication" />
         <result column="official_or_trainee_staff" property="officialOrTraineeStaff" />
         <result column="social_security_payment" property="socialSecurityPayment" />
@@ -30,36 +29,51 @@
             <result column="r_id" property="id" />
             <result column="r_name" property="name" />
         </association>
-        <association property="sysManagement" javaType="com.example.manage.entity.SysManagement">
+        <collection property="sysManagement" ofType="com.example.manage.entity.SysManagement">
             <result column="m_id" property="id" />
             <result column="m_name" property="name" />
             <result column="m_project_address" property="projectAddress" />
             <result column="m_available_balance" property="availableBalance" />
             <result column="m_monthly_indicators" property="monthlyIndicators" />
             <result column="m_management_state" property="managementState" />
-        </association>
+        </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
-        select count(<include refid="tableSql"/>.id) as id from
-        <include refid="tableSql"/>
+        select count(DISTINCT <include refid="tableSqlAs"/>.id) as id from
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
             <include refid="returnSql"/>
         from
-        <include refid="tableSql"/>
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
         <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
+    </select>
+    <sql id="tableSqlAs">
+        sys_p
+    </sql>
+    <!--  子表  -->
+    <sql id="tableReturn">
+        select
+        <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql"/>
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
-    </select>
+    </sql>
     <sql id="tableSql">
         manage.sys_personnel
     </sql>
     <!--  返回  -->
     <sql id="returnSql">
-        <include refid="tableSql"/>.*
+        <include refid="tableSqlAs"/>.*
         ,sys_role.name as r_name
         ,sys_role.id as r_id
         ,sys_management.id as m_id
@@ -71,17 +85,18 @@
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
-        LEFT JOIN sys_role on sys_role.id = <include refid="tableSql"/>.role_id
-        LEFT JOIN sys_management on sys_management.id = <include refid="tableSql"/>.management_id
+        LEFT JOIN sys_role on sys_role.id = <include refid="tableSqlAs"/>.role_id
+        LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSqlAs" />.personnel_code
+        LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
-        <if test="username != null "> and <include refid="tableSql" />.`username` = #{username}</if>
-        <if test="password != null "> and <include refid="tableSql" />.`password` = #{password}</if>
-        <if test="keyWord != null "> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
-        <if test="managementId != null and managementId != ''"> and <include refid="tableSql" />.`management_id` = #{managementId}</if>
-        <if test="dateFormatBirthday == 'start' "> and DATE_FORMAT(<include refid="tableSql" />.birthday,"%m-%d") BETWEEN #{agoBirthday} AND #{backBirthday}</if>
+        <if test="id != null "> and <include refid="tableSqlAs" />.`id` = #{id}</if>
+        <if test="username != null "> and <include refid="tableSqlAs" />.`username` = #{username}</if>
+        <if test="password != null "> and <include refid="tableSqlAs" />.`password` = #{password}</if>
+        <if test="keyWord != null "> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="managementId != null and managementId != ''"> and management_personnel.`management_id` = #{managementId}</if>
+        <if test="dateFormatBirthday == 'start' "> and DATE_FORMAT(<include refid="tableSqlAs" />.birthday,"%m-%d") BETWEEN #{agoBirthday} AND #{backBirthday}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
@@ -93,9 +108,4 @@
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc
     </sql>
-
-    <!--  根据人员查询卡种  -->
-    <select id="queryCard" resultMap="entity" parameterType="hashmap">
-
-    </select>
 </mapper>

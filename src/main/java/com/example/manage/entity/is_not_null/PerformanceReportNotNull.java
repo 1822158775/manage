@@ -37,6 +37,11 @@ public class PerformanceReportNotNull implements Serializable {
         this.id = id;
     }
 
+    public PerformanceReportNotNull(String id, String approverState) {
+        this.id = id;
+        this.approverState = approverState;
+    }
+
     public PerformanceReportNotNull(String reportStatus, String cardTypeId, String personnelId) {
         this.reportStatus = reportStatus;
         this.cardTypeId = cardTypeId;

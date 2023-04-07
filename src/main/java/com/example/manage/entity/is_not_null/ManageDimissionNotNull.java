@@ -32,9 +32,7 @@ public class ManageDimissionNotNull implements Serializable {
     public ManageDimissionNotNull() {
     }
 
-    public ManageDimissionNotNull(String applicant, String personnelCode, String resignationTime, String personnelId) {
-        this.applicant = applicant;
-        this.personnelCode = personnelCode;
+    public ManageDimissionNotNull(String resignationTime, String personnelId) {
         this.resignationTime = resignationTime;
         this.personnelId = personnelId;
     }

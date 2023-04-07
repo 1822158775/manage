@@ -42,8 +42,6 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
     }
     //根据人员查询当下的卡种
     private ReturnEntity cat(HttpServletRequest request) {
-        Map jsonMap = PanXiaoZhang.getMap(request);
-        iSysPersonnelMapper.queryCard(jsonMap);
         return new ReturnEntity();
     }
 }

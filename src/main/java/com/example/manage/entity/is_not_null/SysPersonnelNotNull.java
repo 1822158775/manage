@@ -32,7 +32,6 @@ public class SysPersonnelNotNull {
     public String employmentStatus;//任职状态(true：在职，false：离职)
     public String chiefStewardId;//上级领导编码
     public String salary;//工资
-    public String managementId;//项目编码
     public String standbyApplication;//备用
     public String officialOrTraineeStaff;//1：正式职员，2：实习职员
     public String socialSecurityPayment;//1：正常缴纳，2：未缴纳
@@ -55,7 +54,7 @@ public class SysPersonnelNotNull {
         this.password = password;
     }
 
-    public SysPersonnelNotNull(String phone, String placeOfDomicile, String personnelCode, String username, String roleId, String password, String name, String positionPost, String birthday, String employmentStatus, String chiefStewardId, String salary, String managementId, String officialOrTraineeStaff, String socialSecurityPayment, String commercialInsurance, String entryTime, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence) {
+    public SysPersonnelNotNull(String phone, String placeOfDomicile, String personnelCode, String username, String roleId, String password, String name, String positionPost, String birthday, String employmentStatus, String salary, String managementId, String officialOrTraineeStaff, String socialSecurityPayment, String commercialInsurance, String entryTime, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence) {
         this.phone = phone;
         this.placeOfDomicile = placeOfDomicile;
         this.personnelCode = personnelCode;
@@ -67,7 +66,6 @@ public class SysPersonnelNotNull {
         this.birthday = birthday;
         this.employmentStatus = employmentStatus;
         this.salary = salary;
-        this.managementId = managementId;
         this.officialOrTraineeStaff = officialOrTraineeStaff;
         this.socialSecurityPayment = socialSecurityPayment;
         this.commercialInsurance = commercialInsurance;
@@ -78,7 +76,7 @@ public class SysPersonnelNotNull {
         this.permanentResidence = permanentResidence;
     }
 
-    public SysPersonnelNotNull(String id, String phone, String placeOfDomicile, String personnelCode, String username, String roleId, String password, String name, String positionPost, String image, String birthday, String employmentStatus,  String salary, String managementId, String standbyApplication, String officialOrTraineeStaff, String socialSecurityPayment, String commercialInsurance, String entryTime, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence) {
+    public SysPersonnelNotNull(String id, String phone, String placeOfDomicile, String personnelCode, String username, String roleId, String password, String name, String positionPost, String image, String birthday, String employmentStatus,  String salary, String standbyApplication, String officialOrTraineeStaff, String socialSecurityPayment, String commercialInsurance, String entryTime, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence) {
         this.id = id;
         this.phone = phone;
         this.placeOfDomicile = placeOfDomicile;
@@ -93,7 +91,6 @@ public class SysPersonnelNotNull {
         this.employmentStatus = employmentStatus;
         this.chiefStewardId = chiefStewardId;
         this.salary = salary;
-        this.managementId = managementId;
         this.standbyApplication = standbyApplication;
         this.officialOrTraineeStaff = officialOrTraineeStaff;
         this.socialSecurityPayment = socialSecurityPayment;

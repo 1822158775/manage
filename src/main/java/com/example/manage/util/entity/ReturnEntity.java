@@ -27,6 +27,10 @@ public class ReturnEntity<T> implements Serializable {
     public ReturnEntity() {
     }
 
+    public ReturnEntity(Boolean state) {
+        this.state = state;
+    }
+
     public ReturnEntity(String code, T value, String token, String msg, Integer count, Boolean state) {
         this.code = code;
         this.value = value;

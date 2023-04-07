@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.WhiteSysPersonnelMapper">
+    <resultMap id="entity" type="com.example.manage.entity.SysPersonnel">
+        <result column="id" property="id" />
+        <result column="phone" property="phone" />
+        <result column="place_of_domicile" property="placeOfDomicile" />
+        <result column="personnel_code" property="personnelCode" />
+        <result column="username" property="username" />
+        <result column="role_id" property="roleId" />
+        <result column="password" property="password" />
+        <result column="name" property="name" />
+        <result column="position_post" property="positionPost" />
+        <result column="image" property="image" />
+        <result column="birthday" property="birthday" />
+        <result column="employment_status" property="employmentStatus" />
+        <result column="chief_steward_id" property="chiefStewardId" />
+        <result column="salary" property="salary" />
+        <result column="standby_application" property="standbyApplication" />
+        <result column="official_or_trainee_staff" property="officialOrTraineeStaff" />
+        <result column="social_security_payment" property="socialSecurityPayment" />
+        <result column="commercial_insurance" property="commercialInsurance" />
+        <result column="entry_time" property="entryTime" />
+        <result column="id_number" property="idNumber" />
+        <result column="emergency_contact_name" property="emergencyContactName" />
+        <result column="emergency_contact_phone" property="emergencyContactPhone" />
+        <result column="permanent_residence" property="permanentResidence" />
+    </resultMap>
+
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+    </select>
+    <sql id="tableSql">
+        manage.sys_personnel
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN sys_role on sys_role.id = <include refid="tableSql"/>.role_id
+        LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSql" />.personnel_code
+        LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="roleId != null "> and <include refid="tableSql" />.`role_id` = #{roleId}</if>
+        <if test="managementId != null "> and management_personnel.`management_id` = #{managementId}</if>
+        <if test="employmentStatus != null "> and <include refid="tableSql" />.`employment_status` = #{employmentStatus}</if>
+    </sql>
+</mapper>
