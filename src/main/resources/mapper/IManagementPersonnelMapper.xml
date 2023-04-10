@@ -4,7 +4,7 @@
     <resultMap id="entity" type="com.example.manage.entity.ManagementPersonnel">
         <result column="id" property="id" />
         <result column="management_id" property="managementId" />
-        <result column="personnel_id" property="personnelId" />
+        <result column="personnel_code" property="personnelCode" />
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from

@@ -1,6 +1,9 @@
 package com.example.manage.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.is_not_null.ManageDimissionNotNull;
+import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.mapper.ISysRoleMapper;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.ReturnEntity;
@@ -10,9 +13,11 @@ import com.example.manage.service.IManageDimissionService;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -27,6 +32,9 @@ public class ManageDimissionServiceImpl implements IManageDimissionService {
 
     @Resource
     private IManageDimissionMapper iManageDimissionMapper;
+
+    @Resource
+    private ISysPersonnelMapper iSysPersonnelMapper;
 
     //方法总管
     @Override
@@ -67,6 +75,15 @@ public class ManageDimissionServiceImpl implements IManageDimissionService {
                         jsonParam,
                         MsgEntity.CODE_ERROR
                 );
+            }
+            if (jsonParam.getApplicantState().equals("agree")){
+                QueryWrapper wrapper = new QueryWrapper();
+                wrapper.eq("personnel_code",manageDimission.getPersonnelCode());
+                iSysPersonnelMapper.update(new SysPersonnel(
+                false,
+                            new Date()
+                ),
+                wrapper);
             }
         }
         int updateById = iManageDimissionMapper.updateById(new ManageDimission(

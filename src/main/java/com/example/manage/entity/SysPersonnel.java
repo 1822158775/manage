@@ -70,18 +70,23 @@ public class SysPersonnel {
     public String emergencyContactPhone;//紧急联系人手机号
     @TableField(value = "permanent_residence")
     public String permanentResidence;//常住地
+    @TableField(value = "leave_time")
+    public Date leaveTime;//离职时间
     @TableField(exist = false)
     public SysRole sysRole;//权限名称
     @TableField(exist = false)
     public List<SysManagement> sysManagement;//项目组名称
     @TableField(exist = false)
     public Integer[] managementId;//项目组数组
-    @TableField(value = "entry_time")
-    public Date leaveTime;//离职时间
     public SysPersonnel() {
     }
 
     public SysPersonnel(Integer id) {
         this.id = id;
+    }
+
+    public SysPersonnel(Boolean employmentStatus, Date leaveTime) {
+        this.employmentStatus = employmentStatus;
+        this.leaveTime = leaveTime;
     }
 }

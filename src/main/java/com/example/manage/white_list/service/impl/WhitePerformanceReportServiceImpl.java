@@ -19,6 +19,7 @@ import com.example.manage.util.wechat.WechatMsg;
 import com.example.manage.white_list.service.IWhitePerformanceReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -36,18 +37,27 @@ import java.util.*;
 @Service
 public class WhitePerformanceReportServiceImpl implements IWhitePerformanceReportService {
 
+    @Value("${role.manage}")
+    private Integer roleId;
+
+    @Value("${url.performance}")
+    private String urlPerformance;
+
     @Resource
     private IPerformanceReportMapper iPerformanceReportMapper;
+
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
-    @Resource
-    private WechatMsg wechatMsg;
+
     @Resource
     private NumberPerformanceReportMapper numberPerformanceReportMapper;
+
     @Resource
     private INumberAuditDataMapper iNumberAuditDataMapper;
+
     @Resource
     private IManagementPersonnelMapper iManagementPersonnelMapper;
+
     @Resource
     private WhiteSysPersonnelMapper whiteSysPersonnelMapper;
 
@@ -222,6 +232,11 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             return returnEntity;
         }
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
         //查询当前个人的信息
         if (!returnEntity.getState()){
             //如果查不到人员信息
@@ -238,7 +253,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             //查询该项目主管
             Map map = new HashMap();
             map.put("managementId",jsonParam.getManagementId());
-            map.put("roleId","1");
+            map.put("roleId",roleId);
             map.put("employmentStatus","1");
             List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
             if (sysPersonnels.size() < 1){
@@ -271,7 +286,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 "审核信息",
                 "请前往审核",
                 "",
-                "/pages/activities/show/show?id=" + jsonParam.getReportCoding()
+                urlPerformance + "?code=" + jsonParam.getReportCoding()
         );
         log.info("entity:{}",entity);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"上报成功");

@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.ToString;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @avthor 潘小章
@@ -32,4 +33,17 @@ public class DispatchApplicationManagementNotNull implements Serializable {
     public String laterPersonnelId;//调派后审核人
     public String laterVerifierRemark;//调派后审核人留言
     public String laterVerifierState;//调派后审核人状态
+    public String personnelId;//申请人资源代码
+    public String dispathchTime;//调派时间
+    public String applicantTime;//申请时间
+
+    public DispatchApplicationManagementNotNull() {
+    }
+
+    public DispatchApplicationManagementNotNull(String laterManagementId, String laterVerifierRemark, String personnelId,String dispathchTime) {
+        this.laterManagementId = laterManagementId;
+        this.laterVerifierRemark = laterVerifierRemark;
+        this.personnelId = personnelId;
+        this.dispathchTime = dispathchTime;
+    }
 }

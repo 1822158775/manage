@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -59,7 +60,9 @@ public class DispatchApplicationManagement implements Serializable {
     @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "applicant_time")
-    public Date applicantTime;//调派时间
+    public Date applicantTime;//申请时间
+    @TableField(value = "dispatch_code")
+    public String dispatchCode;//调派代码
     @TableField(exist = false)
     public SysPersonnel agoVerifierSysPersonnel;//当前项目审批人
     @TableField(exist = false)
@@ -68,4 +71,8 @@ public class DispatchApplicationManagement implements Serializable {
     public SysManagement agoVerifierSysManagement;//当前项目
     @TableField(exist = false)
     public SysManagement laterVerifierSysManagement;//调派后项目
+    @TableField(exist = false)
+    public String personnelId;//申请人资源代码
+    @TableField(exist = false)
+    public List<SysPersonnel> sysPersonnels;//人员信息
 }

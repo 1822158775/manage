@@ -59,4 +59,12 @@ wechat:
         secret: Fld7vz3MLwYZJYS1hzKHR7bdXp-gboI_iPHdCA84MOg
         token: 52oOTAnfd373WfGUoEHyg
         aesKey: f1Wy2CjWtaLwKQ6C88AYFSqhAPbadT4LUWLGhlraMTw
-
+role:
+  manage: 1
+phone:
+  personnel: 15189400823
+url:
+  dispatch: /pages/activities/show/show
+  performance: /pages/activities/show/show
+  dimission: /pages/activities/show/show
+  system: /pages/activities/show/show

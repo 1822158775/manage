@@ -17,6 +17,7 @@ import com.example.manage.util.wechat.WechatMsg;
 import com.example.manage.white_list.service.IWhiteManageDimissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -37,14 +38,20 @@ import java.util.Map;
 @Service
 public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionService {
 
+    @Value("${phone.personnel}")
+    private String phone;
+
+    @Value("${url.dimission}")
+    private String urlDimission;
+
+    @Value("${url.system}")
+    private String urlSystem;
+
     @Resource
     private IManageDimissionMapper iManageDimissionMapper;
 
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
-
-    @Resource
-    private WechatMsg wechatMsg;
 
     @Resource
     private WhiteManageDimissionMapper whiteManageDimissionMapper;
@@ -93,6 +100,11 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
             return returnEntity;
         }
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
         ManageDimission manageDimission = iManageDimissionMapper.selectOne(wrapper);
@@ -147,23 +159,23 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         }
         // 发送人事
         ReturnEntity entity = PanXiaoZhang.postWechat(
-                jsonParam.getSysPersonnel().getPhone(),
+                phone,
                 sysPersonnel.getName() + "提交了离职申请",
                 "",
-                "请及时核实",
+                "请及时核实,请前往后台审核",
                 "",
-                "/pages/activities/show/show?id=" + jsonParam.getReportCoding()
+                ""
         );
         // 如果有上一级
         if (!ObjectUtils.isEmpty(jsonParam.getSysPersonnel().getPhone())){
-            // 发送人事
+            // 发送上级领导
             PanXiaoZhang.postWechat(
                     jsonParam.getSysPersonnel().getPhone(),
                     sysPersonnel.getName() + "提交了离职申请",
                     "",
                     "请及时核实",
                     "",
-                    "/pages/activities/show/show?id=" + jsonParam.getReportCoding()
+                    ""
             );
         }
         log.info("entity:{}",entity);
@@ -184,8 +196,9 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
         ManageDimission manageDimission = iManageDimissionMapper.selectOne(wrapper);
         if (!ObjectUtils.isEmpty(manageDimission)){
-            sysPersonnel.setLeaveTime(manageDimission.getResignationTime());
+            jsonParam = manageDimission;
         }
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED, sysPersonnel,"");
+        jsonParam.setSysPersonnel(sysPersonnel);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED, jsonParam,"");
     }
 }

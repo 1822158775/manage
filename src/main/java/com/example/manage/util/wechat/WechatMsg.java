@@ -104,7 +104,7 @@ public class WechatMsg {
             //通知内容
             dataMap.put("content",new DataEntity(keyword3,"#173177"));
             //备注
-            dataMap.put("remark",new DataEntity("感谢您选择EMS，微笑客服期待下次为您服务。","#173177"));
+            dataMap.put("remark",new DataEntity(keyword4,"#173177"));
             paramMap.put("touser", toUser);
             paramMap.put("template_id", template_id);
             paramMap.put("data", dataMap);

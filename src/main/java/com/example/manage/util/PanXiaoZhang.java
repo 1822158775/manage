@@ -2,6 +2,7 @@ package com.example.manage.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.example.manage.entity.SysPersonnel;
 import com.example.manage.util.entity.*;
 import com.example.manage.util.wechat.WechatMsg;
 import lombok.extern.slf4j.Slf4j;
@@ -1038,7 +1039,6 @@ public class PanXiaoZhang {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("mobile",phone);
         String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid", jsonObject.toString(), "");
-        System.out.println(send);
         return send;
     }
     //发送消息
@@ -1068,6 +1068,44 @@ public class PanXiaoZhang {
                 false
         );
     }
+    /**
+     * 判断是否是过去的日期
+     * @param pastDate 输入的日期
+     * @return 该日期晚于今日false
+     * @return 该日期早于今日true
+     */
+    public static boolean isPastDate(Date pastDate){
+
+        boolean flag = false;
+        Date nowDate = new Date();
+        //格式化日期
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd", Locale.CHINA);
+        //在日期字符串非空时执行
+        //调用Date里面的before方法来做判断
+        flag = pastDate.before(nowDate);
+        return flag;
+    }
+    //判断用户状态
+    public static ReturnEntity estimateState(SysPersonnel sysPersonnel){
+        if (sysPersonnel.getEmploymentStatus().equals(0) && !isPastDate(sysPersonnel.getLeaveTime())){
+            return new ReturnEntity(
+                    CodeEntity.CODE_ERROR,
+                    "",
+                    "",
+                    "登录异常",
+                    0,
+                    true
+            );
+        }
+        return new ReturnEntity(
+                CodeEntity.CODE_SUCCEED,
+                "",
+                "",
+                MsgEntity.CODE_SUCCEED,
+                0,
+                false
+        );
+    }
     public static void main(String[] args) {
         //System.out.println(DateFormatUtils.format(tomorrow(new Date()),yMd()));
         //String kunming = base64Str("zhangxun");
@@ -1087,7 +1125,13 @@ public class PanXiaoZhang {
         //    e.printStackTrace();
         //}
         //System.out.println(integer);
-        Token phone = JSONObject.parseObject(getOpenId("15297599442"), Token.class);
-        System.out.println(phone);
+        ReturnEntity entity = postWechat(
+                "15830024173",
+                "a提交了离职申请",
+                "",
+                "请及时核实,请前往后台审核",
+                "",
+                "/pages/activities/show/show?id=38");
+        System.out.println(entity);
     }
 }

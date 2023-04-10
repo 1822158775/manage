@@ -19,6 +19,7 @@
         <result column="later_verifier_state" property="laterVerifierState" />
         <result column="dispathch_time" property="dispathchTime" />
         <result column="applicant_time" property="applicantTime" />
+        <result column="dispatch_code" property="dispatchCode" />
         <association property="agoVerifierSysPersonnel" javaType="com.example.manage.entity.SysPersonnel">
             <result column="p_1_name" property="name" />
         </association>
@@ -70,6 +71,13 @@
         where 1 = 1
         <if test="id != null "> and <include refid="tableSql"/>.`id` = #{id}</if>
         <if test="keyWord != null "> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
+        <if test="personnelCode != null "> and <include refid="tableSql" />.`personnel_code` = #{personnelCode}</if>
+        <if test="personnelId != null ">
+         and
+         <include refid="tableSql" />.`ago_personnel_id` = #{personnelId}
+         on
+        <include refid="tableSql" />.`later_personnel_id` = #{personnelId}
+         </if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
