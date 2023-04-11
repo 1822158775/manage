@@ -1043,22 +1043,26 @@ public class PanXiaoZhang {
     }
     //发送消息
     public static ReturnEntity postWechat(String phone,String keyword1,String keyword2,String keyword3,String keyword4,String pagepath){
-        Token token = JSONObject.parseObject(PanXiaoZhang.getToken(), Token.class);
-        Token object = JSONObject.parseObject(PanXiaoZhang.getOpenId(phone), Token.class);
-        if (object.getSuccess() != false && token.getSuccess() != false) {
-            ReturnEntity entity = WechatMsg.tuiSongXiaoXi(
-                    object.getResponse().getOpenid(),
-                    keyword1,
-                    keyword2,
-                    keyword3,
-                    keyword4,
-                    "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
-                    token.getResponse().getAccess_token(),
-                    pagepath
-            );
-            return entity;
+        try {
+            Token token = JSONObject.parseObject(PanXiaoZhang.getToken(), Token.class);
+            Token object = JSONObject.parseObject(PanXiaoZhang.getOpenId(phone), Token.class);
+            if (object.getSuccess() != false && token.getSuccess() != false) {
+                ReturnEntity entity = WechatMsg.tuiSongXiaoXi(
+                        object.getResponse().getOpenid(),
+                        keyword1,
+                        keyword2,
+                        keyword3,
+                        keyword4,
+                        "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
+                        token.getResponse().getAccess_token(),
+                        pagepath
+                );
+                return entity;
+            }
+            log.info("消息发送失败:{},{}",object,token);
+        }catch (Exception e){
+            log.info("捕获异常：{}",e.getMessage());
         }
-        log.info("消息发送失败:{},{}",object,token);
         return new ReturnEntity(
                 CodeEntity.CODE_SUCCEED,
                 "",

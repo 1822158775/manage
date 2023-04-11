@@ -10,6 +10,9 @@ import com.example.manage.util.entity.MsgEntity;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -42,6 +45,28 @@ public class SysTableNameServiceImpl implements ISysTableNameService {
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public ReturnEntity methodMasterT(HttpServletRequest request, String name) {
+        try {
+            if (name.equals("cat")){
+                return cat(request);
+            }else if (name.equals("add")){
+                SysTableName jsonParam = PanXiaoZhang.getJSONParam(request, SysTableName.class);
+                return add(request,jsonParam);
+            }else if (name.equals("edit")){
+                SysTableName jsonParam = PanXiaoZhang.getJSONParam(request, SysTableName.class);
+                return edit(request,jsonParam);
+            }
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
+        }catch (Exception e){
+            log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
         }
     }

@@ -1,6 +1,7 @@
 package com.example.manage.white_list.service.impl;
 
 import com.example.manage.mapper.ICardTypeMapper;
+import com.example.manage.mapper.WhiteCardTypeMapper;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
@@ -24,8 +25,7 @@ import java.util.Map;
 public class WhiteCardTypeServiceImpl implements IWhiteCardTypeService {
 
     @Resource
-    private ICardTypeMapper iCardTypeMapper;
-
+    private WhiteCardTypeMapper whiteCardTypeMapper;
 
     //方法总管
     @Override
@@ -46,6 +46,6 @@ public class WhiteCardTypeServiceImpl implements IWhiteCardTypeService {
         if (ObjectUtils.isEmpty(map.get("personnelId"))){
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,iCardTypeMapper.queryAll(map),"");
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,whiteCardTypeMapper.queryAll(map),"");
     }
 }

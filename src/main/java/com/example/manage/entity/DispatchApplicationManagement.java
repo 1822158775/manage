@@ -72,7 +72,32 @@ public class DispatchApplicationManagement implements Serializable {
     @TableField(exist = false)
     public SysManagement laterVerifierSysManagement;//调派后项目
     @TableField(exist = false)
-    public String personnelId;//申请人资源代码
+    public Integer personnelId;//申请人资源代码
+    @TableField(exist = false)
+    public String verifierRemark;//审核人留言
+    @TableField(exist = false)
+    public String verifierState;//审核人状态
     @TableField(exist = false)
     public List<SysPersonnel> sysPersonnels;//人员信息
+
+    public DispatchApplicationManagement() {
+    }
+
+    public DispatchApplicationManagement(Integer id, String verifierRemark, String verifierState) {
+        this.id = id;
+        this.verifierRemark = verifierRemark;
+        this.verifierState = verifierState;
+    }
+
+    public DispatchApplicationManagement(Integer id, String agoAuditTime, Integer agoPersonnelId, String agoVerifierRemark, String agoVerifierState, String laterAuditTime, Integer laterPersonnelId, String laterVerifierRemark, String laterVerifierState) {
+        this.id = id;
+        this.agoAuditTime = agoAuditTime;
+        this.agoPersonnelId = agoPersonnelId;
+        this.agoVerifierRemark = agoVerifierRemark;
+        this.agoVerifierState = agoVerifierState;
+        this.laterAuditTime = laterAuditTime;
+        this.laterPersonnelId = laterPersonnelId;
+        this.laterVerifierRemark = laterVerifierRemark;
+        this.laterVerifierState = laterVerifierState;
+    }
 }

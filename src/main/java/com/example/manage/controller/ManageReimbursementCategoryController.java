@@ -1,6 +1,6 @@
 package com.example.manage.controller;
 
-import com.example.manage.service.ISysTableNameService;
+import com.example.manage.service.IManageReimbursementCategoryService;
 import com.example.manage.util.entity.ReturnEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,31 +11,31 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @avthor 潘小章
- * @date 2023-03-24 15:05:37
- * 数据表名称
+ * @date 2023-04-10 18:23:08
+ * 类目管理
  */
 
 @RestController
-@RequestMapping(value = "/api/sys_table_name/")
-public class SysTableNameController {
+@RequestMapping(value = "/api/manage_reimbursement_category/")
+public class ManageReimbursementCategoryController {
     @Resource
-    private ISysTableNameService iSysTableNameService;
+    private IManageReimbursementCategoryService iManageReimbursementCategoryService;
 
-    // 查询数据表名称
+    // 查询类目管理
     @PostMapping(value = "cat")
     public ReturnEntity cat(HttpServletRequest request){
-        return iSysTableNameService.methodMaster(request,"cat");
+        return iManageReimbursementCategoryService.methodMaster(request,"cat");
     }
 
-    // 添加数据表名称
+    // 添加类目管理
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iSysTableNameService.methodMasterT(request,"add");
+        return iManageReimbursementCategoryService.methodMasterT(request,"add");
     }
 
-    // 修改数据表名称
+    // 修改类目管理
    @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
-        return iSysTableNameService.methodMasterT(request,"edit");
+        return iManageReimbursementCategoryService.methodMasterT(request,"edit");
     }
 }

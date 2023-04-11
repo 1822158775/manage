@@ -70,12 +70,12 @@
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and <include refid="tableSql"/>.`id` = #{id}</if>
-        <if test="keyWord != null "> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
         <if test="personnelCode != null "> and <include refid="tableSql" />.`personnel_code` = #{personnelCode}</if>
         <if test="personnelId != null ">
          and
          <include refid="tableSql" />.`ago_personnel_id` = #{personnelId}
-         on
+         or
         <include refid="tableSql" />.`later_personnel_id` = #{personnelId}
          </if>
     </sql>

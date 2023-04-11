@@ -36,14 +36,32 @@ public class DispatchApplicationManagementNotNull implements Serializable {
     public String personnelId;//申请人资源代码
     public String dispathchTime;//调派时间
     public String applicantTime;//申请时间
+    public String verifierRemark;//审核人留言
+    public String verifierState;//审核人状态
 
     public DispatchApplicationManagementNotNull() {
     }
 
-    public DispatchApplicationManagementNotNull(String laterManagementId, String laterVerifierRemark, String personnelId,String dispathchTime) {
+    public DispatchApplicationManagementNotNull(String id, String verifierState) {
+        this.id = id;
+        this.verifierState = verifierState;
+    }
+
+    public DispatchApplicationManagementNotNull(String laterManagementId, String remark, String personnelId, String dispathchTime) {
         this.laterManagementId = laterManagementId;
-        this.laterVerifierRemark = laterVerifierRemark;
+        this.remark = remark;
         this.personnelId = personnelId;
         this.dispathchTime = dispathchTime;
+    }
+
+    public DispatchApplicationManagementNotNull(String agoAuditTime, String agoPersonnelId, String agoVerifierRemark, String agoVerifierState, String laterAuditTime, String laterPersonnelId, String laterVerifierRemark, String laterVerifierState) {
+        this.agoAuditTime = agoAuditTime;
+        this.agoPersonnelId = agoPersonnelId;
+        this.agoVerifierRemark = agoVerifierRemark;
+        this.agoVerifierState = agoVerifierState;
+        this.laterAuditTime = laterAuditTime;
+        this.laterPersonnelId = laterPersonnelId;
+        this.laterVerifierRemark = laterVerifierRemark;
+        this.laterVerifierState = laterVerifierState;
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.ICardTypeMapper">
+<mapper namespace="com.example.manage.mapper.WhiteCardTypeMapper">
     <resultMap id="entity" type="com.example.manage.entity.CardType">
         <result column="id" property="id" />
         <result column="name" property="name" />
@@ -10,24 +10,33 @@
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
         <include refid="tableSql"/>
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select
-            <include refid="tableSql"/>.*
+        select <include refid="tableSql"/>.*
         from
-            <include refid="tableSql"/>
-            <include refid="whereSqlModel" />
-            <include refid="safeOrderBy"/>
-            <include refid="safeLIMIT"/>
+        <include refid="tableSql"/>
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
     </select>
     <sql id="tableSql">
         manage.card_type
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN manage_card_type on manage_card_type.card_type_id = <include refid="tableSql"/>.id
+        LEFT JOIN sys_management on sys_management.management_code = manage_card_type.manage_code
+        LEFT JOIN management_personnel on management_personnel.management_id = sys_management.id
+        LEFT JOIN sys_personnel on sys_personnel.personnel_code = management_personnel.personnel_code
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="personnelId != null "> and sys_personnel.`id` = #{personnelId}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

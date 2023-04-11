@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.ICardTypeMapper">
-    <resultMap id="entity" type="com.example.manage.entity.CardType">
+<mapper namespace="com.example.manage.mapper.ICategoryCopyMapper">
+    <resultMap id="entity" type="com.example.manage.entity.CategoryCopy">
         <result column="id" property="id" />
-        <result column="name" property="name" />
-        <result column="amount" property="amount" />
-        <result column="type" property="type" />
+        <result column="reimbursement_code" property="reimbursementCode" />
+        <result column="role_id" property="roleId" />
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
@@ -13,21 +12,19 @@
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select
-            <include refid="tableSql"/>.*
+        select <include refid="tableSql"/>.*
         from
-            <include refid="tableSql"/>
-            <include refid="whereSqlModel" />
-            <include refid="safeOrderBy"/>
-            <include refid="safeLIMIT"/>
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
     </select>
     <sql id="tableSql">
-        manage.card_type
+        manage.category_copy
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
-        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="id != null "> and `id` = #{id}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

@@ -28,6 +28,10 @@ public class ManagementPersonnel implements Serializable {
     public ManagementPersonnel() {
     }
 
+    public ManagementPersonnel(Integer managementId) {
+        this.managementId = managementId;
+    }
+
     public ManagementPersonnel(Integer managementId, String personnelCode) {
         this.managementId = managementId;
         this.personnelCode = personnelCode;

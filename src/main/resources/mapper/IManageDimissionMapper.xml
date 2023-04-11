@@ -57,7 +57,7 @@
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
-        <if test="keyWord != null "> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
         <if test="applicantState != null and applicantState != ''"> and <include refid="tableSql" />.`applicant_state` = #{applicantState}</if>
     </sql>
     <sql id="safeLIMIT">

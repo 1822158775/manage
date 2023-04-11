@@ -17,6 +17,8 @@ import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
@@ -67,6 +69,32 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public ReturnEntity methodMasterT(HttpServletRequest request, String name) {
+        try {
+            if (name.equals("cat")){
+                return cat(request);
+            }else if (name.equals("add")){
+                SysPersonnel jsonParam = PanXiaoZhang.getJSONParam(request, SysPersonnel.class);
+                return add(request,jsonParam);
+            }else if (name.equals("edit")){
+                SysPersonnel jsonParam = PanXiaoZhang.getJSONParam(request, SysPersonnel.class);
+                return edit(request,jsonParam);
+            }
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
+        }catch (IOException ioException) {
+            log.info("捕获异常方法{},捕获异常{}",name,ioException.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new ReturnEntity(CodeEntity.CODE_ERROR, ioException.getMessage());
+        }catch (Exception e){
+            log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+        }
+    }
+
     //修改人员信息
     private ReturnEntity edit(HttpServletRequest request, SysPersonnel jsonParam) {
         ReturnEntity returnEntity = PanXiaoZhang.isNull(
@@ -78,44 +106,46 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
             return returnEntity;
         }
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getId());
-        SysRole sysRole = iSysRoleMapper.selectById(sysPersonnel.getRoleId());
-        if (sysRole.getLevelSorting() > 2 && jsonParam.getManagementId().length > 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"该角色不可以拥有多个项目");
-        }
-        //存储已有的内容
-        Map<Integer,ManagementPersonnel> map = new HashMap<>();
-        QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("personnel_code",jsonParam.getPersonnelCode());
-        List<ManagementPersonnel> selectList = iManagementPersonnelMapper.selectList(wrapper);
-        //已有的关联
-        for (int i = 0; i < selectList.size(); i++) {
-            ManagementPersonnel managementPersonnel = selectList.get(i);
-            map.put(managementPersonnel.getManagementId(),managementPersonnel);
-        }
-        //传的关联
-        for (int i = 0; i < jsonParam.getManagementId().length; i++) {
-            Integer integer = jsonParam.getManagementId()[i];
-            map.put(integer * -1,new ManagementPersonnel(
-                    integer,
-                    jsonParam.getPersonnelCode()
-            ));
-        }
-        //查询所有项目
-        List<SysManagement> sysManagements = iSysManagementMapper.selectList(null);
-        for (int i = 0; i < sysManagements.size(); i++) {
-            SysManagement management = sysManagements.get(i);
-            Integer id = management.getId();
-            ManagementPersonnel managementPersonnel = map.get(id);
-            ManagementPersonnel personnel = map.get(id * -1);
-            if (ObjectUtils.isEmpty(managementPersonnel) && !ObjectUtils.isEmpty(personnel)){
-                //不存在进行添加
-                iManagementPersonnelMapper.insert(personnel);
-            }else if (!ObjectUtils.isEmpty(managementPersonnel) && ObjectUtils.isEmpty(personnel)){
-                //存在但是现传数据里没有需要删除
-                QueryWrapper queryWrapper = new QueryWrapper();
-                queryWrapper.eq("management_id",managementPersonnel.getManagementId());
-                queryWrapper.eq("personnel_code",managementPersonnel.getPersonnelCode());
-                iManagementPersonnelMapper.delete(queryWrapper);
+        if (!ObjectUtils.isEmpty(jsonParam.getManagementId())){
+            SysRole sysRole = iSysRoleMapper.selectById(sysPersonnel.getRoleId());
+            if (sysRole.getLevelSorting() > 2 && jsonParam.getManagementId().length > 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"该角色不可以拥有多个项目");
+            }
+            //存储已有的内容
+            Map<Integer,ManagementPersonnel> map = new HashMap<>();
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.eq("personnel_code",jsonParam.getPersonnelCode());
+            List<ManagementPersonnel> selectList = iManagementPersonnelMapper.selectList(wrapper);
+            //已有的关联
+            for (int i = 0; i < selectList.size(); i++) {
+                ManagementPersonnel managementPersonnel = selectList.get(i);
+                map.put(managementPersonnel.getManagementId(),managementPersonnel);
+            }
+            //传的关联
+            for (int i = 0; i < jsonParam.getManagementId().length; i++) {
+                Integer integer = jsonParam.getManagementId()[i];
+                map.put(integer * -1,new ManagementPersonnel(
+                        integer,
+                        jsonParam.getPersonnelCode()
+                ));
+            }
+            //查询所有项目
+            List<SysManagement> sysManagements = iSysManagementMapper.selectList(null);
+            for (int i = 0; i < sysManagements.size(); i++) {
+                SysManagement management = sysManagements.get(i);
+                Integer id = management.getId();
+                ManagementPersonnel managementPersonnel = map.get(id);
+                ManagementPersonnel personnel = map.get(id * -1);
+                if (ObjectUtils.isEmpty(managementPersonnel) && !ObjectUtils.isEmpty(personnel)){
+                    //不存在进行添加
+                    iManagementPersonnelMapper.insert(personnel);
+                }else if (!ObjectUtils.isEmpty(managementPersonnel) && ObjectUtils.isEmpty(personnel)){
+                    //存在但是现传数据里没有需要删除
+                    QueryWrapper queryWrapper = new QueryWrapper();
+                    queryWrapper.eq("management_id",managementPersonnel.getManagementId());
+                    queryWrapper.eq("personnel_code",managementPersonnel.getPersonnelCode());
+                    iManagementPersonnelMapper.delete(queryWrapper);
+                }
             }
         }
         //账号不可修改

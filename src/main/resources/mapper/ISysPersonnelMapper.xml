@@ -96,7 +96,7 @@
         <if test="personnelId != null "> and <include refid="tableSqlAs" />.`id` = #{personnelId}</if>
         <if test="username != null "> and <include refid="tableSqlAs" />.`username` = #{username}</if>
         <if test="password != null "> and <include refid="tableSqlAs" />.`password` = #{password}</if>
-        <if test="keyWord != null "> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
         <if test="managementId != null and managementId != ''"> and management_personnel.`management_id` = #{managementId}</if>
         <if test="dateFormatBirthday == 'start' "> and DATE_FORMAT(<include refid="tableSqlAs" />.birthday,"%m-%d") BETWEEN #{agoBirthday} AND #{backBirthday}</if>
     </sql>

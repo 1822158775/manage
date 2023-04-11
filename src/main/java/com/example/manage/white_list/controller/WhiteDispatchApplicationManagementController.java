@@ -30,13 +30,13 @@ public class WhiteDispatchApplicationManagementController {
     // 添加调派管理
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iWhiteDispatchApplicationManagementService.methodMaster(request,"add");
+        return iWhiteDispatchApplicationManagementService.methodMasterT(request,"add");
     }
 
     // 修改调派管理
     @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
-        return iWhiteDispatchApplicationManagementService.methodMaster(request,"edit");
+        return iWhiteDispatchApplicationManagementService.methodMasterT(request,"edit");
     }
 
 

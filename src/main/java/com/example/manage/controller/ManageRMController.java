@@ -1,6 +1,6 @@
 package com.example.manage.controller;
 
-import com.example.manage.service.ISysPersonnelService;
+import com.example.manage.service.IManageRMService;
 import com.example.manage.util.entity.ReturnEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,31 +11,31 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @avthor 潘小章
- * @date 2023/3/23
- * 人员管理接口
+ * @date 2023-04-10 18:27:51
+ * 类目关联审批人管理
  */
+
 @RestController
-@RequestMapping(value = "/api/sys_personnel/")
-public class SysPersonnelServiceController {
-
+@RequestMapping(value = "/api/manage_r_m/")
+public class ManageRMController {
     @Resource
-    private ISysPersonnelService iSysPersonnelService;
+    private IManageRMService iManageRMService;
 
-    // 查询人员管理接口
+    // 查询类目关联审批人管理
     @PostMapping(value = "cat")
     public ReturnEntity cat(HttpServletRequest request){
-        return iSysPersonnelService.methodMasterT(request,"cat");
+        return iManageRMService.methodMaster(request,"cat");
     }
 
-    // 添加人员信息
+    // 添加类目关联审批人管理
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iSysPersonnelService.methodMasterT(request,"add");
+        return iManageRMService.methodMaster(request,"add");
     }
 
-    // 修改人员信息
-    @PostMapping(value = "edit")
+    // 修改类目关联审批人管理
+   @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
-        return iSysPersonnelService.methodMaster(request,"edit");
+        return iManageRMService.methodMaster(request,"edit");
     }
 }
