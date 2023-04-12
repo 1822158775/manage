@@ -25,16 +25,45 @@
         <result column="emergency_contact_name" property="emergencyContactName" />
         <result column="emergency_contact_phone" property="emergencyContactPhone" />
         <result column="permanent_residence" property="permanentResidence" />
+        <collection property="sysManagement" ofType="com.example.manage.entity.SysManagement">
+            <result column="m_id" property="id" />
+            <result column="m_name" property="name" />
+            <result column="m_project_address" property="projectAddress" />
+            <result column="m_available_balance" property="availableBalance" />
+            <result column="m_monthly_indicators" property="monthlyIndicators" />
+            <result column="m_management_state" property="managementState" />
+        </collection>
     </resultMap>
 
-    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+    <select id="queryOne" resultMap="entity" parameterType="hashmap">
         select
-        <include refid="tableSql"/>.*
+        <include refid="returnSql"/>
         from
         <include refid="tableSql" />
         <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
     </select>
+
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="returnSql"/>
+        from
+        <include refid="tableSql" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+    </select>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSql"/>.*
+        ,sys_role.name as r_name
+        ,sys_role.id as r_id
+        ,sys_management.id as m_id
+        ,sys_management.name as m_name
+        ,sys_management.project_address as m_project_address
+        ,sys_management.available_balance as m_available_balance
+        ,sys_management.monthly_indicators as m_monthly_indicators
+        ,sys_management.management_state as m_management_state
+    </sql>
     <sql id="tableSql">
         manage.sys_personnel
     </sql>
@@ -47,6 +76,7 @@
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="roleId != null "> and <include refid="tableSql" />.`role_id` = #{roleId}</if>
+        <if test="personnelId != null "> and <include refid="tableSql" />.`id` = #{personnelId}</if>
         <if test="managementId != null "> and management_personnel.`management_id` = #{managementId}</if>
         <if test="employmentStatus != null "> and <include refid="tableSql" />.`employment_status` = #{employmentStatus}</if>
     </sql>

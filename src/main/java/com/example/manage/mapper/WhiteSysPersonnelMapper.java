@@ -13,4 +13,5 @@ import java.util.Map;
 
 public interface WhiteSysPersonnelMapper extends BaseMapper<SysPersonnel> {
     List<SysPersonnel> queryAll(Map map);
+    SysPersonnel queryOne(Map map);
 }

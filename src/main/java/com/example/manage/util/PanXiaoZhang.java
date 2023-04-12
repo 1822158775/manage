@@ -390,7 +390,6 @@ public class PanXiaoZhang {
         return new BigDecimal(d).setScale(integer,BigDecimal.ROUND_HALF_UP).doubleValue();
     }
     public static Double doubleD(Double d,Integer integer){
-        System.out.println(d);
         return new BigDecimal(d).setScale(integer,BigDecimal.ROUND_HALF_UP).doubleValue();
     }
     public static String getSession(HttpServletRequest request,String name){

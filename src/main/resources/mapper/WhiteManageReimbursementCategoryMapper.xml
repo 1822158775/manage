@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.IWhiteManageReimbursementCategoryMapper">
+    <resultMap id="entity" type="com.example.manage.entity.ManageReimbursementCategory">
+        <result column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="reimbursement_type" property="reimbursementType" />
+        <result column="amount" property="amount" />
+        <result column="particular_conditions" property="particularConditions" />
+        <result column="category_coding" property="categoryCoding" />
+        <collection property="sysRoleManage" ofType="com.example.manage.entity.SysRole">
+            <result column="sys_p_1_r_id" property="id" />
+            <result column="sys_p_1_r_name" property="name" />
+        </collection>
+        <collection property="sysRoleCategory" ofType="com.example.manage.entity.SysRole">
+            <result column="sys_p_2_r_id" property="id" />
+            <result column="sys_p_2_r_name" property="name" />
+        </collection>
+        <collection property="manageConditions" ofType="com.example.manage.entity.ManageCondition">
+            <result column="m_c_id" property="id" />
+            <result column="m_c_name" property="name" />
+        </collection>
+    </resultMap>
+    <select id="queryCount" resultType="int" parameterType="hashmap">
+        select count(DISTINCT <include refid="tableSqlAs"/>.id) as id from
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel"/>
+    </select>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="returnSql"/>
+        from
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+    </select>
+    <!--  匿名表  -->
+    <sql id="tableSqlAs">
+        m_r_category
+    </sql>
+    <!--  子表  -->
+    <sql id="tableReturn">
+        select
+        <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql"/>
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN manage_r_m on manage_r_m.reimbursement_code = <include refid="tableSqlAs"/>.category_coding
+        LEFT JOIN category_copy on category_copy.reimbursement_code = <include refid="tableSqlAs" />.category_coding
+        LEFT JOIN sys_role as sys_r_1 on sys_r_1.id = manage_r_m.role_id
+        LEFT JOIN sys_role as sys_r_2 on sys_r_2.id = category_copy.role_id
+        LEFT JOIN manage_r_c on manage_r_c.category_coding = <include refid="tableSqlAs"/>.category_coding
+        LEFT JOIN manage_condition ON manage_condition.id = manage_r_c.manage_condition
+    </sql>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSqlAs"/>.*
+        ,sys_r_1.`name` as sys_p_1_r_name
+        ,sys_r_2.`name` as sys_p_2_r_name
+        ,sys_r_1.id as sys_p_1_r_id
+        ,sys_r_2.id as sys_p_2_r_id
+        ,manage_condition.id as m_c_id
+        ,manage_condition.`name` as m_c_name
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="id != null "> and manage_r_m.`id` = #{id}</if>
+        <if test="reimbursementType != null and reimbursementType != ''"> and <include refid="tableSqlAs" />.`reimbursement_type` = #{reimbursementType}</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
+    </sql>
+    <sql id="safeLIMIT">
+        <if test="queryAll != 'yes'">
+            <if test="pageNum != null and pageNum != ''">
+                LIMIT #{index},#{pageNum}
+            </if>
+        </if>
+    </sql>
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.id desc
+    </sql>
+    <sql id="tableSql">
+        manage.manage_reimbursement_category
+    </sql>
+</mapper>

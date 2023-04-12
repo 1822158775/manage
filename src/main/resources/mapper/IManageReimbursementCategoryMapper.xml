@@ -16,6 +16,10 @@
             <result column="sys_p_2_r_id" property="id" />
             <result column="sys_p_2_r_name" property="name" />
         </collection>
+        <collection property="manageConditions" ofType="com.example.manage.entity.ManageCondition">
+            <result column="m_c_id" property="id" />
+            <result column="m_c_name" property="name" />
+        </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(DISTINCT <include refid="tableSqlAs"/>.id) as id from
@@ -54,15 +58,18 @@
         LEFT JOIN category_copy on category_copy.reimbursement_code = <include refid="tableSqlAs" />.category_coding
         LEFT JOIN sys_role as sys_r_1 on sys_r_1.id = manage_r_m.role_id
         LEFT JOIN sys_role as sys_r_2 on sys_r_2.id = category_copy.role_id
-
+        LEFT JOIN manage_r_c on manage_r_c.category_coding = <include refid="tableSqlAs"/>.category_coding
+        LEFT JOIN manage_condition ON manage_condition.id = manage_r_c.manage_condition
     </sql>
     <!--  返回  -->
     <sql id="returnSql">
         <include refid="tableSqlAs"/>.*
-        ,sys_r_1.name as sys_p_1_r_name
-        ,sys_r_2.name as sys_p_2_r_name
+        ,sys_r_1.`name` as sys_p_1_r_name
+        ,sys_r_2.`name` as sys_p_2_r_name
         ,sys_r_1.id as sys_p_1_r_id
         ,sys_r_2.id as sys_p_2_r_id
+        ,manage_condition.id as m_c_id
+        ,manage_condition.`name` as m_c_name
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1

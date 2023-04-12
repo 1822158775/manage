@@ -11,6 +11,7 @@ import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.white_list.service.IWhiteSysPersonnelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -63,6 +64,11 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
 
     //根据人员查询当下的卡种
     private ReturnEntity cat(HttpServletRequest request) {
-        return new ReturnEntity();
+        Map map = PanXiaoZhang.getMap(request);
+        if (ObjectUtils.isEmpty(map.get("personnelId"))){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"用户编码不可为空");
+        }
+        SysPersonnel sysPersonnel = whiteSysPersonnelMapper.queryOne(map);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,sysPersonnel,"");
     }
 }

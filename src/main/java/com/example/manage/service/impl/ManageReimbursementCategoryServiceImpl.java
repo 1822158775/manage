@@ -2,9 +2,11 @@ package com.example.manage.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.CategoryCopy;
+import com.example.manage.entity.ManageRC;
 import com.example.manage.entity.ManageRM;
 import com.example.manage.entity.is_not_null.ManageReimbursementCategoryNotNull;
 import com.example.manage.mapper.ICategoryCopyMapper;
+import com.example.manage.mapper.IManageRCMapper;
 import com.example.manage.mapper.IManageRMMapper;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.ReturnEntity;
@@ -43,6 +45,9 @@ public class ManageReimbursementCategoryServiceImpl implements IManageReimbursem
 
     @Resource
     private IManageRMMapper iManageRMMapper;
+
+    @Resource
+    private IManageRCMapper iManageRCMapper;
 
     //方法总管
     @Override
@@ -103,7 +108,7 @@ public class ManageReimbursementCategoryServiceImpl implements IManageReimbursem
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该数据不存在");
         }
         //如果审核人数组不为空则进行处理
-        if (jsonParam.getManageRm() != null){
+        if (jsonParam.getManageRmNumber() != null){
             //已关联的和已选的集合
             Map<Integer,ManageRM> rmMap = new HashMap<>();
             //存储已关联的集合
@@ -120,8 +125,8 @@ public class ManageReimbursementCategoryServiceImpl implements IManageReimbursem
                 rmHashMap.put(manageRM.getRoleId(),manageRM);
             }
             //将已选中的值添加进rmMap
-            for (int i = 0; i < jsonParam.getManageRm().length; i++) {
-                Integer integer = jsonParam.getManageRm()[i];
+            for (int i = 0; i < jsonParam.getManageRmNumber().length; i++) {
+                Integer integer = jsonParam.getManageRmNumber()[i];
                 rmMap.put(integer,new ManageRM(
                         manageReimbursementCategory.getCategoryCoding(),
                         integer
@@ -190,6 +195,50 @@ public class ManageReimbursementCategoryServiceImpl implements IManageReimbursem
                 }
             }
         }
+        //如果特殊条件数组不为空
+        if (!ObjectUtils.isEmpty(jsonParam.getConditionNumber())){
+            //已关联的和已选的集合
+            Map<Integer,ManageRC> ccMap = new HashMap<>();
+            //存储已关联的集合
+            Map<Integer,ManageRC> ccHashMap = new HashMap<>();
+            //存储已选中的集合
+            Map<Integer,ManageRC> intHashMap = new HashMap<>();
+            //查询当前相关连的职位
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.eq("category_coding",manageReimbursementCategory.getCategoryCoding());
+            List<ManageRC> list = iManageRCMapper.selectList(wrapper);
+            for (int i = 0; i < list.size(); i++) {
+                ManageRC manageRC = list.get(i);
+                ccMap.put(manageRC.getManageCondition(),manageRC);
+                ccHashMap.put(manageRC.getManageCondition(),manageRC);
+            }
+            //将已选中的值添加进rmMap
+            for (int i = 0; i < jsonParam.getConditionNumber().length; i++) {
+                Integer integer = jsonParam.getConditionNumber()[i];
+                ccMap.put(integer,new ManageRC(
+                        manageReimbursementCategory.getCategoryCoding(),
+                        integer
+                ));
+                intHashMap.put(integer,new ManageRC(
+                        manageReimbursementCategory.getCategoryCoding(),
+                        integer
+                ));
+            }
+            //进行遍历全部
+            for(Map.Entry<Integer,ManageRC> entry : ccMap.entrySet()){
+                //System.out.println(entry.getKey());
+                //System.out.println(entry.getValue());
+                //已关联的
+                ManageRC rmHash = ccHashMap.get(entry.getKey());
+                //已选中的
+                ManageRC intHash = intHashMap.get(entry.getKey());
+                if (!ObjectUtils.isEmpty(rmHash) && ObjectUtils.isEmpty(intHash)){//如果已关联的存在但是已选中的不存在执行删除操作
+                    iManageRCMapper.deleteById(rmHash.getId());
+                }else if (ObjectUtils.isEmpty(rmHash) && !ObjectUtils.isEmpty(intHash)){//如果已关联的不存在但是已选中的存在则执行添加
+                    iManageRCMapper.insert(intHash);
+                }
+            }
+        }
         //编码不可修改
         jsonParam.setCategoryCoding(null);
         int updateById = iManageReimbursementCategoryMapper.updateById(jsonParam);
@@ -223,8 +272,8 @@ public class ManageReimbursementCategoryServiceImpl implements IManageReimbursem
         //添加编码
         jsonParam.setCategoryCoding(System.currentTimeMillis() + PanXiaoZhang.ran(2));
         //添加审核人职位
-        for (int i = 0; i < jsonParam.getManageRm().length; i++) {
-            Integer integer = jsonParam.getManageRm()[i];
+        for (int i = 0; i < jsonParam.getManageRmNumber().length; i++) {
+            Integer integer = jsonParam.getManageRmNumber()[i];
             iManageRMMapper.insert(new ManageRM(
                     jsonParam.getCategoryCoding(),
                     integer
@@ -234,6 +283,14 @@ public class ManageReimbursementCategoryServiceImpl implements IManageReimbursem
         for (int i = 0; i < jsonParam.getCategoryCopyNumber().length; i++) {
             Integer integer = jsonParam.getCategoryCopyNumber()[i];
             iCategoryCopyMapper.insert(new CategoryCopy(
+                    jsonParam.getCategoryCoding(),
+                    integer
+            ));
+        }
+        //添加关联特殊条件
+        for (int i = 0; i < jsonParam.getConditionNumber().length; i++) {
+            Integer integer = jsonParam.getConditionNumber()[i];
+            iManageRCMapper.insert(new ManageRC(
                     jsonParam.getCategoryCoding(),
                     integer
             ));

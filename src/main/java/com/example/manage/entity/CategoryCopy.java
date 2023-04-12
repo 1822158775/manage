@@ -6,7 +6,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.ToString;
+
+import javax.management.relation.Role;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -24,6 +27,8 @@ public class CategoryCopy implements Serializable {
     public String reimbursementCode;//类目编码
     @TableField(value = "role_id")
     public Integer roleId;//审批人编码
+    @TableField(exist = false)
+    public List<SysPersonnel> sysPersonnels;//人员集合
 
     public CategoryCopy() {
     }

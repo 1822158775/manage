@@ -510,7 +510,7 @@ public class CodeGeneration {
     }
     public static void main(String[] args) {
         try {
-            methodMaster("类目关联抄送人管理","category_copy","CategoryCopy");
+            methodMaster("银行账户管理","manage_bank_account","ManageBankAccount");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

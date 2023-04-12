@@ -36,9 +36,13 @@ public class ManageReimbursementCategory implements Serializable {
     @TableField(exist = false)
     public Integer[] categoryCopyNumber;//关联抄送人
     @TableField(exist = false)
-    public Integer[] manageRm;//关联审核人
+    public Integer[] manageRmNumber;//关联审核人
+    @TableField(exist = false)
+    public Integer[] conditionNumber;//关联特殊条件
     @TableField(exist = false)
     public List<SysRole> sysRoleManage;//审核人职位
     @TableField(exist = false)
     public List<SysRole> sysRoleCategory;//抄送人职位
+    @TableField(exist = false)
+    public List<ManageCondition> manageConditions;//特殊条件关联
 }

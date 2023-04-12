@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.IManageReimbursementRecordMapper">
+    <resultMap id="entity" type="com.example.manage.entity.ManageReimbursementRecord">
+        <result column="id" property="id" />
+        <result column="phone" property="phone" />
+        <result column="declaration_code" property="declarationCode" />
+        <result column="account" property="account" />
+        <result column="applicant" property="applicant" />
+        <result column="reimbursement_type" property="reimbursementType" />
+        <result column="amount_declared" property="amountDeclared" />
+        <result column="declaration_time" property="declarationTime" />
+        <result column="approver_time" property="approverTime" />
+        <result column="remark" property="remark" />
+        <result column="approver_state" property="approverState" />
+        <result column="bank_account" property="bankAccount" />
+    </resultMap>
+    <select id="queryCount" resultType="int" parameterType="hashmap">
+        select count(DISTINCT <include refid="tableSqlAs" />.id) as id from
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel"/>
+    </select>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="returnSql"/>
+        from
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+    </select>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSqlAs" />.*
+        ,reimbursement_category.name as r_c_name
+        ,reimbursement_approval.personnel_name as r_a_personnel_name
+        ,reimbursement_copy.personnel_name as r_c_personnel_name
+        ,reimbursement_image.path_url as r_i_path_url
+        ,reimbursement_project.name as r_p_name
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN reimbursement_category on reimbursement_category.reimbursement_record_code = <include refid="tableSqlAs" />.declaration_code
+        LEFT JOIN reimbursement_approval on reimbursement_approval.reimbursement_record_code = <include refid="tableSqlAs" />.declaration_code
+        LEFT JOIN reimbursement_copy on reimbursement_copy.reimbursement_record_code = <include refid="tableSqlAs" />.declaration_code
+        LEFT JOIN reimbursement_image on reimbursement_image.reimbursement_record_code = <include refid="tableSqlAs" />.declaration_code
+        LEFT JOIN reimbursement_project on reimbursement_project.reimbursement_record_code = <include refid="tableSqlAs" />.declaration_code
+    </sql>
+    <!--  表别名  -->
+    <sql id="tableSqlAs">
+        m_r_record
+    </sql>
+    <!--  子表  -->
+    <sql id="tableReturn">
+        select
+        <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql"/>
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </sql>
+    <sql id="tableSql">
+        manage.manage_reimbursement_record
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="id != null "> and `id` = #{id}</if>
+    </sql>
+    <sql id="safeLIMIT">
+        <if test="queryAll != 'yes'">
+            <if test="pageNum != null and pageNum != ''">
+                LIMIT #{index},#{pageNum}
+            </if>
+        </if>
+    </sql>
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.id desc
+    </sql>
+</mapper>

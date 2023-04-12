@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.WhiteCategoryCopyMapper">
+    <resultMap id="entity" type="com.example.manage.entity.SysPersonnel">
+        <result column="p_id" property="id" />
+        <result column="p_name" property="name" />
+        <result column="p_personnel_code" property="personnelCode" />
+        <association property="sysRole" javaType="com.example.manage.entity.SysRole">
+            <result column="r_id" property="id" />
+            <result column="r_name" property="name" />
+            <result column="r_number" property="number" />
+        </association>
+    </resultMap>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="returnSql"/>
+        from
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+    </select>
+
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSql"/>.*
+        ,sys_role.id as r_id
+        ,sys_role.name as r_name
+        ,sys_role.number as r_number
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN sys_role on sys_role.id = <include refid="tableSql" />.role_id
+        LEFT JOIN management_personnel on management_personnel.personnel_code = sys_personnel.personnel_code
+        LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
+    </sql>
+    <sql id="tableSql">
+        manage.sys_personnel
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="sysManagements != null"> and sys_management.`id` = #{sysManagements}</if>
+        <if test="copyCopies != null"> and sys_role.`id` = #{copyCopies}</if>
+    </sql>
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.id desc
+    </sql>
+</mapper>
