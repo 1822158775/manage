@@ -13,4 +13,5 @@ import java.util.Map;
 public interface IReimbursementApprovalMapper extends BaseMapper<ReimbursementApproval> {
     List<ReimbursementApproval> queryAll(Map map);
     Integer queryCount(Map map);
+    Integer queryMax(Map map);
 }

@@ -7,15 +7,21 @@
         <result column="personnel_code" property="personnelCode" />
         <result column="personnel_name" property="personnelName" />
         <result column="number" property="number" />
-        <result column="max_number" property="maxNumber" />
         <result column="approval_time" property="approvalTime" />
         <result column="approval_state" property="approvalState" />
         <result column="remark" property="remark" />
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
-        select count(<include refid="tableSql"/>.id) as id from
+        select count(<include refid="tableSql" />.id) as id from
         <include refid="tableSql"/>
         <include refid="whereSqlModel"/>
+    </select>
+    <select id="queryMax" resultType="int" parameterType="hashmap">
+        select
+            max(<include refid="tableSql" />.`number`)
+        from
+            <include refid="tableSql"/>
+            <include refid="whereSqlModel" />
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select <include refid="tableSql"/>.*
@@ -30,7 +36,10 @@
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="id != null "> and `id` = #{id}</if>
+        <if test="reimbursementRecordCode != null "> and `reimbursement_record_code` = #{reimbursementRecordCode}</if>
+        <if test="approvalState != null "> and `approval_state` = #{approvalState}</if>
+        <if test="nePersonnelCode != null "> and `personnel_code` != #{nePersonnelCode}</if>
+        <if test="number != null "> and `number` = #{number}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

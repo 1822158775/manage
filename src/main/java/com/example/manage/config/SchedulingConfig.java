@@ -4,6 +4,7 @@ import com.example.manage.entity.SysPersonnel;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
+import com.example.manage.white_list.service.IWhiteSysPersonnelService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.context.annotation.Configuration;
@@ -24,10 +25,10 @@ import java.util.Map;
 @Configuration
 @EnableScheduling
 public class SchedulingConfig {
+
     @Resource
-    private ISysPersonnelMapper iSysPersonnelMapper;
-    @Resource
-    private RedisUtil redisUtil;
+    private IWhiteSysPersonnelService iWhiteSysPersonnelService;
+
     //@Scheduled(cron = "0 0 20 ? * FRI") // 每周五晚上8点执行
     //public void SchedulingFRI() {
     //    Boolean aBoolean = theCommanderService.synchronousData();
@@ -37,10 +38,10 @@ public class SchedulingConfig {
 
     //0    0     12    *   *    ?
     //[秒] [分] [小时] [日] [月] [周] [年]
-    @Scheduled(cron = "0 0 10 ? * MON") // 每周一早上10点执行
-    public void SchedulingMON() {
-
-    }
+    //@Scheduled(cron = "0 0 10 ? * MON") // 每周一早上10点执行
+    //public void SchedulingMON() {
+    //
+    //}
     //@Scheduled(cron = "0 0 0 ? * MON") // 每周一晚上0点执行
     //public void SchedulingMON() {
     //
@@ -57,31 +58,24 @@ public class SchedulingConfig {
     //    Boolean aBoolean = theCommanderService.synchronousData();
     //    System.out.println("-------------" + aBoolean);
     //}
-    //查询2天后的人员生日
+
     //@Scheduled(cron="0 0/1 * * * ?")
-    //public void ExecuteOncePerSecond(){
-    //    //获取Redis设置的天数
-    //    Map<Object, Object> dateFormatBirthday = redisUtil.getHashEntries("dateFormatBirthday");
-    //    //将存储在Redis里的Map存储的值取出并转化为数字类型
-    //    Integer birthday = Integer.valueOf(String.valueOf(dateFormatBirthday.get("dateFormatBirthday")));
-    //    //获取当前时间
-    //    Date date = new Date();
-    //    //进行计算n天后的日期
-    //    Date calculationDate = PanXiaoZhang.calculationDate(date, birthday);
-    //    //进行转化为响应的日期格式
-    //    String format = DateFormatUtils.format(calculationDate, "M-d");
-    //    log.info("日期：{}",format);
-    //    Map map = new HashMap();
-    //    map.put("dateFormatBirthday","start");
-    //    map.put("agoBirthday", format);
-    //    map.put("backBirthday",format);
-    //    //进行查询的出符合条件的数据
-    //    List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
-    //    for (int i = 0; i < sysPersonnels.size(); i++) {
-    //        SysPersonnel sysPersonnel = sysPersonnels.get(i);
-    //        System.out.println(sysPersonnel);
-    //    }
+    //private void process1() {
+    //    iWhiteSysPersonnelService.dimissionInform();
     //}
+
+    //每天10点查询2天后的人员生日
+    @Scheduled(cron="0 0 10 * * ?")
+    public void ExecuteOncePerSecond(){
+        iWhiteSysPersonnelService.birthdayInform();
+    }
+
+    //每天23点查询离职
+    @Scheduled(cron="0 0 23 * * ?")
+    public void DimissionOncePerSecond(){
+        iWhiteSysPersonnelService.dimissionInform();
+    }
+
     //@Scheduled(cron = "59 59 23 * * ?")
     //public void everyDay(){
     //

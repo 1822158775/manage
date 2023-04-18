@@ -26,13 +26,16 @@ public class ReimbursementProject implements Serializable {
     public String reimbursementRecordCode;//报销记录编码
     @TableField(value = "manage_management_id")
     public Integer manageManagementId;//项目
+    @TableField(value = "amount")
+    public Double amount;//扣费金额
 
     public ReimbursementProject() {
     }
 
-    public ReimbursementProject(String name, String reimbursementRecordCode, Integer manageManagementId) {
+    public ReimbursementProject(String name, String reimbursementRecordCode, Integer manageManagementId, Double amount) {
         this.name = name;
         this.reimbursementRecordCode = reimbursementRecordCode;
         this.manageManagementId = manageManagementId;
+        this.amount = amount;
     }
 }

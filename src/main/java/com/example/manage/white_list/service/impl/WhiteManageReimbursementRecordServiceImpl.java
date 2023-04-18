@@ -10,6 +10,7 @@ import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.white_list.service.IWhiteManageReimbursementRecordService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -90,6 +91,18 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
     @Resource
     private WhiteCategoryCopyMapper whiteCategoryCopyMapper;
 
+    //查询申请报销记录
+    @Resource
+    private WhiteManageReimbursementRecordMapper whiteManageReimbursementRecordMapper;
+
+    //角色mapper
+    @Resource
+    private ISysRoleMapper iSysRoleMapper;
+
+    //添加相关项目
+    @Resource
+    private WhiteReimbursementProjectMapper WhiteReimbursementProjectMapper;
+
     //方法总管
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -98,12 +111,27 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                 return cat(request);
             }else if (name.equals("add")){
                 return add(request);
+            }else if (name.equals("approver_cat")){
+                return approver_cat(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
         }
+    }
+
+    //审核列表
+    private ReturnEntity approver_cat(HttpServletRequest request) {
+
+        Map map = PanXiaoZhang.getJsonMap(request);
+        if (ObjectUtils.isEmpty(map.get("personnelId"))){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+        Integer integer = whiteManageReimbursementRecordMapper.queryCount(map);
+        ReturnEntity returnEntity = new ReturnEntity(CodeEntity.CODE_SUCCEED, whiteManageReimbursementRecordMapper.queryApproverAll(map), "");
+        returnEntity.setCount(integer);
+        return returnEntity;
     }
 
     //方法总管外加事务
@@ -118,7 +146,11 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                 }
                 return returnEntity;
             }else if (name.equals("add")){
-                return add(request);
+                ReturnEntity returnEntity = add(request);
+                if (!returnEntity.getCode().equals("0")){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                }
+                return returnEntity;
             }
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
@@ -128,6 +160,197 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
         }
     }
+
+
+    //审核报销表单
+    private ReturnEntity edit(HttpServletRequest request) throws IOException {
+        ManageReimbursementRecord jsonParam = PanXiaoZhang.getJSONParam(request, ManageReimbursementRecord.class);
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(
+                jsonParam,
+                new ManageReimbursementRecordNotNull(
+                        "isNotNullAndIsLengthNot0"
+                        ,"isNotNullAndIsLengthNot0"
+                )
+        );
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+        //判断该状态是否进行提交数据
+        SysPersonnel personnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(personnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
+        //查询该项目信息
+        ManageReimbursementRecord manageReimbursementRecord = iManageReimbursementRecordMapper.selectById(jsonParam.getId());
+        //判断数据是否存在
+        if (ObjectUtils.isEmpty(manageReimbursementRecord)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该数据不存在");
+        }
+        //判断是否可以操作状态
+        if (!manageReimbursementRecord.getApproverState().equals("pending")){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目状态为" + manageReimbursementRecord.getApproverState() + ",无法进行下一步操作");
+        }
+        //当前可审批的等级
+        Integer maxNumber = 0;
+        //查询审核人
+        if (manageReimbursementRecord.getDeclarationCode() != null){
+            Map map = new HashMap();
+            map.put("reimbursementRecordCode",manageReimbursementRecord.getDeclarationCode());
+            map.put("approvalState","pending");
+            maxNumber = iReimbursementApprovalMapper.queryMax(map);
+        }
+        //查询当前职位等级
+        if (!ObjectUtils.isEmpty(personnel.getSysRole())){
+            SysRole sysRole = iSysRoleMapper.selectById(personnel.getRoleId());
+            if (!sysRole.getNumber().equals(maxNumber)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"当前职位不可审批");
+            }
+        }
+        //当前时间
+        String format = DateFormatUtils.format(new Date(), PanXiaoZhang.yMdHms());
+        //如果同意审核
+        if (jsonParam.getApproverState().equals("agree")){
+            //查询是否还有剩余的
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.ne("personnel_code",personnel.getPersonnelCode());
+            wrapper.eq("approval_state","pending");
+            List<ReimbursementApproval> selectList = iReimbursementApprovalMapper.selectList(wrapper);
+            //如果没有了审批人
+            if (selectList.size() < 1){
+                Map map = new HashMap();
+                map.put("reimbursementRecordCode",manageReimbursementRecord.getDeclarationCode());
+                List<ReimbursementProject> reimbursementProjects = WhiteReimbursementProjectMapper.querySumAmount(map);
+                //进行项目余额操作
+                for (int i = 0; i < reimbursementProjects.size(); i++) {
+                    //获取项目需承担的金额
+                    ReimbursementProject reimbursementProject = reimbursementProjects.get(i);
+                    //查询当前项目
+                    SysManagement management = iSysManagementMapper.selectById(reimbursementProject.getManageManagementId());
+                    //进行项目余额计算
+                    Double doubleD = PanXiaoZhang.doubleD(management.getAvailableBalance() - reimbursementProject.getAmount(), 2);
+                    //判断余额是否够用
+                    if (doubleD < 0D){
+                        return new ReturnEntity(CodeEntity.CODE_ERROR,management.getName() + "项目" + ",余额不足");
+                    }
+                    //进行修改金额
+                    int updateById = iSysManagementMapper.updateById(new SysManagement(
+                            reimbursementProject.getManageManagementId(),
+                            doubleD
+                    ));
+                    if (updateById != 1){
+                        return new ReturnEntity(CodeEntity.CODE_ERROR,"项目余额修改失败");
+                    }
+                }
+                //修改当前报销记录的总状态
+                int updateById = iManageReimbursementRecordMapper.updateById(new ManageReimbursementRecord(
+                        manageReimbursementRecord.getId(),
+                        format,
+                        jsonParam.getRemark(),
+                        jsonParam.getApproverState()
+                ));
+                if (updateById != 1){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"报销状态修改失败");
+                }
+                //发送给申请人
+                QueryWrapper queryWrapper = new QueryWrapper();
+                queryWrapper.eq("username",manageReimbursementRecord.getAccount());
+                SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(queryWrapper);
+                PanXiaoZhang.postWechat(
+                        sysPersonnel.getPhone(),
+                        "审核信息",
+                        "",
+                        "审核通过",
+                        "",
+                        urlReimburse + "?code=" + jsonParam.getDeclarationCode()
+                );
+                return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
+            }else {//如果还有审批人
+                Map map = new HashMap();
+                map.put("reimbursementRecordCode",manageReimbursementRecord.getDeclarationCode());
+                map.put("approvalState","pending");
+                map.put("nePersonnelCode",personnel.getPersonnelCode());//不等于当前审核人的资源编码
+                //查询当前审核等级
+                Integer queryMax = iReimbursementApprovalMapper.queryMax(map);
+                //判断审核等级是否相同
+                if (!queryMax.equals(maxNumber)){//如果不相等
+                    //去除当前审核人的资源代码
+                    map.remove("nePersonnelCode");
+                    //设置条件
+                    map.put("number",maxNumber);
+                    List<ReimbursementApproval> reimbursementApprovals = iReimbursementApprovalMapper.queryAll(map);
+                    //开始循环通知下一层的审核人员
+                    for (int i = 0; i < reimbursementApprovals.size(); i++) {
+                        ReimbursementApproval approval = reimbursementApprovals.get(i);
+                        //查询人员当前手机号
+                        QueryWrapper queryWrapper = new QueryWrapper();
+                        queryWrapper.eq("personnel_code",approval.getPersonnelCode());
+                        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(queryWrapper);
+                        PanXiaoZhang.postWechat(
+                                sysPersonnel.getPhone(),
+                                personnel.getName() + "提交了报销信息",
+                                "",
+                                "请前往审核",
+                                "",
+                                urlReimburse + "?code=" + jsonParam.getDeclarationCode()
+                        );
+                    }
+                }
+            }
+            //更改当前审核状态
+            QueryWrapper queryWrapper = new QueryWrapper();
+            queryWrapper.eq("personnel_code",personnel.getPersonnelCode());
+            queryWrapper.eq("reimbursement_record_code",manageReimbursementRecord.getDeclarationCode());
+            int update = iReimbursementApprovalMapper.update(new ReimbursementApproval(
+                format,
+                jsonParam.getApproverState(),
+                jsonParam.getRemark()
+            ), queryWrapper);
+            if (update != 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"审核结果修改失败");
+            }
+            return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
+        }else if (jsonParam.getApproverState().equals("refuse")){//如果拒绝审核
+            //修改当前报销记录的总状态
+            int updateById = iManageReimbursementRecordMapper.updateById(new ManageReimbursementRecord(
+                    manageReimbursementRecord.getId(),
+                    format,
+                    jsonParam.getRemark(),
+                    jsonParam.getApproverState()
+            ));
+            if (updateById != 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"报销状态修改失败");
+            }
+            //更改当前审核状态
+            QueryWrapper queryWrapper = new QueryWrapper();
+            queryWrapper.eq("personnel_code",personnel.getPersonnelCode());
+            queryWrapper.eq("reimbursement_record_code",manageReimbursementRecord.getDeclarationCode());
+            int update = iReimbursementApprovalMapper.update(new ReimbursementApproval(
+                    DateFormatUtils.format(new Date(),PanXiaoZhang.yMdHms()),
+                    jsonParam.getApproverState(),
+                    jsonParam.getRemark()
+            ), queryWrapper);
+            if (update != 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"审核结果修改失败");
+            }
+            //发送给申请人
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.eq("username",manageReimbursementRecord.getAccount());
+            SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
+            PanXiaoZhang.postWechat(
+                    sysPersonnel.getPhone(),
+                    "审核信息",
+                    "",
+                    "审核失败",
+                    "",
+                    urlReimburse + "?code=" + jsonParam.getDeclarationCode()
+            );
+            return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
+        }
+        return new ReturnEntity(CodeEntity.CODE_ERROR,"审核状态不正确");
+    }
+
     //申请报销信息
     private ReturnEntity add(HttpServletRequest request) throws IOException {
         ManageReimbursementRecord jsonParam = PanXiaoZhang.getJSONParam(request, ManageReimbursementRecord.class);
@@ -135,14 +358,14 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                 jsonParam,
                 new ManageReimbursementRecordNotNull(
                         "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0",
+                        "",
                         "",
                         "isNotNullAndIsLengthNot0",
                         "",
                         "isNotNullAndIsLengthNot0",
                         "",
                         "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0"
+                        ""
                 )
         );
         if (returnEntity.getState()){
@@ -165,47 +388,16 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
         if (reimbursementCategories.size() < 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"请选择类目");
         }
-        //附件集合
-        List<ReimbursementImage> reimbursementImages = jsonParam.getReimbursementImages();
         //生成编码
         jsonParam.setDeclarationCode(System.currentTimeMillis() + PanXiaoZhang.ran(2));
-        //存储项目id
-        List<Integer> sysManagementList = new ArrayList<>();
-        try {
-            //定义项目数组
-            Map<Integer,Integer> integerMap = new HashMap<>();
-            //添加相关项目
-            for (int i = 0; i < reimbursementProjects.size(); i++) {
-                //获取当前数据
-                ReimbursementProject reimbursementProject = reimbursementProjects.get(i);
-                //查询项目是否存在
-                SysManagement management = iSysManagementMapper.selectById(reimbursementProject.getManageManagementId());
-                if (ObjectUtils.isEmpty(management)){
-                    return new ReturnEntity(CodeEntity.CODE_ERROR,reimbursementProject.getName() + "该项目不存在");
-                }
-                //获取Map存储的内容
-                Integer integer = integerMap.get(management.getId());
-                //如果不存在，将值存储进integerMap和sysManagementList中
-                if (ObjectUtils.isEmpty(integer)){
-                    integerMap.put(management.getId(),management.getId());
-                    sysManagementList.add(management.getId());
-                }
-                //进行添加
-                iReimbursementProjectMapper.insert(new ReimbursementProject(
-                        management.getName(),//设置项目名称
-                        jsonParam.getDeclarationCode(),//设置报销编码
-                        management.getId()//设置项目编码
-                ));
-            }
-        }catch (Exception e){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"项目录入失败");
-        }
         //存储类目编码
         List<String> manageReimbursementCategoryList = new ArrayList<>();
         //存储职位id
         List<Integer> sysRoleList = new ArrayList<>();
         //存储抄送人id
         List<Integer> copyList = new ArrayList<>();
+        //总金额设置为0
+        jsonParam.setAmountDeclared(0D);
         //添加类目关联
         try {
             //定义项目数组
@@ -226,19 +418,38 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                     integerMap.put(reimbursementCategory.getId(),reimbursementCategory.getId());
                     manageReimbursementCategoryList.add(manageReimbursementCategory.getCategoryCoding());
                 }
+                //判断金额是否为负数
+                if (reimbursementCategory.getAmout() <= 0){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,reimbursementCategory.getAmout() + "为数字");
+                }
                 //将当前金额设置小数点为2位
                 Double aDouble = PanXiaoZhang.doubleD(reimbursementCategory.getAmout(), 2);
                 //进行添加进总金额
                 jsonParam.setAmountDeclared(PanXiaoZhang.doubleD(aDouble + jsonParam.getAmountDeclared(),2));
+                //唯一编码
+                String uuid = UUID.randomUUID().toString();
                 //添加报销和类目
                 iReimbursementCategoryMapper.insert(new ReimbursementCategory(
                         jsonParam.getDeclarationCode(),//设置报销编码
                         manageReimbursementCategory.getId(),//设置类目编码
                         aDouble,//设置当前金额
                         manageReimbursementCategory.getName(),//设置类目名称
-                        manageReimbursementCategory.getReimbursementType(),//设置类目类型
-                        reimbursementCategory.getOccurrenceTime()
+                        jsonParam.getReimbursementType(),//设置类目类型
+                        reimbursementCategory.getOccurrenceTime(),//发生时间
+                        uuid,//设置唯一编码
+                        reimbursementCategory.getRemark()//备注
                 ));
+                //附件集合
+                String[] imagesNumber = reimbursementCategory.getImagesNumber();
+                //添加附件
+                for (int j = 0; j < imagesNumber.length; j++) {
+                    //获取当前数据
+                    String imageString = imagesNumber[j];
+                    iReimbursementImageMapper.insert(new ReimbursementImage(
+                            imageString,
+                            uuid
+                    ));
+                }
             }
             //转化为数组
             String[] strings = manageReimbursementCategoryList.toArray(new String[manageReimbursementCategoryList.size()]);
@@ -253,7 +464,7 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                 Integer integer = roleMap.get(manageRM.getRoleId());
                 //如果不存在，将值存储进roleMap和sysRoleList中
                 if (ObjectUtils.isEmpty(integer)){
-                    integerMap.put(manageRM.getRoleId(),manageRM.getRoleId());
+                    roleMap.put(manageRM.getRoleId(),manageRM.getRoleId());
                     sysRoleList.add(manageRM.getRoleId());
                 }
             }
@@ -265,17 +476,70 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             Map<Integer,Integer> copyMap = new HashMap<>();
             for (int i = 0; i < categoryCopies.size(); i++) {
                 CategoryCopy categoryCopy = categoryCopies.get(i);
-                Integer integer = roleMap.get(categoryCopy.getRoleId());
+                Integer integer = copyMap.get(categoryCopy.getRoleId());
                 //如果不存在，将值存储进roleMap和sysRoleList中
                 if (ObjectUtils.isEmpty(integer)){
-                    integerMap.put(categoryCopy.getRoleId(),categoryCopy.getRoleId());
-                    sysRoleList.add(categoryCopy.getRoleId());
+                    copyMap.put(categoryCopy.getRoleId(),categoryCopy.getRoleId());
+                    copyList.add(categoryCopy.getRoleId());
                 }
             }
         }catch (Exception e){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"报销细节录入失败");
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"报销项目录入失败");
         }
 
+        //存储项目id
+        List<Integer> sysManagementList = new ArrayList<>();
+        try {
+            //定义项目数组
+            Map<Integer,Integer> integerMap = new HashMap<>();
+            //定义当前平均金额
+            Double amountAge = PanXiaoZhang.doubleD(jsonParam.getAmountDeclared() / reimbursementProjects.size(),2);
+            //定义分摊金额
+            Double amountDeclared = jsonParam.getAmountDeclared() - PanXiaoZhang.doubleD(PanXiaoZhang.doubleD((jsonParam.getAmountDeclared() / reimbursementProjects.size()) , 2) * reimbursementProjects.size() - 1,2);
+            //添加相关项目
+            for (int i = 0; i < reimbursementProjects.size(); i++) {
+                //获取当前数据
+                ReimbursementProject reimbursementProject = reimbursementProjects.get(i);
+                //查询项目是否存在
+                SysManagement management = iSysManagementMapper.selectById(reimbursementProject.getId());
+                if (ObjectUtils.isEmpty(management)){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,reimbursementProject.getName() + "项目不存在");
+                }
+                //如果可用余额为空
+                if (ObjectUtils.isEmpty(management.getAvailableBalance())){
+                    management.setAvailableBalance(0D);
+                }
+                //判断余额
+                if (management.getAvailableBalance() < amountDeclared){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,management.getName() + "项目余额为" + management.getAvailableBalance() + "分摊金额为" + PanXiaoZhang.doubleD(amountDeclared,2));
+                }
+                //获取Map存储的内容
+                Integer integer = integerMap.get(management.getId());
+                //如果不存在，将值存储进integerMap和sysManagementList中
+                if (ObjectUtils.isEmpty(integer)){
+                    integerMap.put(management.getId(),management.getId());
+                    sysManagementList.add(management.getId());
+                }
+                //当前所分担的金额
+                Double amount;
+                //判断当前项目所分担的金额
+                if ((i + 1) == reimbursementProjects.size()){
+                    amount = amountDeclared;
+                }else {
+                    amount = amountAge;
+                }
+                //进行添加
+                iReimbursementProjectMapper.insert(new ReimbursementProject(
+                        management.getName(),//设置项目名称
+                        jsonParam.getDeclarationCode(),//设置报销编码
+                        management.getId(),//设置项目编码
+                        amount//设置承担金额
+                ));
+            }
+        }catch (Exception e){
+            log.info("捕获异常：{}",e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"项目录入失败");
+        }
         //转化为项目id数组
         Integer[] sysManagements = sysManagementList.toArray(new Integer[sysManagementList.size()]);
         //转化为职位id数组
@@ -283,13 +547,13 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
         //转化为抄送人职位id数组
         Integer[] copyCopies = copyList.toArray(new Integer[copyList.size()]);
         //查询map存储
-        Map hashMap = new HashMap();
+        Map<String,String> hashMap = new HashMap();
         //设置已选项目id
-        hashMap.put("sysManagements",sysManagements);
+        hashMap.put("sysManagements", StringUtils.join(sysManagements,","));
         //设置审核职位关联
-        hashMap.put("sysRoles",sysRoles);
+        hashMap.put("sysRoles",StringUtils.join(sysRoles,","));
         //设置抄送人职位关联
-        hashMap.put("copyCopies",copyCopies);
+        hashMap.put("copyCopies",StringUtils.join(copyCopies,","));
         //查询审核人
         List<SysPersonnel> rmPersonnels = whiteManageRMMapper.queryAll(hashMap);
         //判断是否有审核人
@@ -304,8 +568,8 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
         }
         //储存需要通知的人
         Map<String, Integer> map = new HashMap();
-        //储存第一个审批人手机号
-        String approvalPhone = "";
+        //储存审批人手机号
+        List<String> approvalPhone = new ArrayList<>();
         //添加审核人
         for (int i = 0; i < rmPersonnels.size(); i++) {
             //获取当前数据
@@ -322,12 +586,15 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             Integer integer = map.get("approvalInt");
             if (!ObjectUtils.isEmpty(integer)){
                 if (integer > sysPersonnel.getSysRole().getNumber()){
+                    approvalPhone.clear();
                     map.put("approvalInt",sysPersonnel.getSysRole().getNumber());
-                    approvalPhone = sysPersonnel.getPhone();
+                    approvalPhone.add(sysPersonnel.getPhone());
+                }else if (integer.equals(sysPersonnel.getSysRole().getNumber())){
+                    approvalPhone.add(sysPersonnel.getPhone());
                 }
             }else {
                 map.put("approvalInt",sysPersonnel.getSysRole().getNumber());
-                approvalPhone = sysPersonnel.getPhone();
+                approvalPhone.add(sysPersonnel.getPhone());
             }
         }
         //添加抄送人
@@ -350,21 +617,27 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             ManageBankAccount manageBankAccount = iManageBankAccountMapper.selectOne(wrapper);
             //判断当前银行账号是否存在
             if (ObjectUtils.isEmpty(manageBankAccount)){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"请先绑定银行账号");
+                if (ObjectUtils.isEmpty(jsonParam.getBankAccount())){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"请填写银行卡号");
+                }
+                if (ObjectUtils.isEmpty(jsonParam.getBankOfDeposit())){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"请填写开户行");
+                }
+                iManageBankAccountMapper.insert(new ManageBankAccount(
+                        personnel.getPersonnelCode(),
+                        jsonParam.getBankAccount(),
+                        jsonParam.getBankOfDeposit()
+                ));
+                //设置银行账号
+                jsonParam.setBankAccount(jsonParam.getBankAccount());
+                //设置银行开户行地址
+                jsonParam.setBankOfDeposit(jsonParam.getBankOfDeposit());
+            }else {
+                //设置银行账号
+                jsonParam.setBankAccount(manageBankAccount.getBankAccount());
+                //设置银行开户行地址
+                jsonParam.setBankOfDeposit(manageBankAccount.getBankOfDeposit());
             }
-            //设置银行账号
-            jsonParam.setBankAccount(manageBankAccount.getBankAccount());
-            //设置银行开户行地址
-            jsonParam.setBankOfDeposit(manageBankAccount.getBankOfDeposit());
-        }
-        //添加附件
-        for (int i = 0; i < reimbursementImages.size(); i++) {
-            //获取当前数据
-            ReimbursementImage reimbursementImage = reimbursementImages.get(i);
-            iReimbursementImageMapper.insert(new ReimbursementImage(
-                    reimbursementImage.getPathUrl(),
-                    jsonParam.getDeclarationCode()
-            ));
         }
         //将id设为空
         jsonParam.setId(null);
@@ -388,24 +661,36 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                     MsgEntity.CODE_ERROR
             );
         }
-        //发送给第一个审批人
-        PanXiaoZhang.postWechat(
-                approvalPhone,
-                personnel.getName() + "提交了报销信息",
-                "审核信息",
-                "请前往审核",
-                "",
-                urlReimburse + "?code=" + jsonParam.getDeclarationCode()
-        );
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,MsgEntity.CODE_SUCCEED);
-    }
-
-    private ReturnEntity edit(HttpServletRequest request) {
-        return null;
+        //发送给第一批审批人
+        for (int i = 0; i < approvalPhone.size(); i++) {
+            String phone = approvalPhone.get(i);
+            PanXiaoZhang.postWechat(
+                    phone,
+                    personnel.getName() + "提交了报销信息",
+                    "",
+                    "请前往审核",
+                    "",
+                    urlReimburse + "?code=" + jsonParam.getDeclarationCode()
+            );
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");
     }
 
     //查询当前数据
     private ReturnEntity cat(HttpServletRequest request) {
-        return null;
+        Map map = PanXiaoZhang.getJsonMap(request);
+        if (ObjectUtils.isEmpty(map.get("personnelId"))){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+        Integer integer = whiteManageReimbursementRecordMapper.queryCount(map);
+        ReturnEntity returnEntity = new ReturnEntity(CodeEntity.CODE_SUCCEED, whiteManageReimbursementRecordMapper.queryAll(map), "");
+        returnEntity.setCount(integer);
+        return returnEntity;
+    }
+
+    public static void main(String[] args) {
+        Double d = 10.0;
+        double v = d / 3;
+        System.out.println(d - PanXiaoZhang.doubleD(PanXiaoZhang.doubleD(v , 2) * 2,2));
     }
 }

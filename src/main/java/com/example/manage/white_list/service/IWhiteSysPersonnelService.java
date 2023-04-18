@@ -16,4 +16,6 @@ public interface IWhiteSysPersonnelService {
     ReturnEntity methodMaster(HttpServletRequest request,String name);
     List<SysPersonnel> myLeader(Integer roleId, Integer managementId);
     List<SysPersonnel> queryAll(Map map);
+    void birthdayInform();
+    void dimissionInform();
 }

@@ -23,11 +23,11 @@
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(DISTINCT <include refid="tableSqlAs"/>.id) as id from
-        (<include refid="tableReturn" />)
+            <include refid="tableSql" />
         as
-        <include refid="tableSqlAs" />
-        <include refid="relevanceSql" />
-        <include refid="whereSqlModel"/>
+            <include refid="tableSqlAs" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
@@ -42,6 +42,14 @@
     <!--  匿名表  -->
     <sql id="tableSqlAs">
         m_r_category
+    </sql>
+    <!--  子表count  -->
+    <sql id="tableReturnCount">
+        select
+        <include refid="tableSql"/>.id
+        from
+        <include refid="tableSql"/>
+        <include refid="safeOrderBy"/>
     </sql>
     <!--  子表  -->
     <sql id="tableReturn">

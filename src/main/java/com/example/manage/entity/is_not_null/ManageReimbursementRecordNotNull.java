@@ -45,6 +45,11 @@ public class ManageReimbursementRecordNotNull implements Serializable {
     public ManageReimbursementRecordNotNull() {
     }
 
+    public ManageReimbursementRecordNotNull(String id, String approverState) {
+        this.id = id;
+        this.approverState = approverState;
+    }
+
     public ManageReimbursementRecordNotNull(String reimbursementType, String amountDeclared, String remark, String bankAccount, String reimbursementApprovals, String reimbursementCategories, String reimbursementCopies, String reimbursementProjects, String maxNumber) {
         this.reimbursementType = reimbursementType;
         this.amountDeclared = amountDeclared;

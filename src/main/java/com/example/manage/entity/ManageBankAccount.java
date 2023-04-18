@@ -26,4 +26,13 @@ public class ManageBankAccount implements Serializable {
     public String bankAccount;//银行账户
     @TableField(value = "bank_of_deposit")
     public String bankOfDeposit;//开户银行
+
+    public ManageBankAccount() {
+    }
+
+    public ManageBankAccount(String personnelCode, String bankAccount, String bankOfDeposit) {
+        this.personnelCode = personnelCode;
+        this.bankAccount = bankAccount;
+        this.bankOfDeposit = bankOfDeposit;
+    }
 }

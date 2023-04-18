@@ -63,8 +63,6 @@ public class ManageReimbursementRecord implements Serializable {
     public List<ReimbursementCopy> reimbursementCopies;//报销记录抄送人
     @TableField(exist = false)
     public List<ReimbursementProject> reimbursementProjects;//报销记录关联项目
-    @TableField(exist = false)
-    public List<ReimbursementImage> reimbursementImages;//图片存储
 
     @TableField(exist = false)
     public Integer[] approvalNumber;//报销记录关联审批人进行审批
@@ -74,10 +72,17 @@ public class ManageReimbursementRecord implements Serializable {
     public Integer[] copiesNumber;//报销记录抄送人
     @TableField(exist = false)
     public Integer[] projectsNumber;//报销记录关联项目
-    @TableField(exist = false)
-    public Integer[] imagesNumber;//图片存储
 
     @TableField(exist = false)
     public Integer personnelId;//人员编码
 
+    public ManageReimbursementRecord() {
+    }
+
+    public ManageReimbursementRecord(Integer id, String approverTime, String remark, String approverState) {
+        this.id = id;
+        this.approverTime = approverTime;
+        this.remark = remark;
+        this.approverState = approverState;
+    }
 }

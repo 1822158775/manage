@@ -43,6 +43,11 @@ public class SysManagement implements Serializable {
     public SysManagement() {
     }
 
+    public SysManagement(Integer id, Double availableBalance) {
+        this.id = id;
+        this.availableBalance = availableBalance;
+    }
+
     public SysManagement(String name, String projectAddress, Double availableBalance, Integer monthlyIndicators, Integer managementState) {
         this.name = name;
         this.projectAddress = projectAddress;

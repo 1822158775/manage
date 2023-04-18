@@ -41,21 +41,37 @@
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(DISTINCT <include refid="tableSqlAs"/>.id) as id from
-        (<include refid="tableReturn" />)
+        <include refid="tableSql" />
         as
         <include refid="tableSqlAs" />
         <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select
-            <include refid="returnSql"/>
-        from
-        (<include refid="tableReturn" />)
-        as
-        <include refid="tableSqlAs" />
-        <include refid="relevanceSql" />
-        <include refid="whereSqlModel" />
+        <choose>
+            <when test="managementId != null and managementId != '' or keyWord != null and keyWord != ''">
+                select
+                <include refid="returnSql"/>
+                from
+                <include refid="tableSql" />
+                as
+                <include refid="tableSqlAs" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="safeOrderByAs"/>
+                <include refid="safeLIMIT"/>
+            </when>
+            <otherwise>
+                select
+                <include refid="returnSql"/>
+                from
+                (<include refid="tableReturn" />)
+                as
+                <include refid="tableSqlAs" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+            </otherwise>
+        </choose>
     </select>
     <sql id="tableSqlAs">
         sys_p
@@ -66,6 +82,7 @@
         <include refid="tableSql"/>.*
         from
         <include refid="tableSql"/>
+        <include refid="whereSqlModelAs" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
     </sql>
@@ -90,6 +107,10 @@
         LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSqlAs" />.personnel_code
         LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
     </sql>
+    <sql id="whereSqlModelAs">
+        where 1 = 1
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
+    </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and <include refid="tableSqlAs" />.`id` = #{id}</if>
@@ -109,5 +130,8 @@
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc
+    </sql>
+    <sql id="safeOrderByAs">
+        order by <include refid="tableSqlAs"/>.id desc
     </sql>
 </mapper>

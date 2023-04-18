@@ -283,7 +283,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         ReturnEntity entity = PanXiaoZhang.postWechat(
                 jsonParam.getSysPersonnel().getPhone(),
                 sysPersonnel.getName() + "提交信息",
-                "审核信息",
+                "",
                 "请前往审核",
                 "",
                 urlPerformance + "?code=" + jsonParam.getReportCoding()

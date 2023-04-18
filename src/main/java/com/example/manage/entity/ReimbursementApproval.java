@@ -40,6 +40,12 @@ public class ReimbursementApproval implements Serializable {
     public ReimbursementApproval() {
     }
 
+    public ReimbursementApproval(String approvalTime, String approvalState, String remark) {
+        this.approvalTime = approvalTime;
+        this.approvalState = approvalState;
+        this.remark = remark;
+    }
+
     public ReimbursementApproval(String reimbursementRecordCode, String personnelCode, String personnelName, Integer number, String approvalState) {
         this.reimbursementRecordCode = reimbursementRecordCode;
         this.personnelCode = personnelCode;

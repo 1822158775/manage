@@ -1,6 +1,7 @@
 package com.example.manage.controller;
 
 import com.example.manage.service.FileService;
+import com.example.manage.util.entity.ReturnEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,11 +35,12 @@ public class FileController {
      * @throws IOException
      */
     @PostMapping(value = "add")
-    public String fileUpload(@RequestParam("file") MultipartFile[] file,
-                             @RequestParam(required = false,value = "originFile") String originFile,
-                             @RequestParam(required = false,value = "from") String from,
-                             HttpServletRequest request) {
-        return fileService.fileUpload(file,originFile,from,request);
+    public ReturnEntity fileUpload(@RequestParam("file") MultipartFile[] file,
+                                   @RequestParam(required = false,value = "originFile") String originFile,
+                                   @RequestParam(required = false,value = "from") String from,
+                                   HttpServletRequest request) {
+        ReturnEntity entity = fileService.fileUpload(file, originFile, from, request);
+        return entity;
     }
 
 

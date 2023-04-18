@@ -10,9 +10,11 @@ import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.white_list.service.IWhiteManageBankAccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 /**
  * @avthor 潘小章
@@ -73,6 +75,10 @@ public class WhiteManageBankAccountServiceImpl implements IWhiteManageBankAccoun
     }
 
     private ReturnEntity cat(HttpServletRequest request) {
-        return null;
+        Map map = PanXiaoZhang.getMap(request);
+        if (ObjectUtils.isEmpty(map.get("personnelId"))){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"用户编码不可为空");
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,iManageBankAccountMapper.queryAll(map),"");
     }
 }

@@ -89,4 +89,10 @@ public class SysPersonnel {
         this.employmentStatus = employmentStatus;
         this.leaveTime = leaveTime;
     }
+
+    public SysPersonnel(Integer id, Boolean employmentStatus, Date leaveTime) {
+        this.id = id;
+        this.employmentStatus = employmentStatus;
+        this.leaveTime = leaveTime;
+    }
 }

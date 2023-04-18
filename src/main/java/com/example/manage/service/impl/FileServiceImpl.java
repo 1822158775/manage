@@ -78,7 +78,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public String fileUpload(MultipartFile[] file, String originFile, String from, HttpServletRequest request) {
+    public ReturnEntity fileUpload(MultipartFile[] file, String originFile, String from, HttpServletRequest request) {
         try {
             String originFilePath = uploadFilePathConfig.originFilePath(originFile);
             String realPath = uploadFilePathConfig.getUploadDiskFolder()+ originFilePath ;
@@ -88,7 +88,8 @@ public class FileServiceImpl implements FileService {
                 dirPath.mkdirs();
             }
             String originalFilename = null;
-            List<Map> returnUrls = new ArrayList<>();
+            //List<Map> returnUrls = new ArrayList<>();
+            List<String> returnUrls = new ArrayList<>();
             for (MultipartFile myfile : file) {
                 if (!myfile.isEmpty()) {
                     // 获取文件名
@@ -126,32 +127,31 @@ public class FileServiceImpl implements FileService {
                             }
                         }
                     }
-                    returnUrls.add(MapUtil.buildMap("src",returnUrl,"title",originalFilename));
+                    //returnUrls.add(MapUtil.buildMap("src",returnUrl,"title",originalFilename));
+                    returnUrls.add(returnUrl);
                 }
             }
             if(ListUtil.isNotBlank(returnUrls)){
-                if(returnUrls.size()==1){//单个文件上传 返回1个地址
-                    return PanXiaoZhang.getJsonReturn(new ReturnEntity(
+                if(returnUrls.size() == 1){//单个文件上传 返回1个地址
+                    return new ReturnEntity(
                             CodeEntity.CODE_SUCCEED,
-                            JSON.toJSONString(returnUrls.get(0)),
-                            request,
-                            MsgEntity.CODE_SUCCEED));
+                            returnUrls.get(0),
+                            MsgEntity.CODE_SUCCEED);
                 }
                 //多个文件 返回多个地址
-                return PanXiaoZhang.getJsonReturn(new ReturnEntity(
+                return new ReturnEntity(
                         CodeEntity.CODE_SUCCEED,
-                        JSON.toJSONString(returnUrls),
-                        request,
-                        MsgEntity.CODE_SUCCEED));
+                        returnUrls,
+                        MsgEntity.CODE_SUCCEED);
             }
-            return PanXiaoZhang.getJsonReturn(new ReturnEntity(
+            return new ReturnEntity(
                     CodeEntity.CODE_ERROR,
-                    MsgEntity.CODE_ERROR));
+                    MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常{}",e.getMessage());
-            return PanXiaoZhang.getJsonReturn(new ReturnEntity(
+            return new ReturnEntity(
                     CodeEntity.CODE_ERROR,
-                    MsgEntity.CODE_ERROR));
+                    MsgEntity.CODE_ERROR);
         }
     }
 

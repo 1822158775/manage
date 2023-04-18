@@ -1057,8 +1057,21 @@ public class PanXiaoZhang {
                         pagepath
                 );
                 return entity;
+            }else {
+                Token admin = JSONObject.parseObject(PanXiaoZhang.getOpenId("15830024173"), Token.class);
+                log.info("消息发送失败:{},{}",object,token);
+                ReturnEntity entity = WechatMsg.tuiSongXiaoXi(
+                        admin.getResponse().getOpenid(),
+                        keyword1 + ",消息发送失败",
+                        keyword2,
+                        keyword3,
+                        keyword4,
+                        "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
+                        token.getResponse().getAccess_token(),
+                        pagepath
+                );
+                return entity;
             }
-            log.info("消息发送失败:{},{}",object,token);
         }catch (Exception e){
             log.info("捕获异常：{}",e.getMessage());
         }

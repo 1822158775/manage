@@ -17,7 +17,7 @@
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(DISTINCT <include refid="tableSqlAs" />.id) as id from
-            (<include refid="tableReturn" />)
+            <include refid="tableSql" />
         as
             <include refid="tableSqlAs" />
             <include refid="relevanceSql" />
@@ -39,6 +39,14 @@
         ,card_type.id as c_id
         ,card_type.name as c_name
         ,card_type.amount as c_amount
+    </sql>
+    <!--  子表count  -->
+    <sql id="tableReturnCount">
+        select
+        <include refid="tableSql"/>.id
+        from
+        <include refid="tableSql"/>
+        <include refid="safeOrderBy"/>
     </sql>
     <!--  子表  -->
     <sql id="tableReturn">

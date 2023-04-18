@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @avthor 潘小章
  * @date 2023/4/11
+ * 报销记录
  */
 
 
@@ -37,6 +38,14 @@ public class WhiteManageReimbursementRecordController {
     // 修改申请报销记录管理
     @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
-        return iWhiteManageReimbursementRecordService.methodMasterT(request,"edit");
+        synchronized (this.getClass()){
+            return iWhiteManageReimbursementRecordService.methodMasterT(request,"edit");
+        }
+    }
+
+    // 查询申请报销记录管理
+    @PostMapping(value = "approver_cat")
+    public ReturnEntity approver_cat(HttpServletRequest request){
+        return iWhiteManageReimbursementRecordService.methodMaster(request,"approver_cat");
     }
 }

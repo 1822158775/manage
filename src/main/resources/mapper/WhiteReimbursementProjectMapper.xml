@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.IReimbursementCategoryMapper">
-    <resultMap id="entity" type="com.example.manage.entity.ReimbursementCategory">
+<mapper namespace="com.example.manage.mapper.WhiteReimbursementProjectMapper">
+    <resultMap id="entity" type="com.example.manage.entity.ReimbursementProject">
         <result column="id" property="id" />
-        <result column="reimbursement_record_code" property="reimbursementRecordCode" />
-        <result column="reimbursement_category_id" property="reimbursementCategoryId" />
-        <result column="amout" property="amout" />
         <result column="name" property="name" />
-        <result column="reimbursement_type" property="reimbursementType" />
-        <result column="reimbursement_category_code" property="reimbursementCategoryCode" />
+        <result column="reimbursement_record_code" property="reimbursementRecordCode" />
+        <result column="manage_management_id" property="manageManagementId" />
     </resultMap>
-    <select id="queryCount" resultType="int" parameterType="hashmap">
-        select count(<include refid="tableSql"/>.id) as id from
-        <include refid="tableSql"/>
-        <include refid="whereSqlModel"/>
+    <select id="querySumAmount" resultMap="entity" parameterType="hashmap">
+        select SUM(amount) as amount,manage_management_id from
+        <include refid="tableSql" />
+        <include refid="whereSqlModel" />
+        <include refid="safeGroupBy" />
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select <include refid="tableSql"/>.*
@@ -24,11 +22,12 @@
         <include refid="safeLIMIT"/>
     </select>
     <sql id="tableSql">
-        manage.reimbursement_category
+        manage.reimbursement_project
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
+        <if test="reimbursementRecordCode != null"> and `reimbursement_record_code` = #{reimbursementRecordCode}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
@@ -39,5 +38,8 @@
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc
+    </sql>
+    <sql id="safeGroupBy">
+        GROUP BY <include refid="tableSql"/>.manage_management_id
     </sql>
 </mapper>
