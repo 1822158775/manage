@@ -25,6 +25,7 @@
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
+        <if test="personnelCode != null "> and `personnel_code` = #{personnelCode}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

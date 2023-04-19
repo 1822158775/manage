@@ -1,0 +1,571 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.WhiteDataStatisticsMapper">
+    <resultMap id="entity" type="com.example.manage.entity.DataStatistics">
+        <result column="today_day_activation" property="todayDayActivation" />
+        <result column="today_day_approved" property="todayDayApproved" />
+        <result column="today_day_artificial" property="todayDayArtificial" />
+        <result column="today_day_refuse" property="todayDayRefuse" />
+        <result column="today_day_all" property="todayDayAll" />
+
+        <result column="today_week_activation" property="todayWeekActivation" />
+        <result column="today_week_approved" property="todayWeekApproved" />
+        <result column="today_week_artificial" property="todayWeekArtificial" />
+        <result column="today_week_refuse" property="todayWeekRefuse" />
+        <result column="today_week_all" property="todayWeekAll" />
+
+        <result column="today_month_activation" property="todayMonthActivation" />
+        <result column="today_month_approved" property="todayMonthApproved" />
+        <result column="today_month_artificial" property="todayMonthArtificial" />
+        <result column="today_month_refuse" property="todayMonthRefuse" />
+        <result column="today_month_all" property="todayMonthAll" />
+
+        <result column="today_yester_activation" property="todayYesterActivation" />
+        <result column="today_yester_approved" property="todayYesterApproved" />
+        <result column="today_yester_artificial" property="todayYesterArtificial" />
+        <result column="today_yester_refuse" property="todayYesterRefuse" />
+        <result column="today_yester_all" property="todayYesterAll" />
+
+        <result column="last_week_activation" property="lastWeekActivation" />
+        <result column="last_week_approved" property="lastWeekApproved" />
+        <result column="last_week_artificial" property="lastWeekArtificial" />
+        <result column="last_week_refuse" property="lastWeekRefuse" />
+        <result column="last_week_all" property="lastWeekAll" />
+
+        <result column="last_month_activation" property="lastMonthActivation" />
+        <result column="last_month_approved" property="lastMonthApproved" />
+        <result column="last_month_artificial" property="lastMonthArtificial" />
+        <result column="last_month_refuse" property="lastMonthRefuse" />
+        <result column="last_month_all" property="lastMonthAll" />
+
+        <result column="today_day_activation_growth_rate" property="todayDayActivationGrowthRate" />
+        <result column="today_day_approved_growth_rate" property="todayDayApprovedGrowthRate" />
+        <result column="today_day_artificial_growth_rate" property="todayDayArtificialGrowthRate" />
+        <result column="today_day_refuse_growth_rate" property="todayDayRefuseGrowthRate" />
+        <result column="today_day_all_growth_rate" property="todayDayAllGrowthRate" />
+
+        <result column="today_week_activation_growth_rate" property="todayWeekActivationGrowthRate" />
+        <result column="today_week_approved_growth_rate" property="todayWeekApprovedGrowthRate" />
+        <result column="today_week_artificial_growth_rate" property="todayWeekArtificialGrowthRate" />
+        <result column="today_week_refuse_growth_rate" property="todayWeekRefuseGrowthRate" />
+        <result column="today_week_all_growth_rate" property="todayWeekAllGrowthRate" />
+
+        <result column="today_month_activation_growth_rate" property="todayMonthActivationGrowthRate" />
+        <result column="today_month_approved_growth_rate" property="todayMonthApprovedGrowthRate" />
+        <result column="today_month_artificial_growth_rate" property="todayMonthArtificialGrowthRate" />
+        <result column="today_month_refuse_growth_rate" property="todayMonthRefuseGrowthRate" />
+        <result column="today_month_all_growth_rate" property="todayMonthAllGrowthRate" />
+    </resultMap>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+-- 本日
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusActivation" />
+                <include refid="todayDay" />
+            )
+            as
+                today_day_activation
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusApproved" />
+            <include refid="todayDay" />
+            )
+            as
+                today_day_approved
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusArtificial" />
+                <include refid="todayDay" />
+            )
+            as
+                today_day_artificial
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusRefuse" />
+                <include refid="todayDay" />
+            )
+            as
+                today_day_refuse
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="todayDay" />
+            )
+            as
+                today_day_all
+            ,
+-- 本周
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusActivation" />
+                <include refid="todayWeek" />
+            )
+            as
+                today_week_activation
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusApproved" />
+                <include refid="todayWeek" />
+            )
+            as
+                today_week_approved
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusArtificial" />
+                <include refid="todayWeek" />
+            )
+            as
+            today_week_artificial
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusRefuse" />
+                <include refid="todayWeek" />
+            )
+            as
+                today_week_refuse
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="todayWeek" />
+            )
+            as
+                today_week_all
+            ,
+-- 本月
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusActivation" />
+                <include refid="todayMonth" />
+            )
+            as
+                today_month_activation
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusApproved" />
+                <include refid="todayMonth" />
+            )
+            as
+                today_month_approved
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusArtificial" />
+                <include refid="todayMonth" />
+            )
+            as
+                today_month_artificial
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="statusRefuse" />
+                <include refid="todayMonth" />
+            )
+            as
+                today_month_refuse
+            ,
+            (
+            SELECT
+                COUNT(DISTINCT performance_report.id)
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="todayMonth" />
+            )
+            as
+                today_month_all
+            ,
+-- 昨日
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusActivation" />
+            <include refid="yesterday" />
+        )
+        as
+            today_yester_activation
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusApproved" />
+            <include refid="yesterday" />
+        )
+        as
+            today_yester_approved
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusArtificial" />
+            <include refid="yesterday" />
+        )
+        as
+            today_yester_artificial
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusRefuse" />
+            <include refid="yesterday" />
+        )
+        as
+            today_yester_refuse
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="yesterday" />
+        )
+        as
+            today_yester_all
+        ,
+-- 上周
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusActivation" />
+            <include refid="lastWeek" />
+        )
+        as
+            last_week_activation
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusApproved" />
+            <include refid="lastWeek" />
+        )
+        as
+            last_week_approved
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusArtificial" />
+            <include refid="lastWeek" />
+        )
+        as
+            last_week_artificial
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusRefuse" />
+            <include refid="lastWeek" />
+        )
+        as
+            last_week_refuse
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="lastWeek" />
+        )
+        as
+            last_week_all
+        ,
+-- 上月
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusActivation" />
+            <include refid="lastMonth" />
+        )
+        as
+            last_month_activation
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusApproved" />
+            <include refid="lastMonth" />
+        )
+        as
+            last_month_approved
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusArtificial" />
+            <include refid="lastMonth" />
+        )
+        as
+            last_month_artificial
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="statusRefuse" />
+            <include refid="lastMonth" />
+        )
+        as
+            last_month_refuse
+        ,
+        (
+        SELECT
+            COUNT(DISTINCT performance_report.id)
+        FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="lastMonth" />
+        )
+        as
+            last_month_all
+        ,
+-- 本日上升率
+            (today_day_activation - today_yester_activation) / today_yester_activation * 100
+        as
+            today_day_activation_growth_rate
+        ,
+            (today_day_approved - today_yester_approved) / today_yester_approved * 100
+        as
+            today_day_approved_growth_rate
+        ,
+            (today_day_artificial - today_yester_artificial) / today_yester_artificial * 100
+        as
+            today_day_artificial_growth_rate
+        ,
+            (today_day_refuse - today_yester_refuse) / today_yester_refuse * 100
+        as
+            today_day_refuse_growth_rate
+        ,
+            (today_day_all - today_yester_all) / today_yester_all * 100
+        as
+            today_day_all_growth_rate
+        ,
+-- 本周上升率
+            (today_week_activation - last_week_activation) / last_week_activation * 100
+        as
+            today_week_activation_growth_rate
+        ,
+            (today_week_approved - last_week_approved) / last_week_approved * 100
+        as
+            today_week_approved_growth_rate
+        ,
+            (today_week_artificial - last_week_artificial) / last_week_artificial * 100
+        as
+            today_week_artificial_growth_rate
+        ,
+            (today_week_refuse - last_week_refuse) / last_week_refuse * 100
+        as
+            today_week_refuse_growth_rate
+        ,
+            (today_week_all - last_week_all) / last_week_all * 100
+        as
+            today_week_all_growth_rate
+        ,
+-- 本月上升率
+            (today_month_activation - last_week_activation) / last_month_activation * 100
+        as
+            today_month_activation_growth_rate
+        ,
+            (today_month_approved - last_week_approved) / last_month_approved * 100
+        as
+            today_month_approved_growth_rate
+        ,
+            (today_month_artificial - last_week_artificial) / last_month_artificial * 100
+        as
+            today_month_artificial_growth_rate
+        ,
+            (today_month_refuse - last_week_refuse) / last_month_refuse * 100
+        as
+            today_month_refuse_growth_rate
+        ,
+            (today_month_all - last_week_all) / last_month_all * 100
+        as
+            today_month_all_growth_rate
+        ,
+            COUNT(1)
+        from
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel" />
+    </select>
+    <sql id="whereSqlModel">
+        where 1 = 1
+    </sql>
+    <sql id="tableSql">
+        manage.management_personnel
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN performance_report ON <include refid="tableSql" />.management_id = performance_report.management_id
+    </sql>
+    <!--  本日  -->
+    <sql id="todayDay">
+        AND to_days(<include refid="tableSql" />.report_time) = to_days(NOW()))
+    </sql>
+    <!--  本周  -->
+    <sql id="todayWeek">
+        AND YEARWEEK(date_format(<include refid="tableSql" />.report_time ,'%Y-%m-%d') - INTERVAL 1 DAY) = YEARWEEK(now() - INTERVAL 1 DAY)
+    </sql>
+    <!--  本月  -->
+    <sql id="todayMonth">
+        AND DATE_FORMAT( <include refid="tableSql" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+    </sql>
+    <!--  30分钟内记录  -->
+    <sql id="within30Minutes">
+        AND <include refid="tableSql" />.report_time > CURRENT_TIMESTAMP - INTERVAL 30 MINUTE
+    </sql>
+    <!--  48小时内的数据  -->
+    <sql id="inFortyEightHours">
+        AND DATE(<include refid="tableSql" />.report_time) > date_sub(curdate(),interval 2 day)
+    </sql>
+    <!--  昨天记录  -->
+    <sql id="yesterday">
+        AND date(<include refid="tableSql" />.report_time)= DATE(NOW() - INTERVAL 1 DAY)
+    </sql>
+    <!--  上周记录  -->
+    <sql id="lastWeek">
+        YEARWEEK(date_format(<include refid="tableSql" />.report_time,'%Y-%m-%d')) = YEARWEEK(now()) - 1
+    </sql>
+    <!--  上月记录  -->
+    <sql id="lastMonth">
+        PERIOD_DIFF( date_format( now( ) , '%Y%m' ) , date_format( <include refid="tableSql" />.report_time , '%Y%m' ) ) = 1
+    </sql>
+    <!--  激活状态  -->
+    <sql id="statusActivation">
+        AND <include refid="tableSql" />.report_status = '激活'
+    </sql>
+    <!--  批核状态  -->
+    <sql id="statusApproved">
+        AND <include refid="tableSql" />.report_status = '批核'
+    </sql>
+    <!--  转人工状态  -->
+    <sql id="statusArtificial">
+        AND <include refid="tableSql" />.report_status = '转人工'
+    </sql>
+    <!--  拒绝  -->
+    <sql id="statusRefuse">
+        AND <include refid="tableSql" />.report_status = '拒绝'
+    </sql>
+</mapper>

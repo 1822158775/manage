@@ -16,6 +16,7 @@ import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -35,6 +36,15 @@ import java.util.Map;
 @Slf4j
 @Service
 public class SysPersonnelServiceImpl implements ISysPersonnelService {
+
+    @Value("${role.manage4}")
+    private Integer roleId4;
+
+
+    @Value("${role.manage3}")
+    private Integer roleId3;
+
+
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
 
@@ -77,10 +87,18 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                 return cat(request);
             }else if (name.equals("add")){
                 SysPersonnel jsonParam = PanXiaoZhang.getJSONParam(request, SysPersonnel.class);
-                return add(request,jsonParam);
+                ReturnEntity returnEntity = add(request, jsonParam);
+                if (!returnEntity.getCode().equals("0")){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                }
+                return returnEntity;
             }else if (name.equals("edit")){
                 SysPersonnel jsonParam = PanXiaoZhang.getJSONParam(request, SysPersonnel.class);
-                return edit(request,jsonParam);
+                ReturnEntity returnEntity = edit(request, jsonParam);
+                if (!returnEntity.getCode().equals("0")){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                }
+                return returnEntity;
             }
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
@@ -137,6 +155,22 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                 ManagementPersonnel managementPersonnel = map.get(id);
                 ManagementPersonnel personnel = map.get(id * -1);
                 if (ObjectUtils.isEmpty(managementPersonnel) && !ObjectUtils.isEmpty(personnel)){
+                    HashMap hashMap = new HashMap();
+                    hashMap.put("roleId",sysRole.getId());
+                    hashMap.put("employmentStatus",1);
+                    hashMap.put("managementId",id);
+                    //判断区域经理是否重复拥有项目
+                    if (sysRole.getId().equals(roleId3)){
+                        List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
+                        if (sysPersonnels.size() > 0){
+                            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属区域经理" + sysPersonnels.get(0).getName());
+                        }
+                    }else if (sysRole.getId().equals(roleId4)){//判断经理是否重复拥有项目
+                        List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
+                        if (sysPersonnels.size() > 0){
+                            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnels.get(0).getName());
+                        }
+                    }
                     //不存在进行添加
                     iManagementPersonnelMapper.insert(personnel);
                 }else if (!ObjectUtils.isEmpty(managementPersonnel) && ObjectUtils.isEmpty(personnel)){
@@ -150,6 +184,8 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         }
         //账号不可修改
         jsonParam.setUsername(null);
+        //任职状态不可修改
+        jsonParam.setEmploymentStatus(null);
         if (!ObjectUtils.isEmpty(jsonParam.getPassword())){
             //密码进行加密
             jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));
@@ -202,14 +238,33 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
             return returnEntity;
         }
         SysRole sysRole = iSysRoleMapper.selectById(jsonParam.getRoleId());
+        //判断等级如果大于2则不可拥有多个项目
         if (sysRole.getLevelSorting() > 2 && jsonParam.getManagementId().length > 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该角色不可以拥有多个项目");
         }
         if (jsonParam.getManagementId().length < 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"请选择所属项目");
         }
+        Map map = new HashMap();
+        map.put("roleId",sysRole.getId());
+        map.put("employmentStatus",1);
         for (int i = 0; i < jsonParam.getManagementId().length; i++) {
             Integer integer = jsonParam.getManagementId()[i];
+            map.put("managementId",integer);
+            //判断区域经理是否重复拥有项目
+            if (sysRole.getId().equals(roleId3)){
+                List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
+                if (sysPersonnels.size() > 0){
+                    SysPersonnel sysPersonnel = sysPersonnels.get(0);
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属区域经理" + sysPersonnel.getName());
+                }
+            }else if (sysRole.getId().equals(roleId4)){//判断经理是否重复拥有项目
+                List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
+                if (sysPersonnels.size() > 0){
+                    SysPersonnel sysPersonnel = sysPersonnels.get(0);
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnel.getName());
+                }
+            }
             iManagementPersonnelMapper.insert(new ManagementPersonnel(
                     integer,
                     jsonParam.getPersonnelCode()

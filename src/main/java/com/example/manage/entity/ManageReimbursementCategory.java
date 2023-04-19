@@ -28,7 +28,7 @@ public class ManageReimbursementCategory implements Serializable {
     @TableField(value = "reimbursement_type")
     public String reimbursementType;//固定(gd),可变(kb)
     @TableField(value = "amount")
-    public String amount;//金额
+    public Double amount;//金额
     @TableField(value = "particular_conditions")
     public Boolean particularConditions;//是否有特殊条件：0没有，1有
     @TableField(value = "category_coding")

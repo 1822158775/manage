@@ -79,6 +79,11 @@ public class ManageReimbursementRecord implements Serializable {
     public ManageReimbursementRecord() {
     }
 
+    public ManageReimbursementRecord(Integer id, Integer maxNumber) {
+        this.id = id;
+        this.maxNumber = maxNumber;
+    }
+
     public ManageReimbursementRecord(Integer id, String approverTime, String remark, String approverState) {
         this.id = id;
         this.approverTime = approverTime;

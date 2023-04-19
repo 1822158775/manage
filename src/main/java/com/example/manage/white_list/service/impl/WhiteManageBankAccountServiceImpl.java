@@ -1,8 +1,10 @@
 package com.example.manage.white_list.service.impl;
 
 import com.example.manage.entity.ManageBankAccount;
+import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.is_not_null.ManageBankAccountNotNull;
 import com.example.manage.mapper.IManageBankAccountMapper;
+import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
@@ -27,6 +29,9 @@ public class WhiteManageBankAccountServiceImpl implements IWhiteManageBankAccoun
 
     @Resource
     private IManageBankAccountMapper iManageBankAccountMapper;
+
+    @Resource
+    private ISysPersonnelMapper iSysPersonnelMapper;
 
     //方法总管
     @Override
@@ -79,6 +84,11 @@ public class WhiteManageBankAccountServiceImpl implements IWhiteManageBankAccoun
         if (ObjectUtils.isEmpty(map.get("personnelId"))){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"用户编码不可为空");
         }
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(String.valueOf(map.get("personnelId")));
+        if (ObjectUtils.isEmpty(sysPersonnel)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该用户不存在");
+        }
+        map.put("personnelCode",sysPersonnel.getPersonnelCode());
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,iManageBankAccountMapper.queryAll(map),"");
     }
 }

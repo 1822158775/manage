@@ -1,7 +1,10 @@
 package com.example.manage.config;
 
+import com.example.manage.entity.ManageReimbursementCategory;
 import com.example.manage.entity.SysPersonnel;
+import com.example.manage.mapper.IManageReimbursementCategoryMapper;
 import com.example.manage.mapper.ISysPersonnelMapper;
+import com.example.manage.mapper.IWhiteManageReimbursementCategoryMapper;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
 import com.example.manage.white_list.service.IWhiteSysPersonnelService;
@@ -28,6 +31,9 @@ public class SchedulingConfig {
 
     @Resource
     private IWhiteSysPersonnelService iWhiteSysPersonnelService;
+
+    @Resource
+    private IManageReimbursementCategoryMapper iManageReimbursementCategoryMapper;
 
     //@Scheduled(cron = "0 0 20 ? * FRI") // 每周五晚上8点执行
     //public void SchedulingFRI() {
@@ -60,8 +66,8 @@ public class SchedulingConfig {
     //}
 
     //@Scheduled(cron="0 0/1 * * * ?")
-    //private void process1() {
-    //    iWhiteSysPersonnelService.dimissionInform();
+    //private void minute() {
+    //    System.out.println(1);
     //}
 
     //每天10点查询2天后的人员生日

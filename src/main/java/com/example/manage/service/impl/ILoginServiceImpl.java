@@ -94,6 +94,7 @@ public class ILoginServiceImpl implements ILoginService {
             Map<String,Object> map = new HashMap<>();
             map.put("username",jsonParam.getUsername());
             map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
+            map.put("login","login");
             //查询账号信息
             List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
             //判断如果账号查到唯一个就成功登录

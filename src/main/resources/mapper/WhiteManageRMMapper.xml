@@ -30,6 +30,7 @@
             <result column="r_id" property="id" />
             <result column="r_name" property="name" />
             <result column="r_number" property="number" />
+            <result column="r_level_sorting" property="levelSorting" />
         </association>
     </resultMap>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
@@ -44,24 +45,36 @@
 
     <!--  返回  -->
     <sql id="returnSql">
-        <include refid="tableSql"/>.*
+        sys_personnel.*
         ,sys_role.id as r_id
         ,sys_role.name as r_name
         ,sys_role.number as r_number
+        ,sys_role.level_sorting as r_level_sorting
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
-        LEFT JOIN sys_role on sys_role.id = <include refid="tableSql" />.role_id
-        LEFT JOIN management_personnel on management_personnel.personnel_code = sys_personnel.personnel_code
-        LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
+        LEFT JOIN sys_personnel on <include refid="tableSql" />.personnel_code = sys_personnel.personnel_code
+        LEFT JOIN sys_management on sys_management.id = <include refid="tableSql" />.management_id
+        LEFT JOIN sys_role on sys_role.id = sys_personnel.role_id
     </sql>
     <sql id="tableSql">
-        manage.sys_personnel
+        manage.management_personnel
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="sysManagements != null"> and sys_management.`id` in (#{sysManagements})</if>
-        <if test="sysRoles != null"> and sys_role.`id` in (#{sysRoles})</if>
+        <if test="sysManagements != null"> and sys_management.`id` in
+            <foreach collection="sysManagements" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sysRoles != null"> and sys_personnel.`role_id` in
+            <foreach collection="sysRoles" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+         </if>
+        <if test="employmentStatus != null">
+            and sys_personnel.`employment_status` = #{employmentStatus}
+        </if>
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc

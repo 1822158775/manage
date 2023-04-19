@@ -61,6 +61,8 @@ wechat:
         aesKey: f1Wy2CjWtaLwKQ6C88AYFSqhAPbadT4LUWLGhlraMTw
 role:
   manage: 1
+  manage4: 4
+  manage3: 3
 phone:
   personnel: 15189400823
 url:

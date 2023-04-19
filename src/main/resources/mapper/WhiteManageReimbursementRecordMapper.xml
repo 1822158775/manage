@@ -56,7 +56,7 @@
         as
         <include refid="tableSqlAs" />
         <include refid="relevanceSqlApproverAll" />
-        <include refid="whereSqlModel" />
+        <include refid="whereSqlModelApproverAll" />
         <include refid="safeOrderBy"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
@@ -125,6 +125,13 @@
     <sql id="tableSql">
         manage.manage_reimbursement_record
     </sql>
+    <sql id="whereSqlModelApproverAll">
+        where 1 = 1 and  reimbursement_approval.number >= <include refid="tableSqlAs" />.max_number
+        <if test="id != null "> and <include refid="tableSqlAs" />.`id` = #{id}</if>
+        <if test="personnelId != null"> and sys_personnel.id = #{personnelId}</if>
+        <if test="approvalState != null"> and reimbursement_approval.approval_state = #{approvalState}</if>
+
+    </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and <include refid="tableSqlAs" />.`id` = #{id}</if>
@@ -139,6 +146,6 @@
         </if>
     </sql>
     <sql id="safeOrderBy">
-        order by <include refid="tableSqlAs"/>.id desc ,reimbursement_approval.number
+        order by <include refid="tableSqlAs"/>.id desc ,reimbursement_approval.number desc
     </sql>
 </mapper>
