@@ -113,6 +113,6 @@
     </sql>
     <!--  当前本月时间  -->
     <sql id="curdateTime">
-        and DATE_FORMAT( <include refid="tableSql" />.report_time, '%y%M' ) = DATE_FORMAT( CURDATE( ) , '%y%M' )
+        and DATE_FORMAT( <include refid="tableSql" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%M' )
     </sql>
 </mapper>

@@ -118,7 +118,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
     public void dimissionInform() {
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("applicant_state","pending");
-        wrapper.apply(true,"DATE_FORMAT(NOW(),\"%y-%M-%d\") >= DATE_FORMAT(resignation_time,\"%y-%M-%d\")");
+        wrapper.apply(true,"DATE_FORMAT(NOW(),\"%Y-%m-%d\") >= DATE_FORMAT(resignation_time,\"%Y-%m-%d\")");
         List<ManageDimission> list = iManageDimissionMapper.selectList(wrapper);
         for (int i = 0; i < list.size(); i++) {
             QueryWrapper queryWrapper = new QueryWrapper();

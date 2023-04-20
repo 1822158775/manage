@@ -1,0 +1,20 @@
+package com.example.manage.entity.ranking_list;
+
+import lombok.Data;
+import lombok.ToString;
+
+import java.io.Serializable;
+
+/**
+ * @avthor 潘小章
+ * @date 2023/4/20
+ */
+
+@Data
+@ToString
+public class RankingList implements Serializable {
+    public Integer countNumber;//项目数据数量
+    public String name;//项目名称
+    public String cardTypeName;//卡名称名称
+    public String personnelName;//人员名称
+}

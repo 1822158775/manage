@@ -189,6 +189,9 @@ public class PanXiaoZhang {
     public static Map subjoinValue(Map<String,Integer> map,HttpServletRequest request){
         Integer index = map.get("index");
         Integer pageNum = map.get("pageNum");
+        if (pageNum < 1){
+            pageNum = 1;
+        }
         if (ObjectUtils.isEmpty(pageNum)){
             map.put("pageNum",10);
         }else {
@@ -199,6 +202,9 @@ public class PanXiaoZhang {
         if (ObjectUtils.isEmpty(index)){
             map.put("index",0);
         }else {
+            if (index < 1){
+                index = 1;
+            }
             map.put("index",(Integer.valueOf(index.toString()) - 1) * map.get("pageNum"));
         }
         return map;

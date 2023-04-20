@@ -20,7 +20,7 @@ magicalcoder:
           uploadDiskFolder:
           requestPrefix: upload
           fileExtraAddPrefix: upload/
-          ap: D:\\home\\equity\\manage\\upload\\
+          ap: D:\\home\\xiangmu\\wechat-one\\home\\
 #          ap: /www/springboot/manage/upload
       useAliyunOss:
         open: false
@@ -63,6 +63,7 @@ role:
   manage: 1
   manage4: 4
   manage3: 3
+  manage5: 5
 phone:
   personnel: 15189400823
 url:

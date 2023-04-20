@@ -40,6 +40,9 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
     @Value("${role.manage}")
     private Integer roleId;
 
+    @Value("${role.manage5}")
+    private Integer manage5;
+
     @Value("${url.performance}")
     private String urlPerformance;
 
@@ -236,6 +239,14 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
         if (estimateState.getState()){
             return estimateState;
+        }
+        //如果角色不是员工或者不是销售岗位
+        if (!sysPersonnel.getPositionPost().equals(1)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"非业务岗人员不可提交");
+        }
+        //判断是否为员工
+        if (!sysPersonnel.getRoleId().equals(manage5) && !sysPersonnel.getRoleId().equals(roleId)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"非员工主管不可提交");
         }
         //查询当前个人的信息
         if (!returnEntity.getState()){

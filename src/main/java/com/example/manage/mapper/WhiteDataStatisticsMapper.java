@@ -1,6 +1,6 @@
 package com.example.manage.mapper;
 
-import com.example.manage.entity.DataStatistics;
+import com.example.manage.entity.data_statistics.DataStatistics;
 
 import java.util.Map;
 

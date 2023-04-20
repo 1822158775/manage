@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.WhiteRankingListMapper">
+    <resultMap id="entity" type="com.example.manage.entity.ranking_list.RankingList">
+        <result column="count_number" property="countNumber" />
+        <result column="name" property="name" />
+        <result column="card_type_name" property="cardTypeName" />
+    </resultMap>
+    <!--  查询数量  -->
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+    <choose>
+        <when test="managementId != null and managementId != ''">
+            SELECT
+            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as count_number,
+            <include refid="tableSqlPersonnel" />.`name`,
+            <include refid="tableSqlCardType" />.`name` as card_type_name
+            FROM
+            <include refid="tableSqlPersonnel" />
+            <include refid="relevanceSqlPpersonnel" />
+            <include refid="whereSqlModel" />
+            <include refid="safeGroupBy" />
+            <include refid="safeOrderBy" />
+            <include refid="safeLIMIT" />
+        </when>
+        <otherwise>
+            SELECT
+            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as count_number,
+            <include refid="tableSqlSManagement" />.`name`,
+            <include refid="tableSqlCardType" />.`name` as card_type_name
+            FROM
+            <include refid="tableSqlSManagement" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="safeGroupBy" />
+            <include refid="safeOrderBy" />
+            <include refid="safeLIMIT" />
+        </otherwise>
+    </choose>
+    </select>
+
+    <!--  表名称  -->
+    <sql id="tableSqlCardType">
+        manage.card_type
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlPersonnel">
+        manage.sys_personnel
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlPReport">
+        manage.performance_report
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlSManagement">
+        manage.sys_management
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlMCType">
+        manage.manage_card_type
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlManagementPersonnel">
+        manage.management_personnel
+    </sql>
+    <!--  进行关联表项目  -->
+    <sql id="relevanceSql">
+        LEFT JOIN <include refid="tableSqlPReport" /> ON <include refid="tableSqlSManagement" />.id = <include refid="tableSqlPReport" />.management_id
+        LEFT JOIN <include refid="tableSqlMCType" />  ON <include refid="tableSqlMCType" />.manage_code = <include refid="tableSqlSManagement" />.management_code
+        LEFT JOIN <include refid="tableSqlCardType" /> ON <include refid="tableSqlCardType" />.id = <include refid="tableSqlMCType" />.card_type_id
+    </sql>
+    <!--  进行关联人员表 -->
+    <sql id="relevanceSqlPpersonnel">
+        LEFT JOIN
+            <include refid="tableSqlManagementPersonnel" />
+        ON
+            <include refid="tableSqlManagementPersonnel" />.personnel_code =
+            <include refid="tableSqlPersonnel" />.personnel_code
+        LEFT JOIN
+            <include refid="tableSqlSManagement" />
+        ON
+            <include refid="tableSqlManagementPersonnel" />.management_id =
+            <include refid="tableSqlSManagement" />.id
+        LEFT JOIN
+            <include refid="tableSqlPReport" />
+        ON
+            <include refid="tableSqlSManagement" />.id =
+            <include refid="tableSqlPReport" />.management_id
+        LEFT JOIN
+            <include refid="tableSqlMCType" />
+        ON
+            <include refid="tableSqlMCType" />.manage_code =
+            <include refid="tableSqlSManagement" />.management_code
+        LEFT JOIN
+            <include refid="tableSqlCardType" />
+        ON
+            <include refid="tableSqlCardType" />.id =
+            <include refid="tableSqlMCType" />.card_type_id
+    </sql>
+    <!--  条件  -->
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="managementId != null and managementId != ''">
+            and <include refid="tableSqlSManagement" />.id = #{managementId}
+        </if>
+        <if test="manageCardTypeId != null and manageCardTypeId != ''">
+            and <include refid="tableSqlMCType" />.id = #{manageCardTypeId}
+        </if>
+        <if test="inManagementId != null and inManagementId != ''">
+            and <include refid="tableSqlSManagement" />.id in
+            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <!--  分组  -->
+    <sql id="safeGroupBy">
+        <choose>
+            <when test="groupByManagement == 'yes' and groupByCardType == 'yes'">
+                GROUP BY <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id
+            </when>
+            <when test="groupByManagement == 'yes' and groupByCardType != 'yes'">
+                GROUP BY <include refid="tableSqlSManagement" />.id
+            </when>
+            <when test="groupByManagement != 'yes' and groupByCardType == 'yes'">
+                GROUP BY <include refid="tableSqlCardType" />.id
+            </when>
+            <otherwise>
+                GROUP BY <include refid="tableSqlSManagement" />.id
+            </otherwise>
+        </choose>
+    </sql>
+    <!--  排序  -->
+    <sql id="safeOrderBy">
+        ORDER BY count_number DESC
+    </sql>
+    <!--  分页  -->
+    <sql id="safeLIMIT">
+        LIMIT #{index},#{pageNum}
+    </sql>
+</mapper>
