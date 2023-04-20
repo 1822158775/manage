@@ -189,14 +189,13 @@ public class PanXiaoZhang {
     public static Map subjoinValue(Map<String,Integer> map,HttpServletRequest request){
         Integer index = map.get("index");
         Integer pageNum = map.get("pageNum");
-        if (pageNum < 1){
-            pageNum = 1;
-        }
         if (ObjectUtils.isEmpty(pageNum)){
             map.put("pageNum",10);
         }else {
             if (Integer.valueOf(pageNum.toString()) > 100){
                 map.put("pageNum",100);
+            }else if (pageNum < 1){
+                map.put("pageNum",10);
             }
         }
         if (ObjectUtils.isEmpty(index)){

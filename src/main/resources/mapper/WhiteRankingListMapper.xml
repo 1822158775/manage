@@ -65,45 +65,44 @@
     <!--  进行关联表项目  -->
     <sql id="relevanceSql">
         LEFT JOIN <include refid="tableSqlPReport" /> ON <include refid="tableSqlSManagement" />.id = <include refid="tableSqlPReport" />.management_id
-        LEFT JOIN <include refid="tableSqlMCType" />  ON <include refid="tableSqlMCType" />.manage_code = <include refid="tableSqlSManagement" />.management_code
-        LEFT JOIN <include refid="tableSqlCardType" /> ON <include refid="tableSqlCardType" />.id = <include refid="tableSqlMCType" />.card_type_id
+        LEFT JOIN <include refid="tableSqlCardType" /> ON <include refid="tableSqlCardType" />.id = <include refid="tableSqlPReport" />.card_type_id
     </sql>
     <!--  进行关联人员表 -->
     <sql id="relevanceSqlPpersonnel">
         LEFT JOIN
-            <include refid="tableSqlManagementPersonnel" />
+            <include refid="tableSqlPReport" />
         ON
-            <include refid="tableSqlManagementPersonnel" />.personnel_code =
-            <include refid="tableSqlPersonnel" />.personnel_code
+            <include refid="tableSqlPersonnel" />.personnel_code =
+            <include refid="tableSqlPReport" />.personnel_code
         LEFT JOIN
             <include refid="tableSqlSManagement" />
-        ON
-            <include refid="tableSqlManagementPersonnel" />.management_id =
-            <include refid="tableSqlSManagement" />.id
-        LEFT JOIN
-            <include refid="tableSqlPReport" />
         ON
             <include refid="tableSqlSManagement" />.id =
             <include refid="tableSqlPReport" />.management_id
         LEFT JOIN
-            <include refid="tableSqlMCType" />
-        ON
-            <include refid="tableSqlMCType" />.manage_code =
-            <include refid="tableSqlSManagement" />.management_code
-        LEFT JOIN
             <include refid="tableSqlCardType" />
         ON
             <include refid="tableSqlCardType" />.id =
-            <include refid="tableSqlMCType" />.card_type_id
+            <include refid="tableSqlPReport" />.card_type_id
     </sql>
     <!--  条件  -->
     <sql id="whereSqlModel">
         where 1 = 1
+        and <include refid="tableSqlPReport" />.report_status in ('激活','批核')
         <if test="managementId != null and managementId != ''">
-            and <include refid="tableSqlSManagement" />.id = #{managementId}
+            and <include refid="tableSqlPReport" />.management_id = #{managementId}
         </if>
         <if test="manageCardTypeId != null and manageCardTypeId != ''">
-            and <include refid="tableSqlMCType" />.id = #{manageCardTypeId}
+            and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
+        </if>
+        <if test="type == 'day'">
+            <include refid="todayDay" />
+        </if>
+        <if test="type == 'week'">
+            <include refid="todayWeek" />
+        </if>
+        <if test="type == 'month'">
+            <include refid="todayMonth" />
         </if>
         <if test="inManagementId != null and inManagementId != ''">
             and <include refid="tableSqlSManagement" />.id in
@@ -112,24 +111,56 @@
             </foreach>
         </if>
     </sql>
+
+    <!--  本日  -->
+    <sql id="todayDay">
+        AND to_days(<include refid="tableSqlPReport" />.report_time) = to_days(NOW())
+    </sql>
+    <!--  本周  -->
+    <sql id="todayWeek">
+        AND YEARWEEK(date_format(<include refid="tableSqlPReport" />.report_time ,'%Y-%m-%d') - INTERVAL 1 DAY) = YEARWEEK(now() - INTERVAL 1 DAY)
+    </sql>
+    <!--  本月  -->
+    <sql id="todayMonth">
+        AND DATE_FORMAT( <include refid="tableSqlPReport" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+    </sql>
+
     <!--  分组  -->
     <sql id="safeGroupBy">
+        GROUP BY
         <choose>
-            <when test="groupByManagement == 'yes' and groupByCardType == 'yes'">
-                GROUP BY <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id
-            </when>
-            <when test="groupByManagement == 'yes' and groupByCardType != 'yes'">
-                GROUP BY <include refid="tableSqlSManagement" />.id
-            </when>
-            <when test="groupByManagement != 'yes' and groupByCardType == 'yes'">
-                GROUP BY <include refid="tableSqlCardType" />.id
-            </when>
-            <otherwise>
-                GROUP BY <include refid="tableSqlSManagement" />.id
-            </otherwise>
-        </choose>
-    </sql>
-    <!--  排序  -->
+<!--            <when test="groupByManagement == 'yes' and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
+<!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
+<!--            </when>-->
+
+<!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel != 'yes'">-->
+<!--                <include refid="tableSqlSManagement" />.id-->
+<!--            </when>-->
+<!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
+<!--                <include refid="tableSqlCardType" />.id-->
+<!--            </when>-->
+<!--            <when test="groupByManagement != 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
+<!--                <include refid="tableSqlPersonnel" />.id-->
+<!--            </when>-->
+
+<!--            <when test="groupByManagement == 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
+<!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id-->
+<!--            </when>-->
+<!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
+<!--                <include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
+<!--            </when>-->
+<!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
+<!--                <include refid="tableSqlPersonnel" />.id,<include refid="tableSqlSManagement" />.id-->
+<!--            </when>-->
+                <when test="managementId != null and managementId != ''">
+                    <include refid="tableSqlPersonnel" />.id
+                </when>
+                <otherwise>
+                    <include refid="tableSqlSManagement" />.id
+                </otherwise>
+            </choose>
+        </sql>
+        <!--  排序  -->
     <sql id="safeOrderBy">
         ORDER BY count_number DESC
     </sql>
