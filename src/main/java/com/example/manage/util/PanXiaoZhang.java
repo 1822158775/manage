@@ -1045,6 +1045,13 @@ public class PanXiaoZhang {
         String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid", jsonObject.toString(), "");
         return send;
     }
+    //获取token
+    public static String postOpenId(String token){
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token",token);
+        String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid_by_token", jsonObject.toString(), "");
+        return send;
+    }
     //发送消息
     public static ReturnEntity postWechat(String phone,String keyword1,String keyword2,String keyword3,String keyword4,String pagepath){
         try {
@@ -1065,6 +1072,50 @@ public class PanXiaoZhang {
             }else {
                 Token admin = JSONObject.parseObject(PanXiaoZhang.getOpenId("15830024173"), Token.class);
                 log.info("消息发送失败:{},{}",object,token);
+                ReturnEntity entity = WechatMsg.tuiSongXiaoXi(
+                        admin.getResponse().getOpenid(),
+                        keyword1 + ",消息发送失败",
+                        keyword2,
+                        keyword3,
+                        keyword4,
+                        "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
+                        token.getResponse().getAccess_token(),
+                        pagepath
+                );
+                return entity;
+            }
+        }catch (Exception e){
+            log.info("捕获异常：{}",e.getMessage());
+        }
+        return new ReturnEntity(
+                CodeEntity.CODE_SUCCEED,
+                "",
+                "",
+                MsgEntity.CODE_SUCCEED,
+                0,
+                false
+        );
+    }
+
+    //发送消息
+    public static ReturnEntity postWechatFer(String openId,String keyword1,String keyword2,String keyword3,String keyword4,String pagepath){
+        try {
+            Token token = JSONObject.parseObject(PanXiaoZhang.getToken(), Token.class);
+            if (!ObjectUtils.isEmpty(openId) && token.getSuccess() != false) {
+                ReturnEntity entity = WechatMsg.tuiSongXiaoXi(
+                        openId,
+                        keyword1,
+                        keyword2,
+                        keyword3,
+                        keyword4,
+                        "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
+                        token.getResponse().getAccess_token(),
+                        pagepath
+                );
+                return entity;
+            }else {
+                Token admin = JSONObject.parseObject(PanXiaoZhang.getOpenId("15830024173"), Token.class);
+                log.info("消息发送失败:{},{}",openId,token);
                 ReturnEntity entity = WechatMsg.tuiSongXiaoXi(
                         admin.getResponse().getOpenid(),
                         keyword1 + ",消息发送失败",

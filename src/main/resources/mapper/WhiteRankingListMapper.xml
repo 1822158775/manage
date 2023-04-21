@@ -5,15 +5,37 @@
         <result column="count_number" property="countNumber" />
         <result column="name" property="name" />
         <result column="card_type_name" property="cardTypeName" />
+        <result column="report_status" property="reportStatus" />
+        <result column="already_report_status" property="alreadyReportStatus" />
+        <result column="activation" property="activation" />
+        <result column="approved" property="approved" />
+        <result column="artificial" property="artificial" />
+        <result column="refuse" property="refuse" />
     </resultMap>
     <!--  查询数量  -->
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
     <choose>
         <when test="managementId != null and managementId != ''">
             SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as count_number,
             <include refid="tableSqlPersonnel" />.`name`,
-            <include refid="tableSqlCardType" />.`name` as card_type_name
+            <include refid="tableSqlCardType" />.`name` as card_type_name,
+            <include refid="tableSqlPReport" />.`report_status` as report_status,
+            CONCAT('[\"有效\",\"',
+              GROUP_CONCAT(DISTINCT <include refid="tableSqlPReport" />.`report_status`
+            ORDER BY
+              <include refid="tableSqlPersonnel" />.id SEPARATOR '\"\,\"'),'\"]')
+            as
+                already_report_status
+            ,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '激活',true,null))
+            +
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '批核',true,null))
+            as
+            count_number,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '激活',true,null)) as activation,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '批核',true,null)) as approved,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '转人工',true,null)) as artificial,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '拒绝',true,null)) as refuse
             FROM
             <include refid="tableSqlPersonnel" />
             <include refid="relevanceSqlPpersonnel" />
@@ -24,9 +46,21 @@
         </when>
         <otherwise>
             SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as count_number,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '激活',true,null))
+            +
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '批核',true,null))
+            as
+            count_number,
             <include refid="tableSqlSManagement" />.`name`,
-            <include refid="tableSqlCardType" />.`name` as card_type_name
+            <include refid="tableSqlCardType" />.`name` as card_type_name,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '激活',true,null)) as activation,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '批核',true,null)) as approved,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '转人工',true,null)) as artificial,
+            count(IF(<include refid="tableSqlPReport" />.`report_status` = '拒绝',true,null)) as refuse,
+            CONCAT('[\"有效\",\"',
+            GROUP_CONCAT(DISTINCT <include refid="tableSqlPReport" />.`report_status`),'\"]')
+            as
+            already_report_status
             FROM
             <include refid="tableSqlSManagement" />
             <include refid="relevanceSql" />
@@ -65,6 +99,16 @@
     <!--  进行关联表项目  -->
     <sql id="relevanceSql">
         LEFT JOIN <include refid="tableSqlPReport" /> ON <include refid="tableSqlSManagement" />.id = <include refid="tableSqlPReport" />.management_id
+        <if test="type == 'day'">
+            <include refid="todayDay" />
+        </if>
+        <if test="type == 'week'">
+            <include refid="todayWeek" />
+        </if>
+        <if test="type == 'month'">
+            <include refid="todayMonth" />
+        </if>
+        <include refid="reportApproverState" />
         LEFT JOIN <include refid="tableSqlCardType" /> ON <include refid="tableSqlCardType" />.id = <include refid="tableSqlPReport" />.card_type_id
     </sql>
     <!--  进行关联人员表 -->
@@ -74,11 +118,24 @@
         ON
             <include refid="tableSqlPersonnel" />.personnel_code =
             <include refid="tableSqlPReport" />.personnel_code
+        <if test="type == 'day'">
+            <include refid="todayDay" />
+        </if>
+        <if test="type == 'week'">
+            <include refid="todayWeek" />
+        </if>
+        <if test="type == 'month'">
+            <include refid="todayMonth" />
+        </if>
+        <include refid="reportApproverState" />
         LEFT JOIN
             <include refid="tableSqlSManagement" />
         ON
             <include refid="tableSqlSManagement" />.id =
             <include refid="tableSqlPReport" />.management_id
+        <if test="managementId != null and managementId != ''">
+            and <include refid="tableSqlPReport" />.management_id = #{managementId}
+        </if>
         LEFT JOIN
             <include refid="tableSqlCardType" />
         ON
@@ -88,21 +145,11 @@
     <!--  条件  -->
     <sql id="whereSqlModel">
         where 1 = 1
-        and <include refid="tableSqlPReport" />.report_status in ('激活','批核')
-        <if test="managementId != null and managementId != ''">
-            and <include refid="tableSqlPReport" />.management_id = #{managementId}
+        <if test="reportStatus != null and reportStatus != ''">
+            and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
         </if>
         <if test="manageCardTypeId != null and manageCardTypeId != ''">
             and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
-        </if>
-        <if test="type == 'day'">
-            <include refid="todayDay" />
-        </if>
-        <if test="type == 'week'">
-            <include refid="todayWeek" />
-        </if>
-        <if test="type == 'month'">
-            <include refid="todayMonth" />
         </if>
         <if test="inManagementId != null and inManagementId != ''">
             and <include refid="tableSqlSManagement" />.id in
@@ -123,6 +170,10 @@
     <!--  本月  -->
     <sql id="todayMonth">
         AND DATE_FORMAT( <include refid="tableSqlPReport" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+    </sql>
+    <!--  通过状态  -->
+    <sql id="reportApproverState">
+        AND <include refid="tableSqlPReport" />.approver_state = 'agree'
     </sql>
 
     <!--  分组  -->

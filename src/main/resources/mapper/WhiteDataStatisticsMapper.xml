@@ -712,8 +712,13 @@
     <!--  进行关联表  -->
     <sql id="relevanceSql">
         LEFT JOIN <include refid="tableSqlPReport" /> ON <include refid="tableSql" />.management_id = <include refid="tableSqlPReport" />.management_id
+        <include refid="reportApproverState" />
         LEFT JOIN <include refid="tableSqlSManagement" /> ON <include refid="tableSqlSManagement" />.id = <include refid="tableSql" />.management_id
         LEFT JOIN <include refid="tableSqlMCType" /> ON <include refid="tableSqlMCType" />.manage_code = <include refid="tableSqlSManagement" />.management_code
+    </sql>
+    <!--  通过状态  -->
+    <sql id="reportApproverState">
+        AND <include refid="tableSqlPReport" />.approver_state = 'agree'
     </sql>
     <!--  本日  -->
     <sql id="todayDay">

@@ -15,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +53,6 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"用户编码不可为空");
         }
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(String.valueOf(map.get("personnelId")));
-        List<RankingList> rankingLists = whiteRankingListMapper.queryAll(map);
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,rankingLists,"");
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,whiteRankingListMapper.queryAll(map),"");
     }
 }

@@ -43,6 +43,9 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
     @Value("${role.manage5}")
     private Integer manage5;
 
+    @Value("${url.transfer}")
+    private String urlTransfer;
+
     @Value("${url.performance}")
     private String urlPerformance;
 
@@ -291,13 +294,13 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     MsgEntity.CODE_ERROR
             );
         }
-        ReturnEntity entity = PanXiaoZhang.postWechat(
-                jsonParam.getSysPersonnel().getPhone(),
+        ReturnEntity entity = PanXiaoZhang.postWechatFer(
+                jsonParam.getSysPersonnel().getOpenId(),
                 sysPersonnel.getName() + "提交信息",
                 "",
                 "请前往审核",
                 "",
-                urlPerformance + "?code=" + jsonParam.getReportCoding()
+                urlTransfer + "?from=zn&redirect_url=" + urlPerformance
         );
         log.info("entity:{}",entity);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"上报成功");

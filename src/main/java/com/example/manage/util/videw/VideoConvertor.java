@@ -211,9 +211,11 @@ public class VideoConvertor implements Runnable {
             p = builder.start();
             in = p.getInputStream();
             int read = 0;
+            Integer integer = 0;
             while (in.read() != -1) {
                 read = in.read();
-                System.out.println(in.read());
+                integer++;
+                System.out.println(integer);
             }
             // 用这个来监控命令行的执行，当视频转换完毕，命令行那边的也就没有东西输出了
             while (exitValue != 0) {// 如果需要看到 ffmpeg 和 mencoder 的输出信息可以使用这种，注释解开就行

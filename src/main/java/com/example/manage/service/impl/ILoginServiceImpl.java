@@ -1,16 +1,19 @@
 package com.example.manage.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.is_not_null.SysPersonnelNotNull;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.service.ILoginService;
+import com.example.manage.util.HttpUtil;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.TokenUtil;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
+import com.example.manage.util.entity.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,6 +105,22 @@ public class ILoginServiceImpl implements ILoginService {
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码错误");
             }
             SysPersonnel sysPersonnel = sysPersonnels.get(0);
+            //判断该用户是否有openID
+            if (ObjectUtils.isEmpty(sysPersonnel.getOpenId())){
+                String token = request.getHeader("Http-X-User-Access-Token");
+                System.out.println(token + "==================");
+                Token parseObject = JSONObject.parseObject(PanXiaoZhang.postOpenId(token), Token.class);
+                if (!parseObject.getSuccess()){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"请关注常旅通公众号");
+                }
+                String openid = parseObject.getResponse().getOpenid();
+                iSysPersonnelMapper.updateById(new SysPersonnel(
+                        sysPersonnel.getId(),
+                        null,
+                        null,
+                        openid
+                ));
+            }
             return new ReturnEntity(
                     CodeEntity.CODE_SUCCEED,
                     sysPersonnel,//返回用户所有信息
@@ -111,5 +130,13 @@ public class ILoginServiceImpl implements ILoginService {
             log.info("捕获异常{}",e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
+    }
+
+    public static void main(String[] args) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token","sRYZMRiAH9dzMxqrYs72");
+        String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid_by_token", jsonObject.toString(), "");
+        Token token = JSONObject.parseObject(send, Token.class);
+        System.out.println(token);
     }
 }

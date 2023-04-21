@@ -66,10 +66,12 @@ role:
   manage5: 5
 phone:
   personnel: 15189400823
+  birthday: 15297599442
 url:
-  dispatch: /pages/activities/show/show
-  performance: /pages/activities/show/show
+  transfer: /pages/guide/guide
+  dispatch: /packageZn/pages/dispatch_list/dispatch_list
+  performance: /packageZn/pages/achievement_verify/achievement_verify
   dimission: /pages/activities/show/show
   system: /pages/activities/show/show
-  reimburse: /pages/activities/show/show
+  reimburse: /packageZn/pages/reimburse_list/reimburse_list
   birthday: /pages/activities/show/show

@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.io.Serializable;
 
 /**
@@ -26,8 +29,12 @@ public class BalanceRecordManagement implements Serializable {
     public String remainingSum;//项目余额
     @TableField(value = "working_cost")
     public String workingCost;//使用费用
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "start_time")
     public String startTime;//开始时间
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "end_time")
     public String endTime;//结束时间
 }

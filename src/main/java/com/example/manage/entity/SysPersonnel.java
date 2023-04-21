@@ -70,6 +70,10 @@ public class SysPersonnel {
     public String emergencyContactPhone;//紧急联系人手机号
     @TableField(value = "permanent_residence")
     public String permanentResidence;//常住地
+    @TableField(value = "open_id")
+    public String openId;//用户openid
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "leave_time")
     public Date leaveTime;//离职时间
     @TableField(exist = false)
@@ -83,6 +87,13 @@ public class SysPersonnel {
 
     public SysPersonnel(Integer id) {
         this.id = id;
+    }
+
+    public SysPersonnel(Integer id, String name, String image, String openId) {
+        this.id = id;
+        this.name = name;
+        this.image = image;
+        this.openId = openId;
     }
 
     public SysPersonnel(Boolean employmentStatus, Date leaveTime) {

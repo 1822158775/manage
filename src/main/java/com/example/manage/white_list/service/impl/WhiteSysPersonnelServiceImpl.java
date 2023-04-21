@@ -17,6 +17,7 @@ import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.white_list.service.IWhiteSysPersonnelService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -35,6 +36,9 @@ import java.util.Map;
 @Slf4j
 @Service
 public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
+
+    @Value("${phone.birthday}")
+    private String birthdayPhone;
 
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
@@ -101,7 +105,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         for (int i = 0; i < sysPersonnels.size(); i++) {
             SysPersonnel sysPersonnel = sysPersonnels.get(i);
             PanXiaoZhang.postWechat(
-                    "15297599442",
+                    birthdayPhone,
                     "生日提醒",
                     "",
                     sysPersonnel.getName() + "的生日是" + DateFormatUtils.format(sysPersonnel.getBirthday(),PanXiaoZhang.yMd()),

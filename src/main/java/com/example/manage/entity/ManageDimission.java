@@ -31,6 +31,8 @@ public class ManageDimission implements Serializable {
     public String personnelCode;//申请人资源代码
     @TableField(value = "reasons_for_leaving")
     public String reasonsForLeaving;//离职原因
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "submission_time")
     public String submissionTime;//提交时间
     @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
@@ -49,6 +51,8 @@ public class ManageDimission implements Serializable {
     public String approverState;//状态
     @TableField(value = "report_coding")
     public String reportCoding;//报告编码
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "approver_time")
     public String approverTime;//审核时间
     @TableField(exist = false)

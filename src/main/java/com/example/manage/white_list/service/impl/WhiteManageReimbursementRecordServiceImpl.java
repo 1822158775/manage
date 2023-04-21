@@ -35,6 +35,9 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
     @Value("${url.reimburse}")
     private String urlReimburse;
 
+    @Value("${url.transfer}")
+    private String urlTransfer;
+
     //添加相关项目
     @Resource
     private IReimbursementProjectMapper iReimbursementProjectMapper;
@@ -265,13 +268,13 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                 QueryWrapper queryWrapper = new QueryWrapper();
                 queryWrapper.eq("username",manageReimbursementRecord.getAccount());
                 SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(queryWrapper);
-                PanXiaoZhang.postWechat(
-                        sysPersonnel.getPhone(),
+                PanXiaoZhang.postWechatFer(
+                        sysPersonnel.getOpenId(),
                         "审核信息",
                         "",
                         "审核通过",
                         "",
-                        urlReimburse + "?code=" + jsonParam.getDeclarationCode()
+                        urlTransfer + "?from=zn&redirect_url=" + urlReimburse + "from_verify=" + false
                 );
             }else {//如果还有审批人
                 Map map = new HashMap();
@@ -294,13 +297,13 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                         QueryWrapper queryWrapper = new QueryWrapper();
                         queryWrapper.eq("personnel_code",approval.getPersonnelCode());
                         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(queryWrapper);
-                        PanXiaoZhang.postWechat(
-                                sysPersonnel.getPhone(),
+                        PanXiaoZhang.postWechatFer(
+                                sysPersonnel.getOpenId(),
                                 personnel.getName() + "提交了报销信息",
                                 "",
                                 "请前往审核",
                                 "",
-                                urlReimburse + "?code=" + jsonParam.getDeclarationCode()
+                                urlTransfer + "?from=zn&redirect_url=" + urlReimburse + "from_verify=" + true
                         );
                     }
                     maxNumber = queryMax;
@@ -350,13 +353,13 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             QueryWrapper wrapper = new QueryWrapper();
             wrapper.eq("username",manageReimbursementRecord.getAccount());
             SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
-            PanXiaoZhang.postWechat(
-                    sysPersonnel.getPhone(),
+            PanXiaoZhang.postWechatFer(
+                    sysPersonnel.getOpenId(),
                     "审核信息",
                     "",
                     "审核失败",
                     "",
-                    urlReimburse + "?code=" + jsonParam.getDeclarationCode()
+                    urlTransfer + "?from=zn&redirect_url=" + urlReimburse + "from_verify=" + false
             );
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
         }
@@ -601,7 +604,7 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
         //储存需要通知的人
         Map<String, Integer> map = new HashMap();
         //储存审批人手机号
-        List<String> approvalPhone = new ArrayList<>();
+        List<String> approvalOpenId = new ArrayList<>();
         //添加审核人
         for (int i = 0; i < rmPersonnels.size(); i++) {
             //获取当前数据
@@ -618,15 +621,15 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             Integer integer = map.get("approvalInt");
             if (!ObjectUtils.isEmpty(integer)){
                 if (integer < sysPersonnel.getSysRole().getLevelSorting()){
-                    approvalPhone.clear();
+                    approvalOpenId.clear();
                     map.put("approvalInt",sysPersonnel.getSysRole().getLevelSorting());
-                    approvalPhone.add(sysPersonnel.getPhone());
+                    approvalOpenId.add(sysPersonnel.getOpenId());
                 }else if (integer.equals(sysPersonnel.getSysRole().getLevelSorting())){
-                    approvalPhone.add(sysPersonnel.getPhone());
+                    approvalOpenId.add(sysPersonnel.getOpenId());
                 }
             }else {
                 map.put("approvalInt",sysPersonnel.getSysRole().getLevelSorting());
-                approvalPhone.add(sysPersonnel.getPhone());
+                approvalOpenId.add(sysPersonnel.getOpenId());
             }
         }
         //添加抄送人
@@ -696,15 +699,15 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             );
         }
         //发送给第一批审批人
-        for (int i = 0; i < approvalPhone.size(); i++) {
-            String phone = approvalPhone.get(i);
-            PanXiaoZhang.postWechat(
-                    phone,
+        for (int i = 0; i < approvalOpenId.size(); i++) {
+            String openId = approvalOpenId.get(i);
+            PanXiaoZhang.postWechatFer(
+                    openId,
                     personnel.getName() + "提交了报销信息",
                     "",
                     "请前往审核",
                     "",
-                    urlReimburse + "?code=" + jsonParam.getDeclarationCode()
+                    urlTransfer + "?from=zn&redirect_url=" + urlReimburse + "from_verify=" + true
             );
         }
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");

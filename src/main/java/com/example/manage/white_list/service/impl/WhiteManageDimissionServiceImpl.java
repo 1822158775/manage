@@ -169,8 +169,8 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         // 如果有上一级
         if (!ObjectUtils.isEmpty(jsonParam.getSysPersonnel().getPhone())){
             // 发送上级领导
-            PanXiaoZhang.postWechat(
-                    jsonParam.getSysPersonnel().getPhone(),
+            PanXiaoZhang.postWechatFer(
+                    jsonParam.getSysPersonnel().getOpenId(),
                     sysPersonnel.getName() + "提交了离职申请",
                     "",
                     "请及时核实",

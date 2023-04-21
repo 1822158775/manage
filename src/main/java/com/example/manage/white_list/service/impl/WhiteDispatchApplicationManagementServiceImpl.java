@@ -46,6 +46,9 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
     @Value("${url.dispatch}")
     private String urlDispatch;
 
+    @Value("${url.transfer}")
+    private String urlTransfer;
+
     @Resource
     private IDispatchApplicationManagementMapper iDispatchApplicationManagementMapper;
 
@@ -183,8 +186,8 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 if (!ObjectUtils.isEmpty(applicationManagement.getAgoVerifierRemark())){
                     remark = applicationManagement.getAgoVerifierRemark();
                 }
-                PanXiaoZhang.postWechat(
-                        personnel.getPhone(),
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
                         "调派结果通知",
                         "",
                         byId.getName() + "拒绝了您的请求，" + "拒绝原因是：" + remark,
@@ -200,8 +203,8 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 if (!ObjectUtils.isEmpty(applicationManagement.getLaterVerifierRemark())){
                     remark = applicationManagement.getLaterVerifierRemark();
                 }
-                PanXiaoZhang.postWechat(
-                        personnel.getPhone(),
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
                         "调派结果通知",
                         "",
                         byId.getName() + "拒绝了您的请求，" + "拒绝原因是：" + remark,
@@ -211,8 +214,8 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             }
         }
         if (applicationManagement.getAgoVerifierState().equals("agree") && applicationManagement.getLaterVerifierState().equals("agree")){
-            PanXiaoZhang.postWechat(
-                    personnel.getPhone(),
+            PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
                     "调派结果通知",
                     "",
                     "同意调派",
@@ -320,10 +323,10 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             //添加调派代码
             jsonParam.setDispatchCode(System.currentTimeMillis() + PanXiaoZhang.ran(4));
         }
-        //记录手机号
-        String agoPhone = "";
-        //记录手机号
-        String laterPhone = "";
+        //记录调派前人员手机号
+        String agoOpenId = "";
+        //记录调派后人员手机号
+        String laterOpenId = "";
         //调派前项目数据编码
         if (!ObjectUtils.isEmpty(jsonParam.getAgoManagementId())){
             List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(roleId, jsonParam.getAgoManagementId());
@@ -335,8 +338,8 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             jsonParam.setAgoPersonnelId(personnel.getId());
             //添加默认审核状态
             jsonParam.setAgoVerifierState("pending");
-            //记录审核人手机号
-            agoPhone = personnel.getPhone();
+            //记录审核人审核人
+            agoOpenId = personnel.getOpenId();
         }
         //调派后项目数据编码
         if (!ObjectUtils.isEmpty(jsonParam.getLaterManagementId())){
@@ -350,7 +353,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             //添加默认审核状态
             jsonParam.setLaterVerifierState("pending");
             //记录审核人手机号
-            laterPhone = personnel.getPhone();
+            laterOpenId = personnel.getOpenId();
         }
         //添加申请时间
         jsonParam.setApplicantTime(new Date());
@@ -367,22 +370,22 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             );
         }
         //告知审核人前往审核
-        PanXiaoZhang.postWechat(
-                agoPhone,
+        PanXiaoZhang.postWechatFer(
+                agoOpenId,
                 sysPersonnel.getName() + "提交了调派申请",
                 "",
                 "请及时前往核实",
                 "",
-                urlDispatch + "?code=" + jsonParam.getDispatchCode()
+                urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "from_dispatch_verify=" + true
         );
         //告知审核人前往审核
-        PanXiaoZhang.postWechat(
-                laterPhone,
+        PanXiaoZhang.postWechatFer(
+                laterOpenId,
                 sysPersonnel.getName() + "提交了调派申请",
                 "",
                 "请及时前往核实",
                 "",
-                urlDispatch + "?code=" + jsonParam.getDispatchCode()
+                urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "from_dispatch_verify=" + true
         );
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");
     }

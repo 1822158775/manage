@@ -22,6 +22,7 @@
         <result column="commercial_insurance" property="commercialInsurance" />
         <result column="entry_time" property="entryTime" />
         <result column="id_number" property="idNumber" />
+        <result column="open_id" property="openId" />
         <result column="emergency_contact_name" property="emergencyContactName" />
         <result column="emergency_contact_phone" property="emergencyContactPhone" />
         <result column="permanent_residence" property="permanentResidence" />

@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.io.Serializable;
 
 /**
@@ -22,6 +25,8 @@ public class PerformanceReport implements Serializable {
     public Integer id;//数据编码
     @TableField(value = "personnel_code")
     public String personnelCode;//资源代码
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "report_time")
     public String reportTime;//报告时间
     @TableField(value = "report_status")
@@ -40,6 +45,8 @@ public class PerformanceReport implements Serializable {
     public String approverState;//状态
     @TableField(value = "card_type_id")
     public Integer cardTypeId;//办卡类型id
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "approver_time")
     public String approverTime;//审核时间
     @TableField(exist = false)
