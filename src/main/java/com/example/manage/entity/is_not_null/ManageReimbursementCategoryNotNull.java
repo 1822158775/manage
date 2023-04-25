@@ -24,7 +24,7 @@ public class ManageReimbursementCategoryNotNull implements Serializable {
     public String particularConditions;//是否有特殊条件：0没有，1有
     public String categoryCoding;//类目编码
     public String categoryCopyNumber;//关联抄送人
-    public String manageRm;//关联审核人
+    public String manageRmNumber;//关联审核人
 
     public ManageReimbursementCategoryNotNull() {
     }
@@ -33,12 +33,12 @@ public class ManageReimbursementCategoryNotNull implements Serializable {
         this.id = id;
     }
 
-    public ManageReimbursementCategoryNotNull(String name, String reimbursementType, String amount, String particularConditions, String categoryCopyNumber, String manageRm) {
+    public ManageReimbursementCategoryNotNull(String name, String reimbursementType, String amount, String particularConditions, String categoryCopyNumber, String manageRmNumber) {
         this.name = name;
         this.reimbursementType = reimbursementType;
         this.amount = amount;
         this.particularConditions = particularConditions;
         this.categoryCopyNumber = categoryCopyNumber;
-        this.manageRm = manageRm;
+        this.manageRmNumber = manageRmNumber;
     }
 }

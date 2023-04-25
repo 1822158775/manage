@@ -80,7 +80,7 @@ public class ManageDimissionServiceImpl implements IManageDimissionService {
                 QueryWrapper wrapper = new QueryWrapper();
                 wrapper.eq("personnel_code",manageDimission.getPersonnelCode());
                 iSysPersonnelMapper.update(new SysPersonnel(
-                false,
+                0,
                             new Date()
                 ),
                 wrapper);

@@ -18,14 +18,14 @@ public class DataStatisticsTodayWeek implements Serializable {
     public String startTime;//开始时间
     public String endTime;//结束时间
 
-    public Integer activation;//本周激活
-    public Integer approved;//本周批核
+    public Integer activation;//本周批核已激活
+    public Integer approved;//本周批核未激活
     public Integer artificial;//本周转人工
     public Integer refuse;//本周拒绝
     public Integer all;//本周所有数据
 
-    public Double activationGrowthRate;//上周激活上升率
-    public Double approvedGrowthRate;//上周批核上升率
+    public Double activationGrowthRate;//上周批核已激活上升率
+    public Double approvedGrowthRate;//上周批核未激活上升率
     public Double artificialGrowthRate;//上周转人工上升率
     public Double refuseGrowthRate;//上周拒绝上升率
     public Double allGrowthRate;//上周所有数据上升率

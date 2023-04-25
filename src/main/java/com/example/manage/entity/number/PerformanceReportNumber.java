@@ -16,12 +16,12 @@ import java.util.List;
 @ToString
 public class PerformanceReportNumber implements Serializable {
     public Integer all;//全部数量
-    public Integer approve;//批核
-    public Integer active;//激活
+    public Integer approve;//批核未激活
+    public Integer active;//批核已激活
     public Integer refuse;//拒绝
     public Integer pendding;//转人工
-    public Integer thisMonthActive;//本月激活
-    public Integer thisMonthApprove;//本月批核
+    public Integer thisMonthActive;//本月批核已激活
+    public Integer thisMonthApprove;//本月批核未激活
     public String approverState;//状态
     public List<PerformanceReport> performanceReport;//业绩申报
 }

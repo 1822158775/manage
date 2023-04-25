@@ -45,7 +45,7 @@ public class SysPersonnel {
     @TableField(value = "birthday")
     public Date birthday;//生日
     @TableField(value = "employment_status")
-    public Boolean employmentStatus;//任职状态(true：在职，false：离职)
+    public Integer employmentStatus;//任职状态(1：在职，0：离职,2:待入职)
     @TableField(value = "chief_steward_id")
     public Integer chiefStewardId;//上级领导编码
     @TableField(value = "salary")
@@ -82,6 +82,8 @@ public class SysPersonnel {
     public List<SysManagement> sysManagement;//项目组名称
     @TableField(exist = false)
     public Integer[] managementId;//项目组数组
+    @TableField(exist = false)
+    public Integer personnelId;//人员信息
     public SysPersonnel() {
     }
 
@@ -96,12 +98,12 @@ public class SysPersonnel {
         this.openId = openId;
     }
 
-    public SysPersonnel(Boolean employmentStatus, Date leaveTime) {
+    public SysPersonnel(Integer employmentStatus, Date leaveTime) {
         this.employmentStatus = employmentStatus;
         this.leaveTime = leaveTime;
     }
 
-    public SysPersonnel(Integer id, Boolean employmentStatus, Date leaveTime) {
+    public SysPersonnel(Integer id, Integer employmentStatus, Date leaveTime) {
         this.id = id;
         this.employmentStatus = employmentStatus;
         this.leaveTime = leaveTime;

@@ -28,6 +28,8 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -1168,6 +1170,15 @@ public class PanXiaoZhang {
                     0,
                     true
             );
+        }else if (sysPersonnel.getEmploymentStatus().equals(2)){
+            return new ReturnEntity(
+                    CodeEntity.CODE_ERROR,
+                    "",
+                    "",
+                    "账号审核中",
+                    0,
+                    true
+            );
         }
         return new ReturnEntity(
                 CodeEntity.CODE_SUCCEED,
@@ -1178,7 +1189,75 @@ public class PanXiaoZhang {
                 false
         );
     }
-    public static void main(String[] args) {
+    /**
+     * 两个日期相差多少年多少天
+     * @param targetDate 目标日期 不能为null
+     * @param compareDate 比较日期 不能为null
+     * @return 相差年与天，返回绝对值或null，格式是28.096代表28年96天。
+     */
+    public static Integer ageYTime(LocalDate targetDate, LocalDate compareDate){
+        try {
+            if (compareDate == null) {
+                return null;
+            }
+            if (targetDate == null) {
+                return null;
+            }
+            int nyear = targetDate.getYear();
+            int nm = targetDate.getMonthValue();
+            int nd = targetDate.getDayOfMonth();
+
+            int byear = compareDate.getYear();
+            int bm = compareDate.getMonthValue();
+            int bd = compareDate.getDayOfMonth();
+
+            int year = nyear - byear;
+            /*
+             * 这段是处理两个日期相差多少年
+             * 1、当前年份减去出生年份，比较当前月份是否小于出生月份，如果小于的话相差年数需要减1
+             * 2、如果当前月份大于等于目标月份比较当月天，当前天数小于出生天相差年数减1
+             */
+            if (nm < bm) {
+                year = year - 1;
+            } else if (nm == bm) {
+                if (nd < bd) {
+                    year = year - 1;
+                }
+            }
+            compareDate = compareDate.plusYears(year);
+            float day = targetDate.toEpochDay() - compareDate.toEpochDay();
+            day = day / 1000;//天数后移三位
+            //return Math.abs(year + day);//取绝对值
+            return year;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    /**
+     * 获取出生日期
+     *
+     * @return 返回字符串类型
+     */
+    public String getBirthFromIdCard(String idCard) {
+        if (idCard.length() != 18 && idCard.length() != 15) {
+            return "请输入正确的身份证号码";
+        }
+        if (idCard.length() == 18) {
+            String year = idCard.substring(6).substring(0, 4);// 得到年份
+            String month = idCard.substring(10).substring(0, 2);// 得到月份
+            String day = idCard.substring(12).substring(0, 2);// 得到日
+            return (year + "-" + month + "-" + day);
+        } else if (idCard.length() == 15) {
+            String year = "19" + idCard.substring(6, 8);// 年份
+            String month = idCard.substring(8, 10);// 月份
+            String day = idCard.substring(10, 12);// 得到日
+            return (year + "-" + month + "-" + day);
+        }
+        return null;
+    }
+
+    public static void main(String[] args) throws ParseException {
         //System.out.println(DateFormatUtils.format(tomorrow(new Date()),yMd()));
         //String kunming = base64Str("zhangxun");
         //System.out.println(kunming.equals("emhhbmd4dW5wYW5zaXJ5aW5neGlhb2Rha3VubWluZw=="));
@@ -1197,13 +1276,19 @@ public class PanXiaoZhang {
         //    e.printStackTrace();
         //}
         //System.out.println(integer);
-        ReturnEntity entity = postWechat(
-                "15830024173",
-                "a提交了离职申请",
-                "",
-                "请及时核实,请前往后台审核",
-                "",
-                "/pages/activities/show/show?id=38");
-        System.out.println(entity);
+        //ReturnEntity entity = postWechat(
+        //        "15830024173",
+        //        "a提交了离职申请",
+        //        "",
+        //        "请及时核实,请前往后台审核",
+        //        "",
+        //        "/pages/activities/show/show?id=38");
+        //System.out.println(entity);
+        String str = "2020-06-25";
+        DateFormat df = new SimpleDateFormat(PanXiaoZhang.yMd());
+        Date date = df.parse(str);
+
+        Integer integer = ageYTime(new Date().toInstant().atOffset(ZoneOffset.UTC).toLocalDate() ,date.toInstant().atOffset(ZoneOffset.UTC).toLocalDate());
+        System.out.println(integer);
     }
 }

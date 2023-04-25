@@ -105,10 +105,17 @@ public class ILoginServiceImpl implements ILoginService {
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码错误");
             }
             SysPersonnel sysPersonnel = sysPersonnels.get(0);
+            //判断当前账户的状态
+            if(sysPersonnel.getEmploymentStatus().equals(0)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"已离职");
+            }
+            //判断当前账户的状态
+            if(sysPersonnel.getEmploymentStatus().equals(2)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"待审核");
+            }
             //判断该用户是否有openID
             if (ObjectUtils.isEmpty(sysPersonnel.getOpenId())){
                 String token = request.getHeader("Http-X-User-Access-Token");
-                System.out.println(token + "==================");
                 Token parseObject = JSONObject.parseObject(PanXiaoZhang.postOpenId(token), Token.class);
                 if (!parseObject.getSuccess()){
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"请关注常旅通公众号");

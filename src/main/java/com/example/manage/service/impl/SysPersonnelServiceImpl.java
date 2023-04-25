@@ -184,8 +184,10 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         }
         //账号不可修改
         jsonParam.setUsername(null);
-        //任职状态不可修改
-        jsonParam.setEmploymentStatus(null);
+        //离职状态不可修改
+        if (!sysPersonnel.getEmploymentStatus().equals(2)){
+            jsonParam.setEmploymentStatus(null);
+        }
         if (!ObjectUtils.isEmpty(jsonParam.getPassword())){
             //密码进行加密
             jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));

@@ -26,6 +26,7 @@
         <result column="emergency_contact_phone" property="emergencyContactPhone" />
         <result column="permanent_residence" property="permanentResidence" />
         <result column="leave_time" property="leaveTime" />
+        <result column="open_id" property="openId" />
         <association property="sysRole" javaType="com.example.manage.entity.SysRole">
             <result column="r_id" property="id" />
             <result column="r_name" property="name" />
@@ -122,6 +123,7 @@
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
         <if test="managementId != null and managementId != ''"> and management_personnel.`management_id` = #{managementId}</if>
         <if test="dateFormatBirthday == 'start' "> and DATE_FORMAT(<include refid="tableSqlAs" />.birthday,"%m-%d") BETWEEN #{agoBirthday} AND #{backBirthday}</if>
+        <if test="dateFormatBirthday == 'entryTime' "> and DATE_FORMAT(<include refid="tableSqlAs" />.entry_time,"%m-%d") BETWEEN #{agoBirthday} AND #{backBirthday}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

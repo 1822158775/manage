@@ -135,20 +135,17 @@
             as
             today_day_approved_growth_rate
 
-            ,format(coalesce(((today_day_approved.today_day_approved + today_day_activation.today_day_activation)
+            ,format(coalesce(((today_day_activation.today_day_activation)
             -
-            (today_yester_approved.today_yester_approved + today_yester_activation.today_yester_activation))
+            (today_yester_activation.today_yester_activation))
             /
-            (today_yester_approved.today_yester_approved + today_yester_activation.today_yester_activation)
+            (today_yester_activation.today_yester_activation)
             *
             <include refid="percentageSql" />,0),2)
             as
             today_day_valid_growth_rate
 
-            ,format(coalesce(
-            (today_day_approved.today_day_approved + today_day_activation.today_day_activation)
-            /
-            today_day_all
+            ,format(coalesce((today_day_activation.today_day_activation / today_day_approved.today_day_approved)
             *
             <include refid="percentageSql" />,0),2)
             as
@@ -194,20 +191,18 @@
             as
             today_week_approved_growth_rate
 
-            ,format(coalesce(((today_week_approved.today_week_approved + today_week_activation.today_week_activation)
+            ,format(coalesce(((today_week_activation.today_week_activation)
             -
-            (last_week_approved.last_week_approved + last_week_activation.last_week_activation))
+            (last_week_activation.last_week_activation))
             /
-            (last_week_approved.last_week_approved + last_week_activation.last_week_activation)
+            (last_week_activation.last_week_activation)
             *
             <include refid="percentageSql" />,0),2)
             as
             today_week_valid_growth_rate
 
             ,format(coalesce(
-            (today_week_approved.today_week_approved + today_week_activation.today_week_activation)
-            /
-            today_week_all
+            (today_week_activation.today_week_activation / today_week_approved.today_week_approved)
             *
             <include refid="percentageSql" />,0),2)
             as
@@ -253,19 +248,17 @@
             as
             today_month_approved_growth_rate
 
-            ,format(coalesce((today_month_approved.today_month_approved + today_month_activation.today_month_activation)
-            /
-            today_month_all.today_month_all
+            ,format(coalesce((today_month_activation.today_month_activation / today_month_approved.today_month_approved)
             *
             <include refid="percentageSql" />,0),2)
             as
             today_month_ratio_growth_rate
 
-            ,format(coalesce(((today_month_approved.today_month_approved + today_month_activation.today_month_activation)
+            ,format(coalesce(((today_month_activation.today_month_activation)
             -
-            (last_month_approved.last_month_approved + last_month_activation.last_month_activation))
+            (last_month_activation.last_month_activation))
             /
-            (last_month_approved.last_month_approved + last_month_activation.last_month_activation)
+            (last_month_activation.last_month_activation)
             *
             <include refid="percentageSql" />,0),2)
             as
@@ -293,7 +286,7 @@
 		from
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_day_activation
+                <include refid="returnCount" />  as today_day_activation
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -306,7 +299,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_day_approved
+                <include refid="returnCount" /> as today_day_approved
             FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -319,7 +312,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_day_artificial
+                <include refid="returnCount" /> as today_day_artificial
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -332,7 +325,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_day_refuse
+                <include refid="returnCount" /> as today_day_refuse
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -345,7 +338,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_day_all
+                <include refid="returnCount" /> as today_day_all
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -357,7 +350,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_week_activation
+                <include refid="returnCount" /> as today_week_activation
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -370,7 +363,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_week_approved
+                <include refid="returnCount" /> as today_week_approved
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -383,7 +376,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_week_artificial
+                <include refid="returnCount" /> as today_week_artificial
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -396,7 +389,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_week_refuse
+                <include refid="returnCount" /> as today_week_refuse
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -409,7 +402,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_week_all
+                <include refid="returnCount" /> as today_week_all
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -421,7 +414,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_month_activation
+                <include refid="returnCount" /> as today_month_activation
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -434,7 +427,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_month_approved
+                <include refid="returnCount" /> as today_month_approved
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -447,7 +440,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_month_artificial
+                <include refid="returnCount" /> as today_month_artificial
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -460,7 +453,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_month_refuse
+                <include refid="returnCount" /> as today_month_refuse
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -473,7 +466,7 @@
             ,
             (
             SELECT
-                COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_month_all
+                <include refid="returnCount" /> as today_month_all
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -485,7 +478,7 @@
             ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_yester_activation
+            <include refid="returnCount" /> as today_yester_activation
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -498,7 +491,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_yester_approved
+            <include refid="returnCount" /> as today_yester_approved
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -511,7 +504,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_yester_artificial
+            <include refid="returnCount" /> as today_yester_artificial
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -524,7 +517,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_yester_refuse
+            <include refid="returnCount" /> as today_yester_refuse
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -537,7 +530,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as today_yester_all
+            <include refid="returnCount" /> as today_yester_all
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -549,7 +542,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_week_activation
+            <include refid="returnCount" /> as last_week_activation
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -562,7 +555,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_week_approved
+            <include refid="returnCount" /> as last_week_approved
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -575,7 +568,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_week_artificial
+            <include refid="returnCount" /> as last_week_artificial
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -588,7 +581,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_week_refuse
+            <include refid="returnCount" /> as last_week_refuse
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -601,7 +594,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_week_all
+            <include refid="returnCount" /> as last_week_all
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -613,7 +606,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_month_activation
+            <include refid="returnCount" /> as last_month_activation
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -626,7 +619,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_month_approved
+            <include refid="returnCount" /> as last_month_approved
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -639,7 +632,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_month_artificial
+            <include refid="returnCount" /> as last_month_artificial
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -652,7 +645,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_month_refuse
+            <include refid="returnCount" /> as last_month_refuse
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -665,7 +658,7 @@
         ,
         (
         SELECT
-            COUNT(DISTINCT <include refid="tableSqlPReport" />.id) as last_month_all
+            <include refid="returnCount" /> as last_month_all
         FROM
             <include refid="tableSql" />
             <include refid="relevanceSql" />
@@ -677,21 +670,22 @@
     </select>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="managementId != null and managementId != ''">
-            and <include refid="tableSqlSManagement" />.id = #{managementId}
-        </if>
         <if test="manageCardTypeId != null and manageCardTypeId != ''">
-            and <include refid="tableSqlMCType" />.id = #{manageCardTypeId}
+            and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
         </if>
+        <if test="managementId != null and managementId != ''">
+            and <include refid="tableSqlPReport" />.management_id = #{managementId}
+        </if>
+        <include refid="reportApproverState" />
         <if test="inManagementId != null and inManagementId != ''">
-            and <include refid="tableSqlSManagement" />.id in
+            and <include refid="tableSqlPReport" />.management_id in
             <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
                 #{item}
             </foreach>
         </if>
     </sql>
     <sql id="tableSql">
-        manage.management_personnel
+        manage.performance_report
     </sql>
     <!--  倍数  -->
     <sql id="percentageSql">
@@ -711,10 +705,11 @@
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
-        LEFT JOIN <include refid="tableSqlPReport" /> ON <include refid="tableSql" />.management_id = <include refid="tableSqlPReport" />.management_id
-        <include refid="reportApproverState" />
-        LEFT JOIN <include refid="tableSqlSManagement" /> ON <include refid="tableSqlSManagement" />.id = <include refid="tableSql" />.management_id
-        LEFT JOIN <include refid="tableSqlMCType" /> ON <include refid="tableSqlMCType" />.manage_code = <include refid="tableSqlSManagement" />.management_code
+<!--        LEFT JOIN <include refid="tableSqlPReport" /> ON <include refid="tableSql" />.management_id = <include refid="tableSqlPReport" />.management_id-->
+<!--        -->
+<!--        LEFT JOIN <include refid="tableSqlSManagement" /> ON <include refid="tableSqlSManagement" />.id = <include refid="tableSql" />.management_id-->
+
+<!--        LEFT JOIN <include refid="tableSqlMCType" /> ON <include refid="tableSqlMCType" />.manage_code = <include refid="tableSqlSManagement" />.management_code-->
     </sql>
     <!--  通过状态  -->
     <sql id="reportApproverState">
@@ -754,11 +749,11 @@
     </sql>
     <!--  激活状态  -->
     <sql id="statusActivation">
-        AND <include refid="tableSqlPReport" />.report_status = '激活'
+        AND <include refid="tableSqlPReport" />.report_status = '批核已激活'
     </sql>
-    <!--  批核状态  -->
+    <!--  批核未激活状态  -->
     <sql id="statusApproved">
-        AND <include refid="tableSqlPReport" />.report_status = '批核'
+        AND <include refid="tableSqlPReport" />.report_status in ('批核未激活','批核已激活')
     </sql>
     <!--  转人工状态  -->
     <sql id="statusArtificial">
@@ -767,5 +762,9 @@
     <!--  拒绝  -->
     <sql id="statusRefuse">
         AND <include refid="tableSqlPReport" />.report_status = '拒绝'
+    </sql>
+    <!--  返回条数  -->
+    <sql id="returnCount">
+        COALESCE(SUM(<include refid="tableSqlPReport" />.report_number), 0 )
     </sql>
 </mapper>

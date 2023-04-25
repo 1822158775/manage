@@ -20,7 +20,7 @@ public class PerformanceReportNotNull implements Serializable {
     public String id;//数据编码
     public String personnelCode;//资源代码
     public String reportTime;//报告时间
-    public String reportStatus;//拒绝，转人工，批核,激活
+    public String reportStatus;//拒绝，转人工，批核未激活,批核已激活
     public String managementId;//项目数据编码
     public String reportCoding;//报告编码
     public String approverPersonnelCode;//审批人资源代码
@@ -29,6 +29,7 @@ public class PerformanceReportNotNull implements Serializable {
     public String approverState;//状态
     public String cardTypeId;//办卡类型id
     public String personnelId;//当前人员的数据编码
+    public String reportNumber;//办卡数
 
     public PerformanceReportNotNull() {
     }
@@ -42,9 +43,10 @@ public class PerformanceReportNotNull implements Serializable {
         this.approverState = approverState;
     }
 
-    public PerformanceReportNotNull(String reportStatus, String cardTypeId, String personnelId) {
+    public PerformanceReportNotNull(String reportStatus, String cardTypeId, String personnelId, String reportNumber) {
         this.reportStatus = reportStatus;
         this.cardTypeId = cardTypeId;
         this.personnelId = personnelId;
+        this.reportNumber = reportNumber;
     }
 }

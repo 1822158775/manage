@@ -14,8 +14,8 @@ import java.io.Serializable;
 @ToString
 public class DataStatisticsTodayYester implements Serializable {
 
-    public Integer activation;//昨日激活数据
-    public Integer approved;//昨日批核
+    public Integer activation;//昨日批核已激活数据
+    public Integer approved;//昨日批核未激活
     public Integer artificial;//昨日转人工
     public Integer refuse;//昨日拒绝
     public Integer all;//昨日所有数据

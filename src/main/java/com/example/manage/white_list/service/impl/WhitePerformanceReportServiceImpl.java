@@ -115,7 +115,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 "全部",
                 auditDataNumber.getAll()
         ));
-        //批核
+        //批核未激活
         entityList.add(new MapEntity(
                 "pending",
                 "等待审核",
@@ -186,16 +186,16 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 "全部",
                 performanceReportNumber.getAll()
         ));
-        //批核
+        //批核未激活
         entityList.add(new MapEntity(
-                "批核",
-                "批核",
+                "批核未激活",
+                "批核未激活",
                 performanceReportNumber.getApprove()
         ));
         //激活
         entityList.add(new MapEntity(
-                "激活",
-                "激活",
+                "批核已激活",
+                "批核已激活",
                 performanceReportNumber.getActive()
         ));
         //拒绝
@@ -216,7 +216,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         list.add(new MapEntity(
                 "当月激活",
                 "当月激活",
-                performanceReportNumber.getThisMonthActive() + performanceReportNumber.getThisMonthApprove()
+                performanceReportNumber.getThisMonthActive()
         ));
         listList.add(list);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED, listList,"");
@@ -231,6 +231,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 new PerformanceReportNotNull(
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0"
                 )
         );
@@ -238,6 +239,10 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             return returnEntity;
         }
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断办卡数
+        if (jsonParam.getReportNumber() < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"办卡数不可小于1");
+        }
         //判断当前人员状态
         ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
         if (estimateState.getState()){

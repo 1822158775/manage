@@ -80,7 +80,7 @@
     <!--  查询总数  -->
     <sql id="countSql">
         SELECT
-            COUNT(DISTINCT <include refid="tableSql" />.id)
+            SUM(<include refid="tableSql" />.report_number)
         FROM
             <include refid="tableSql" />
     </sql>
@@ -95,13 +95,13 @@
         where 1 = 1
         <if test="personnelId != null"> and sys_personnel.`id` = #{personnelId}</if>
     </sql>
-    <!--  批核  -->
+    <!--  批核未激活  -->
     <sql id="approve">
-        and <include refid="tableSql" />.report_status = '批核'
+        and <include refid="tableSql" />.report_status = '批核未激活'
     </sql>
     <!--  激活  -->
     <sql id="active">
-        and <include refid="tableSql" />.report_status = '激活'
+        and <include refid="tableSql" />.report_status = '批核已激活'
     </sql>
     <!--  拒绝  -->
     <sql id="refuse">
@@ -113,6 +113,6 @@
     </sql>
     <!--  当前本月时间  -->
     <sql id="curdateTime">
-        and DATE_FORMAT( <include refid="tableSql" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%M' )
+        and DATE_FORMAT( <include refid="tableSql" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
     </sql>
 </mapper>

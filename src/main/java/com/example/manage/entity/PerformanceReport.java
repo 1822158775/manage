@@ -30,7 +30,7 @@ public class PerformanceReport implements Serializable {
     @TableField(value = "report_time")
     public String reportTime;//报告时间
     @TableField(value = "report_status")
-    public String reportStatus;//拒绝，转人工，批核,激活
+    public String reportStatus;//拒绝，转人工，批核未激活,批核已激活
     @TableField(value = "management_id")
     public Integer managementId;//项目数据编码
     @TableField(value = "report_coding")
@@ -49,6 +49,8 @@ public class PerformanceReport implements Serializable {
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "approver_time")
     public String approverTime;//审核时间
+    @TableField(value = "report_number")
+    public Integer reportNumber;//上报数量
     @TableField(exist = false)
     public SysPersonnel sysPersonnel;//申请人信息
     @TableField(exist = false)

@@ -1,7 +1,10 @@
 package com.example.manage.white_list.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.manage.entity.ManagementPersonnel;
 import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.ranking_list.RankingList;
+import com.example.manage.mapper.IManagementPersonnelMapper;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.mapper.WhiteRankingListMapper;
 import com.example.manage.util.PanXiaoZhang;
@@ -34,6 +37,9 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
 
+    @Resource
+    private IManagementPersonnelMapper iManagementPersonnelMapper;
+
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
         try {
@@ -53,6 +59,24 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"用户编码不可为空");
         }
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(String.valueOf(map.get("personnelId")));
+        if (ObjectUtils.isEmpty(sysPersonnel)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该人员不存在");
+        }
+
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+        List<ManagementPersonnel> selectList = iManagementPersonnelMapper.selectList(wrapper);
+
+        ArrayList<Integer> integerArrayList = new ArrayList<>();
+
+        for (int i = 0; i < selectList.size(); i++) {
+            System.out.println(selectList.get(i).getManagementId() + "===============");
+            integerArrayList.add(selectList.get(i).getManagementId());
+        }
+
+        Integer[] toArray = integerArrayList.toArray(new Integer[integerArrayList.size()]);
+
+        map.put("inManagementId",toArray);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,whiteRankingListMapper.queryAll(map),"");
     }
 }

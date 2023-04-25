@@ -27,4 +27,10 @@ public class WhiteSysPersonnelController {
     public ReturnEntity cat(HttpServletRequest request){
         return iWhiteSysPersonnelService.methodMaster(request,"cat");
     }
+
+    // 添加员工
+    @PostMapping(value = "add")
+    public ReturnEntity add(HttpServletRequest request){
+        return iWhiteSysPersonnelService.methodMasterT(request,"add");
+    }
 }

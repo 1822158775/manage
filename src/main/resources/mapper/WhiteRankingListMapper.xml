@@ -27,15 +27,11 @@
             as
                 already_report_status
             ,
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '激活',true,null))
-            +
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '批核',true,null))
-            as
-            count_number,
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '激活',true,null)) as activation,
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '批核',true,null)) as approved,
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '转人工',true,null)) as artificial,
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '拒绝',true,null)) as refuse
+            sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核已激活','批核未激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS count_number,
+            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS activation,
+            sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核未激活','批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS approved,
+            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('转人工') then <include refid="tableSqlPReport" />.report_number else 0 end) AS artificial,
+            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('拒绝') then <include refid="tableSqlPReport" />.report_number else 0 end) AS refuse
             FROM
             <include refid="tableSqlPersonnel" />
             <include refid="relevanceSqlPpersonnel" />
@@ -46,21 +42,17 @@
         </when>
         <otherwise>
             SELECT
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '激活',true,null))
-            +
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '批核',true,null))
-            as
-            count_number,
             <include refid="tableSqlSManagement" />.`name`,
             <include refid="tableSqlCardType" />.`name` as card_type_name,
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '激活',true,null)) as activation,
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '批核',true,null)) as approved,
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '转人工',true,null)) as artificial,
-            count(IF(<include refid="tableSqlPReport" />.`report_status` = '拒绝',true,null)) as refuse,
             CONCAT('[\"有效\",\"',
             GROUP_CONCAT(DISTINCT <include refid="tableSqlPReport" />.`report_status`),'\"]')
             as
-            already_report_status
+            already_report_status,
+            sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核已激活','批核未激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS count_number,
+            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS activation,
+            sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核未激活','批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS approved,
+            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('转人工') then <include refid="tableSqlPReport" />.report_number else 0 end) AS artificial,
+            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('拒绝') then <include refid="tableSqlPReport" />.report_number else 0 end) AS refuse
             FROM
             <include refid="tableSqlSManagement" />
             <include refid="relevanceSql" />
@@ -109,6 +101,12 @@
             <include refid="todayMonth" />
         </if>
         <include refid="reportApproverState" />
+        <if test="reportStatus != null and reportStatus != ''">
+            and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
+        </if>
+        <if test="manageCardTypeId != null and manageCardTypeId != ''">
+            and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
+        </if>
         LEFT JOIN <include refid="tableSqlCardType" /> ON <include refid="tableSqlCardType" />.id = <include refid="tableSqlPReport" />.card_type_id
     </sql>
     <!--  进行关联人员表 -->
@@ -127,7 +125,14 @@
         <if test="type == 'month'">
             <include refid="todayMonth" />
         </if>
+        <if test="reportStatus != null and reportStatus != ''">
+            and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
+        </if>
+        <if test="manageCardTypeId != null and manageCardTypeId != ''">
+            and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
+        </if>
         <include refid="reportApproverState" />
+
         LEFT JOIN
             <include refid="tableSqlSManagement" />
         ON
@@ -136,6 +141,13 @@
         <if test="managementId != null and managementId != ''">
             and <include refid="tableSqlPReport" />.management_id = #{managementId}
         </if>
+        <if test="inManagementId != null and inManagementId != ''">
+            and <include refid="tableSqlSManagement" />.id in
+            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+
         LEFT JOIN
             <include refid="tableSqlCardType" />
         ON
@@ -145,12 +157,6 @@
     <!--  条件  -->
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="reportStatus != null and reportStatus != ''">
-            and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
-        </if>
-        <if test="manageCardTypeId != null and manageCardTypeId != ''">
-            and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
-        </if>
         <if test="inManagementId != null and inManagementId != ''">
             and <include refid="tableSqlSManagement" />.id in
             <foreach collection="inManagementId" separator="," item="item" open="(" close=")">

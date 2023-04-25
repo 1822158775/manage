@@ -7,6 +7,10 @@ spring:
     password: znrlsp123
     database: 4
   datasource:
+#    url: jdbc:mysql://106.15.56.132:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
+#    username: manage
+#    password: manage
+
     url: jdbc:mysql://127.0.0.1:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
     username: root
     password: znrlsp123

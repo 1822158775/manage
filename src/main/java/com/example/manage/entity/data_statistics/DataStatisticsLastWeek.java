@@ -14,8 +14,8 @@ import java.io.Serializable;
 @ToString
 public class DataStatisticsLastWeek implements Serializable {
 
-    public Integer activation;//上周激活数据
-    public Integer approved;//上周批核
+    public Integer activation;//上周批核已激活数据
+    public Integer approved;//上周批核未激活
     public Integer artificial;//上周转人工
     public Integer refuse;//上周拒绝
     public Integer all;//上周所有数据

@@ -57,14 +57,17 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
 
     //查询数据
     private ReturnEntity cat(HttpServletRequest request) {
+
         Map map = PanXiaoZhang.getMap(request);
         if (ObjectUtils.isEmpty(map.get("personnelId"))){
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
+
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(String.valueOf(map.get("personnelId")));
         if (ObjectUtils.isEmpty(sysPersonnel)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该人员不存在");
         }
+
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
         List<ManagementPersonnel> selectList = iManagementPersonnelMapper.selectList(wrapper);
@@ -72,12 +75,13 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
         ArrayList<Integer> integerArrayList = new ArrayList<>();
 
         for (int i = 0; i < selectList.size(); i++) {
+            System.out.println(selectList.get(i).getManagementId() + "===============");
             integerArrayList.add(selectList.get(i).getManagementId());
         }
 
         Integer[] toArray = integerArrayList.toArray(new Integer[integerArrayList.size()]);
 
-        //map.put("inManagementId",toArray);
+        map.put("inManagementId",toArray);
 
         DataStatistics dataStatistics = whiteDataStatisticsMapper.queryAll(map);
         ArrayList<Object> arrayList = new ArrayList<>();

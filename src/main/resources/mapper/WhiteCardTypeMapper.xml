@@ -8,13 +8,17 @@
         <result column="type" property="type" />
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
-        select count(<include refid="tableSql"/>.id) as id from
+        select count(DISTINCT <include refid="tableSql"/>.id) as id from
         <include refid="tableSql"/>
         <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select <include refid="tableSql"/>.*
+        select
+            DISTINCT <include refid="tableSql"/>.id,
+            <include refid="tableSql"/>.name,
+            <include refid="tableSql"/>.amount,
+            <include refid="tableSql"/>.type
         from
         <include refid="tableSql"/>
         <include refid="relevanceSql" />

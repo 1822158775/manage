@@ -67,10 +67,10 @@ public class SchedulingConfig {
 
     //@Scheduled(cron="0 0/1 * * * ?")
     //private void minute() {
-    //    System.out.println(1);
+    //    iWhiteSysPersonnelService.birthdayInform();
     //}
 
-    //每天10点查询2天后的人员生日
+    //每天10点查询2天后的人员生日和周年纪念
     @Scheduled(cron="0 0 10 * * ?")
     public void ExecuteOncePerSecond(){
         iWhiteSysPersonnelService.birthdayInform();

@@ -14,6 +14,7 @@
         <result column="approver_state" property="approverState" />
         <result column="card_type_id" property="cardTypeId" />
         <result column="approver_time" property="approverTime" />
+        <result column="report_number" property="reportNumber" />
         <association property="cardType" javaType="com.example.manage.entity.CardType">
             <result column="c_id" property="id" />
             <result column="c_name" property="name" />
@@ -98,9 +99,8 @@
         </if>
         <if test="orderByTime == 'yes'">
             order by
-                <include refid="tableSql"/>.report_time
-                ,<include refid="tableSql"/>.approver_time
-            desc
+                <include refid="tableSql"/>.report_time desc
+                ,<include refid="tableSql"/>.approver_time desc
         </if>
     </sql>
 </mapper>
