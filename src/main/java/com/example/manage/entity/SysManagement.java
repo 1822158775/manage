@@ -33,6 +33,8 @@ public class SysManagement implements Serializable {
     public Integer managementState;//项目运行状态
     @TableField(value = "management_code")
     public String managementCode;//项目编码
+    @TableField(value = "number_of_people")
+    public Integer numberOfPeople;//人的数量
     @TableField(exist = false)
     public List<CardType> cardTypeS;//卡种管理
     @TableField(exist = false)

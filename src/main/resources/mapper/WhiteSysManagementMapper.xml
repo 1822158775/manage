@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.WhiteSysManagementMapper">
+    <resultMap id="entity" type="com.example.manage.entity.number_of_projects.NumberOfProjects">
+        <result column="number_of_people" property="numberOfPeople" />
+        <result column="number_personnel" property="numberPersonnel" />
+        <result column="real_quantity" property="realQuantity" />
+        <result column="name" property="name" />
+        <result column="rate_of_full_capacity" property="rateOfFullCapacity" />
+    </resultMap>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="returnSql"/>
+        from
+        <include refid="tableSql" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+        <include refid="safeGroupBy" />
+        <include refid="safeOrderBy" />
+    </select>
+    <!--  返回  -->
+    <sql id="returnSql">
+        COUNT(DISTINCT <include refid="tableSqlPersonnel" />.id) as number_personnel,
+        <include refid="tableSql" />.`name` as `name`,
+        <include refid="tableSql" />.number_of_people as number_of_people,
+        <include refid="tableSql" />.number_of_people - COUNT(DISTINCT <include refid="tableSqlPersonnel" />.id) as real_quantity,
+        format(coalesce((COUNT(DISTINCT <include refid="tableSqlPersonnel" />.id) / <include refid="tableSql" />.number_of_people) * 100,0),2) as rate_of_full_capacity
+    </sql>
+    <sql id="tableSql">
+        manage.sys_management
+    </sql>
+    <sql id="tableSqlMPersonnel">
+        manage.management_personnel
+    </sql>
+    <sql id="tableSqlPersonnel">
+        manage.sys_personnel
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
+        <if test="inId != null ">
+         and
+            <include refid="tableSql" />.`id`
+         in
+            <foreach collection="inId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+         </if>
+     </sql>
+    <sql id="relevanceSql">
+        LEFT JOIN <include refid="tableSqlMPersonnel" /> on <include refid="tableSqlMPersonnel" />.management_id = <include refid="tableSql" />.id
+        LEFT JOIN <include refid="tableSqlPersonnel" /> on <include refid="tableSqlPersonnel" />.personnel_code = <include refid="tableSqlMPersonnel" />.personnel_code
+        AND sys_personnel.role_id = #{roleId}
+        AND sys_personnel.employment_status = 1
+    </sql>
+    <sql id="safeOrderBy">
+        ORDER BY format(coalesce((COUNT(DISTINCT <include refid="tableSqlPersonnel" />.id) / <include refid="tableSql" />.number_of_people) * 100,0),2) desc
+    </sql>
+    <sql id="safeGroupBy">
+        GROUP BY sys_management.id
+    </sql>
+</mapper>

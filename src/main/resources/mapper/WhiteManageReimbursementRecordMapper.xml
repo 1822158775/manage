@@ -126,7 +126,7 @@
         manage.manage_reimbursement_record
     </sql>
     <sql id="whereSqlModelApproverAll">
-        where 1 = 1 and  reimbursement_approval.number >= <include refid="tableSqlAs" />.max_number
+        where 1 = 1 and reimbursement_approval.number >= <include refid="tableSqlAs" />.max_number
         <if test="id != null "> and <include refid="tableSqlAs" />.`id` = #{id}</if>
         <if test="personnelId != null"> and sys_personnel.id = #{personnelId}</if>
         <if test="approvalState != null"> and reimbursement_approval.approval_state = #{approvalState}</if>

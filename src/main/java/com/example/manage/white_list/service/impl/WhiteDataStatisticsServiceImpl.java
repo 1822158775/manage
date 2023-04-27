@@ -75,7 +75,6 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
         ArrayList<Integer> integerArrayList = new ArrayList<>();
 
         for (int i = 0; i < selectList.size(); i++) {
-            System.out.println(selectList.get(i).getManagementId() + "===============");
             integerArrayList.add(selectList.get(i).getManagementId());
         }
 

@@ -121,12 +121,17 @@ public class ILoginServiceImpl implements ILoginService {
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"请关注常旅通公众号");
                 }
                 String openid = parseObject.getResponse().getOpenid();
-                iSysPersonnelMapper.updateById(new SysPersonnel(
-                        sysPersonnel.getId(),
-                        null,
-                        null,
-                        openid
-                ));
+                QueryWrapper wrapper = new QueryWrapper();
+                wrapper.eq("open_id",openid);
+                SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
+                if (ObjectUtils.isEmpty(personnel)){
+                    iSysPersonnelMapper.updateById(new SysPersonnel(
+                            sysPersonnel.getId(),
+                            null,
+                            null,
+                            openid
+                    ));
+                }
             }
             return new ReturnEntity(
                     CodeEntity.CODE_SUCCEED,

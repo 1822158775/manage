@@ -156,6 +156,7 @@ public class SysManagementServiceImpl implements ISysManagementService {
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0"
                 ));
         if (returnEntity.getState()){

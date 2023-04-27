@@ -9,6 +9,7 @@
         <result column="monthly_indicators" property="monthlyIndicators" />
         <result column="management_state" property="managementState" />
         <result column="management_code" property="managementCode" />
+        <result column="number_of_people" property="numberOfPeople" />
         <collection property="cardTypeS" ofType="com.example.manage.entity.CardType">
             <result column="c_id" property="id" />
             <result column="c_name" property="name" />

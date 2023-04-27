@@ -25,4 +25,10 @@ public class WhiteSysManagementController {
     public ReturnEntity cat(HttpServletRequest request){
         return iWhiteSysManagementService.methodMaster(request,"cat");
     }
+
+    // 查询项目人员编码
+    @PostMapping(value = "cat_number")
+    public ReturnEntity cat_number(HttpServletRequest request){
+        return iWhiteSysManagementService.methodMaster(request,"cat_number");
+    }
 }

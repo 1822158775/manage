@@ -142,6 +142,29 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
             //传的关联
             for (int i = 0; i < jsonParam.getManagementId().length; i++) {
                 Integer integer = jsonParam.getManagementId()[i];
+                //按断是否有重复的经理和区域经理
+                HashMap hashMap = new HashMap();
+                Integer roleId = sysRole.getId();
+                if (ObjectUtils.isEmpty(jsonParam.getRoleId())){
+                    hashMap.put("roleId",sysRole.getId());
+                }else {
+                    hashMap.put("roleId",jsonParam.getRoleId());
+                    roleId = jsonParam.getRoleId();
+                }
+                hashMap.put("employmentStatus",1);
+                hashMap.put("managementId",integer);
+                //判断区域经理是否重复拥有项目
+                if (roleId.equals(roleId3)){
+                    List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
+                    if (sysPersonnels.size() > 0){
+                        return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属区域经理" + sysPersonnels.get(0).getName());
+                    }
+                }else if (roleId.equals(roleId4)){//判断经理是否重复拥有项目
+                    List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
+                    if (sysPersonnels.size() > 0){
+                        return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnels.get(0).getName());
+                    }
+                }
                 map.put(integer * -1,new ManagementPersonnel(
                         integer,
                         jsonParam.getPersonnelCode()
@@ -155,17 +178,25 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                 ManagementPersonnel managementPersonnel = map.get(id);
                 ManagementPersonnel personnel = map.get(id * -1);
                 if (ObjectUtils.isEmpty(managementPersonnel) && !ObjectUtils.isEmpty(personnel)){
+
+                    //按断是否有重复的经理和区域经理
                     HashMap hashMap = new HashMap();
-                    hashMap.put("roleId",sysRole.getId());
+                    Integer roleId = sysRole.getId();
+                    if (ObjectUtils.isEmpty(jsonParam.getRoleId())){
+                        hashMap.put("roleId",sysRole.getId());
+                    }else {
+                        hashMap.put("roleId",jsonParam.getRoleId());
+                        roleId = jsonParam.getRoleId();
+                    }
                     hashMap.put("employmentStatus",1);
                     hashMap.put("managementId",id);
                     //判断区域经理是否重复拥有项目
-                    if (sysRole.getId().equals(roleId3)){
+                    if (roleId.equals(roleId3)){
                         List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
                         if (sysPersonnels.size() > 0){
                             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属区域经理" + sysPersonnels.get(0).getName());
                         }
-                    }else if (sysRole.getId().equals(roleId4)){//判断经理是否重复拥有项目
+                    }else if (roleId.equals(roleId4)){//判断经理是否重复拥有项目
                         List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
                         if (sysPersonnels.size() > 0){
                             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnels.get(0).getName());

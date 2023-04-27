@@ -67,10 +67,16 @@ public class DispatchApplicationManagement implements Serializable {
     public Date applicantTime;//申请时间
     @TableField(value = "dispatch_code")
     public String dispatchCode;//调派代码
+    @TableField(value = "max_number")
+    public Integer maxNumber;//审核流转层级
+    @TableField(value = "applicant_state")
+    public String applicantState;//审核总状态:pending,agree,refuse
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    @TableField(value = "verifier_time")
+    public Date verifierTime;//审核通过时间
     @TableField(exist = false)
-    public SysPersonnel agoVerifierSysPersonnel;//当前项目审批人
-    @TableField(exist = false)
-    public SysPersonnel laterVerifierSysPersonnel;//调派后项目审批人
+    public SysPersonnel verifierSysPersonnel;//当前项目审批人
     @TableField(exist = false)
     public SysManagement agoVerifierSysManagement;//当前项目
     @TableField(exist = false)
@@ -83,14 +89,45 @@ public class DispatchApplicationManagement implements Serializable {
     public String verifierState;//审核人状态
     @TableField(exist = false)
     public List<SysPersonnel> sysPersonnels;//人员信息
+    @TableField(exist = false)
+    public List<DispatchApplicationReimbursement> dispatchApplicationReimbursements;//审核人列表
 
     public DispatchApplicationManagement() {
+    }
+
+    public DispatchApplicationManagement(Integer id, Integer maxNumber) {
+        this.id = id;
+        this.maxNumber = maxNumber;
     }
 
     public DispatchApplicationManagement(Integer id, String verifierRemark, String verifierState) {
         this.id = id;
         this.verifierRemark = verifierRemark;
         this.verifierState = verifierState;
+    }
+
+    public DispatchApplicationManagement(Integer id, String applicant, String phone, String personnelCode, String remark, Integer agoManagementId, Integer laterManagementId, String agoAuditTime, Integer agoPersonnelId, String agoVerifierRemark, String agoVerifierState, String laterAuditTime, Integer laterPersonnelId, String laterVerifierRemark, String laterVerifierState, Date dispathchTime, Date applicantTime, String dispatchCode, Integer maxNumber, String applicantState, Date verifierTime) {
+        this.id = id;
+        this.applicant = applicant;
+        this.phone = phone;
+        this.personnelCode = personnelCode;
+        this.remark = remark;
+        this.agoManagementId = agoManagementId;
+        this.laterManagementId = laterManagementId;
+        this.agoAuditTime = agoAuditTime;
+        this.agoPersonnelId = agoPersonnelId;
+        this.agoVerifierRemark = agoVerifierRemark;
+        this.agoVerifierState = agoVerifierState;
+        this.laterAuditTime = laterAuditTime;
+        this.laterPersonnelId = laterPersonnelId;
+        this.laterVerifierRemark = laterVerifierRemark;
+        this.laterVerifierState = laterVerifierState;
+        this.dispathchTime = dispathchTime;
+        this.applicantTime = applicantTime;
+        this.dispatchCode = dispatchCode;
+        this.maxNumber = maxNumber;
+        this.applicantState = applicantState;
+        this.verifierTime = verifierTime;
     }
 
     public DispatchApplicationManagement(Integer id, String agoAuditTime, Integer agoPersonnelId, String agoVerifierRemark, String agoVerifierState, String laterAuditTime, Integer laterPersonnelId, String laterVerifierRemark, String laterVerifierState) {

@@ -9,29 +9,28 @@
         <result column="remark" property="remark" />
         <result column="ago_management_id" property="agoManagementId" />
         <result column="later_management_id" property="laterManagementId" />
-        <result column="ago_audit_time" property="agoAuditTime" />
-        <result column="ago_personnel_id" property="agoPersonnelId" />
-        <result column="ago_verifier_remark" property="agoVerifierRemark" />
-        <result column="ago_verifier_state" property="agoVerifierState" />
-        <result column="later_audit_time" property="laterAuditTime" />
-        <result column="later_personnel_id" property="laterPersonnelId" />
-        <result column="later_verifier_remark" property="laterVerifierRemark" />
-        <result column="later_verifier_state" property="laterVerifierState" />
         <result column="dispathch_time" property="dispathchTime" />
         <result column="applicant_time" property="applicantTime" />
-        <result column="dispatch_code" property="dispatchCode" />
-        <association property="agoVerifierSysPersonnel" javaType="com.example.manage.entity.SysPersonnel">
-            <result column="p_1_name" property="name" />
-        </association>
-        <association property="laterVerifierSysPersonnel" javaType="com.example.manage.entity.SysPersonnel">
-            <result column="p_2_name" property="name" />
-        </association>
+        <result column="max_number" property="maxNumber" />
+        <result column="applicant_state" property="applicantState" />
+        <result column="verifier_time" property="verifierTime" />
         <association property="agoVerifierSysManagement" javaType="com.example.manage.entity.SysManagement">
             <result column="m_1_name" property="name" />
         </association>
         <association property="laterVerifierSysManagement" javaType="com.example.manage.entity.SysManagement">
             <result column="m_2_name" property="name" />
         </association>
+        <collection property="dispatchApplicationReimbursements" ofType="com.example.manage.entity.DispatchApplicationReimbursement">
+            <result column="d_a_r_id" property="id" />
+            <result column="d_a_r_personnel_id" property="personnelId" />
+            <result column="d_a_r_verifier_remark" property="verifierRemark" />
+            <result column="d_a_r_verifier_state" property="verifierState" />
+            <result column="d_a_r_verifier_time" property="verifierTime" />
+            <result column="d_a_r_dispatch_code" property="dispatchCode" />
+            <result column="d_a_r_dispatch_state" property="dispatchState" />
+            <result column="d_a_r_number" property="number" />
+            <result column="d_a_r_personnel_name" property="personnelName" />
+        </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
@@ -52,20 +51,33 @@
     <sql id="tableSql">
         manage.dispatch_application_management
     </sql>
+    <sql id="tableSqlPersonnel">
+        manage.sys_personnel
+    </sql>
+    <sql id="tableSqlDAReimbursement">
+        manage.dispatch_application_reimbursement
+    </sql>
     <!--  返回  -->
     <sql id="returnSql">
         <include refid="tableSql"/>.*
         ,sys_m_1.`name` as m_1_name
         ,sys_m_2.`name` as m_2_name
-        ,sys_p_1.`name` as p_1_name
-        ,sys_p_2.`name` as p_2_name
+
+        ,<include refid="tableSqlPersonnel" />.`name` as d_a_r_personnel_name
+
+        ,<include refid="tableSqlDAReimbursement" />.`verifier_remark` as `d_a_r_verifier_remark`
+        ,<include refid="tableSqlDAReimbursement" />.`verifier_state` as `d_a_r_verifier_state`
+        ,<include refid="tableSqlDAReimbursement" />.`verifier_time` as `d_a_r_verifier_time`
+        ,<include refid="tableSqlDAReimbursement" />.`dispatch_state` as `d_a_r_dispatch_state`
+        ,<include refid="tableSqlDAReimbursement" />.`number` as `d_a_r_number`
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
         LEFT JOIN sys_management as sys_m_1 on sys_m_1.id = <include refid="tableSql" />.ago_management_id
         LEFT JOIN sys_management as sys_m_2 on sys_m_2.id = <include refid="tableSql" />.later_management_id
-        LEFT JOIN sys_personnel as sys_p_1 on sys_p_1.id = <include refid="tableSql" />.ago_personnel_id
-        LEFT JOIN sys_personnel as sys_p_2 on sys_p_2.id = <include refid="tableSql" />.later_personnel_id
+        LEFT JOIN <include refid="tableSqlDAReimbursement" /> on <include refid="tableSqlDAReimbursement" />.dispatch_code = <include
+            refid="tableSql" />.dispatch_code
+        LEFT JOIN sys_personnel on sys_personnel.id = <include refid="tableSqlDAReimbursement" />.personnel_id
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
@@ -74,10 +86,12 @@
         <if test="personnelCode != null "> and <include refid="tableSql" />.`personnel_code` = #{personnelCode}</if>
         <if test="personnelId != null ">
          and
-         <include refid="tableSql" />.`ago_personnel_id` = #{personnelId}
-         or
-        <include refid="tableSql" />.`later_personnel_id` = #{personnelId}
+            <include refid="tableSqlDAReimbursement" />.`personnel_id` = #{personnelId}
          </if>
+        <if test="type == 'gt'">
+            and
+            <include refid="tableSqlDAReimbursement" />.`number` >= <include refid="tableSql"/>.`max_number`
+        </if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
@@ -87,6 +101,6 @@
         </if>
     </sql>
     <sql id="safeOrderBy">
-        order by <include refid="tableSql"/>.id desc
+        order by <include refid="tableSql"/>.id desc,<include refid="tableSqlDAReimbursement" />.`number` desc
     </sql>
 </mapper>

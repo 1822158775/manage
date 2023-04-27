@@ -22,6 +22,7 @@ public class SysManagementNotNull implements Serializable {
     public String availableBalance;//可用余额
     public String monthlyIndicators;//每月指标
     public String managementState;//项目运行状态
+    public String numberOfPeople;//人的数量
 
     public SysManagementNotNull() {
     }
@@ -44,5 +45,13 @@ public class SysManagementNotNull implements Serializable {
         this.availableBalance = availableBalance;
         this.monthlyIndicators = monthlyIndicators;
         this.managementState = managementState;
+    }
+
+    public SysManagementNotNull(String name, String projectAddress, String monthlyIndicators, String managementState, String numberOfPeople) {
+        this.name = name;
+        this.projectAddress = projectAddress;
+        this.monthlyIndicators = monthlyIndicators;
+        this.managementState = managementState;
+        this.numberOfPeople = numberOfPeople;
     }
 }

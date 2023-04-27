@@ -1,14 +1,9 @@
 package com.example.manage.white_list.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.manage.entity.DispatchApplicationManagement;
-import com.example.manage.entity.ManagementPersonnel;
-import com.example.manage.entity.SysPersonnel;
+import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.DispatchApplicationManagementNotNull;
-import com.example.manage.mapper.IDispatchApplicationManagementMapper;
-import com.example.manage.mapper.IManagementPersonnelMapper;
-import com.example.manage.mapper.ISysPersonnelMapper;
-import com.example.manage.mapper.WhiteSysPersonnelMapper;
+import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
@@ -61,6 +56,12 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
     @Resource
     private IWhiteSysPersonnelService iWhiteSysPersonnelService;
 
+    @Resource
+    private ISysRoleMapper iSysRoleMapper;
+
+    @Resource
+    private IDispatchApplicationReimbursementMapper iDispatchApplicationReimbursementMapper;
+
     //方法总管
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -93,14 +94,18 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 }
                 return returnEntity;
             }else if (name.equals("add")){
-                return add(request);
+                ReturnEntity returnEntity = add(request);
+                if (!returnEntity.getCode().equals("0")){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                }
+                return returnEntity;
             }
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
     }
 
@@ -120,6 +125,17 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         if (ObjectUtils.isEmpty(dispatchApplicationManagement)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该数据不存在");
         }
+        //判断该数据总状态
+        if (!dispatchApplicationManagement.getApplicantState().equals("pending")){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该状态下不可审核");
+        }
+        //查询申请人信息
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("personnel_code",dispatchApplicationManagement.getPersonnelCode());
+        SysPersonnel personnel = iSysPersonnelMapper.selectOne(queryWrapper);
+        if (ObjectUtils.isEmpty(personnel)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该调派人员不存在");
+        }
         //当前时间
         String format = DateFormatUtils.format(new Date(), PanXiaoZhang.yMdHms());
         //那些字段不可为空
@@ -133,87 +149,100 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 jsonParam.getVerifierRemark(),
                 jsonParam.getVerifierState()
         );
-        if (dispatchApplicationManagement.getAgoPersonnelId().equals(jsonParam.getPersonnelId())){//如果相等则为当前项目主管
-            //判断当前是否待审批状态
-            if (!dispatchApplicationManagement.getAgoVerifierState().equals("pending")){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"当前状态不可更改");
-            }
-            //修改调派前项目内容
-            applicationManagement.setAgoAuditTime(format);
-            applicationManagement.setAgoVerifierRemark(jsonParam.getVerifierRemark());
-            applicationManagement.setAgoVerifierState(jsonParam.getVerifierState());
-            //保持调派后项目内容
-            applicationManagement.setLaterAuditTime(dispatchApplicationManagement.getLaterAuditTime());
-            applicationManagement.setLaterVerifierRemark(dispatchApplicationManagement.getLaterVerifierRemark());
-            applicationManagement.setLaterVerifierState(dispatchApplicationManagement.getLaterVerifierState());
-        }else if (dispatchApplicationManagement.getLaterPersonnelId().equals(jsonParam.getPersonnelId())){//如果相等则为调派后项目主管
-            //判断当前是否待审批状态
-            if (!dispatchApplicationManagement.getLaterVerifierState().equals("pending")){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"当前状态不可更改");
-            }
-            //修改调派后项目内容
-            applicationManagement.setLaterAuditTime(format);
-            applicationManagement.setLaterVerifierRemark(jsonParam.getVerifierRemark());
-            applicationManagement.setLaterVerifierState(jsonParam.getVerifierState());
-            //保持调派前项目内容
-            applicationManagement.setAgoAuditTime(dispatchApplicationManagement.getLaterAuditTime());
-            applicationManagement.setAgoVerifierRemark(dispatchApplicationManagement.getAgoVerifierRemark());
-            applicationManagement.setAgoVerifierState(dispatchApplicationManagement.getAgoVerifierState());
-        }else {
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"该条数据异常");
-        }
         //进行判断那些字段不可为空
         ReturnEntity returnEntity = PanXiaoZhang.isNull(
                 applicationManagement,
                 dispatchApplicationManagementNotNull
         );
+        if (!ObjectUtils.isEmpty(sysPersonnel)){
+            //查询该数据
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.eq("personnel_id",sysPersonnel.getId());
+            wrapper.eq("verifier_state","pending");
+            wrapper.eq("dispatch_code",dispatchApplicationManagement.getDispatchCode());
+            DispatchApplicationReimbursement reimbursement = iDispatchApplicationReimbursementMapper.selectOne(wrapper);
+            if (ObjectUtils.isEmpty(reimbursement)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"该数据已审核过");
+            }
+            int updateById = iDispatchApplicationReimbursementMapper.updateById(new DispatchApplicationReimbursement(
+                    reimbursement.getId(),
+                    null,
+                    jsonParam.getVerifierRemark(),
+                    jsonParam.getVerifierState(),
+                    format,
+                    null,
+                    null,
+                    null
+            ));
+            if (updateById != 1) {
+                return new ReturnEntity(CodeEntity.CODE_ERROR, "审核数据更改失败");
+            }
+        }
         if (returnEntity.getState()){
             return returnEntity;
         }
         //至此拦截机制结束
-        int updateById = iDispatchApplicationManagementMapper.updateById(applicationManagement);
-        //查询申请人信息
-        QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("personnel_code",dispatchApplicationManagement.getPersonnelCode());
-        SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
-        if (ObjectUtils.isEmpty(personnel)){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"该调派人员不存在");
-        }
-        if (dispatchApplicationManagement.getAgoVerifierState().equals("pending") && !applicationManagement.getAgoVerifierState().equals("pending")){
-            if (applicationManagement.getAgoVerifierState().equals("refuse")){
-                SysPersonnel byId = iSysPersonnelMapper.selectById(dispatchApplicationManagement.getAgoPersonnelId());
-                String remark = "";
-                if (!ObjectUtils.isEmpty(applicationManagement.getAgoVerifierRemark())){
-                    remark = applicationManagement.getAgoVerifierRemark();
+        if (jsonParam.getVerifierState().equals("agree")){
+            Map map = new HashMap();
+            map.put("reimbursementRecordCode",dispatchApplicationManagement.getDispatchCode());
+            map.put("approvalState","pending");
+            map.put("nePersonnelId",sysPersonnel.getId());//不等于当前审核人的资源编码
+            List<DispatchApplicationReimbursement> dispatchApplicationReimbursements = iDispatchApplicationReimbursementMapper.queryAll(map);
+            if (dispatchApplicationReimbursements.size() > 0){
+                Integer integer = iDispatchApplicationReimbursementMapper.queryMax(map);
+                if (!integer.equals(dispatchApplicationManagement.getMaxNumber())){//如果得出的流转等级不一致将进行修改
+                    int updateById = iDispatchApplicationManagementMapper.updateById(new DispatchApplicationManagement(
+                            dispatchApplicationManagement.getId(),
+                            integer
+                    ));
+                    if (updateById != 1){
+                        return new ReturnEntity(CodeEntity.CODE_ERROR,"修改流转等级失败");
+                    }
+                    //进行消息通知流转下一级
+                    for (int i = 0; i < dispatchApplicationReimbursements.size(); i++) {
+                        DispatchApplicationReimbursement reimbursement = dispatchApplicationReimbursements.get(i);
+                        if (reimbursement.getNumber().equals(integer)){
+                            SysPersonnel selectById = iSysPersonnelMapper.selectById(reimbursement.getPersonnelId());
+                            //告知审核人前往审核
+                            PanXiaoZhang.postWechatFer(
+                                    selectById.getOpenId(),
+                                    personnel.getName() + "提交了调派申请",
+                                    "",
+                                    "请及时前往核实",
+                                    "",
+                                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "from_dispatch_verify=" + true
+                            );
+                        }
+                    }
                 }
-                PanXiaoZhang.postWechatFer(
-                        personnel.getOpenId(),
-                        "调派结果通知",
-                        "",
-                        byId.getName() + "拒绝了您的请求，" + "拒绝原因是：" + remark,
-                        "",
-                        ""
-                );
+                return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
             }
-        }
-        if (dispatchApplicationManagement.getLaterVerifierState().equals("pending") && !applicationManagement.getLaterVerifierState().equals("pending")) {
-            if (applicationManagement.getLaterVerifierState().equals("refuse")) {
-                SysPersonnel byId = iSysPersonnelMapper.selectById(dispatchApplicationManagement.getLaterPersonnelId());
-                String remark = "";
-                if (!ObjectUtils.isEmpty(applicationManagement.getLaterVerifierRemark())){
-                    remark = applicationManagement.getLaterVerifierRemark();
-                }
-                PanXiaoZhang.postWechatFer(
-                        personnel.getOpenId(),
-                        "调派结果通知",
-                        "",
-                        byId.getName() + "拒绝了您的请求，" + "拒绝原因是：" + remark,
-                        "",
-                        ""
-                );
+            int updateById = iDispatchApplicationManagementMapper.updateById(new DispatchApplicationManagement(
+                    dispatchApplicationManagement.getId(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "agree",
+                    new Date()
+            ));
+            if (updateById != 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"修改数据失败");
             }
-        }
-        if (applicationManagement.getAgoVerifierState().equals("agree") && applicationManagement.getLaterVerifierState().equals("agree")){
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
                     "调派结果通知",
@@ -222,19 +251,49 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                     "",
                     ""
             );
-            QueryWrapper queryWrapper = new QueryWrapper();
-            queryWrapper.eq("personnel_code",dispatchApplicationManagement.getPersonnelCode());
-            int byId = iManagementPersonnelMapper.update(new ManagementPersonnel(
-                    dispatchApplicationManagement.getLaterManagementId()
-            ),queryWrapper);
-            if (byId != 1){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"用户项目更改失败");
+        }else if (jsonParam.getVerifierState().equals("refuse")){//如果拒绝审核
+            int updateById = iDispatchApplicationManagementMapper.updateById(new DispatchApplicationManagement(
+                    dispatchApplicationManagement.getId(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "refuse",
+                    new Date()
+            ));
+            if (updateById != 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"修改数据失败");
             }
+            String remark = sysPersonnel.getName() + "拒绝了您的请求";
+            if (!ObjectUtils.isEmpty(jsonParam.getRemark())){
+                remark += "，拒绝原因是：" + jsonParam.getRemark();
+            }
+            PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
+                    "调派结果通知",
+                    "",
+                    remark,
+                    "",
+                    ""
+            );
+        }else {
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"审核状态不正确");
         }
-        if (updateById != 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"数据更改失败");
-        }
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"提交成功");
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
     }
 
     //查看历史审核数据
@@ -243,6 +302,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         if (ObjectUtils.isEmpty(jsonMap.get("personnelId"))){
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
+        jsonMap.put("type","gt");
         List<DispatchApplicationManagement> dispatchApplicationManagements = iDispatchApplicationManagementMapper.queryAll(jsonMap);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,dispatchApplicationManagements,"");
     }
@@ -322,38 +382,97 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             jsonParam.setAgoManagementId(managementPersonnel.getManagementId());
             //添加调派代码
             jsonParam.setDispatchCode(System.currentTimeMillis() + PanXiaoZhang.ran(4));
+            //设置初始状态
+            jsonParam.setApplicantState("pending");
         }
         //记录调派前人员手机号
         String agoOpenId = "";
         //记录调派后人员手机号
         String laterOpenId = "";
-        //调派前项目数据编码
-        if (!ObjectUtils.isEmpty(jsonParam.getAgoManagementId())){
-            List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(roleId, jsonParam.getAgoManagementId());
-            if (sysPersonnels.size() < 1){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"当前项目现没有负责人无法提交");
+        //从最大的开始审核
+        jsonParam.setMaxNumber(0);
+        //设置审核职位
+        Integer[] integers = {1,3};
+        //存储map
+        Map<Integer, SysRole> mapRole = new HashMap();
+        //存储通知的人
+        Map<Integer, SysPersonnel> mapPersonnel = new HashMap();
+        //查询职位名
+        if (integers.length > 0){
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.in("id",integers);
+            List<SysRole> selectList = iSysRoleMapper.selectList(wrapper);
+            for (int i = 0; i < selectList.size(); i++) {
+                SysRole sysRole = selectList.get(i);
+                mapRole.put(sysRole.getId(),sysRole);
+                if (sysRole.getLevelSorting() > jsonParam.getMaxNumber()){
+                    jsonParam.setMaxNumber(sysRole.getLevelSorting());
+                    mapPersonnel.clear();
+                }
+
+                if (!ObjectUtils.isEmpty(jsonParam.getAgoManagementId())) {
+                    List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(sysRole.getId(), jsonParam.getAgoManagementId());
+                    if (sysPersonnels.size() < 1) {
+                        return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
+                    }
+                    SysPersonnel personnel = sysPersonnels.get(0);
+                    //添加当前项目主管
+                    jsonParam.setAgoPersonnelId(personnel.getId());
+                    //添加默认审核状态
+                    jsonParam.setAgoVerifierState("pending");
+                    //记录审核人审核人
+                    mapPersonnel.put(personnel.getId(),personnel);
+                    int insert = iDispatchApplicationReimbursementMapper.insert(new DispatchApplicationReimbursement(
+                            null,
+                            personnel.getId(),
+                            null,
+                            "pending",
+                            null,
+                            jsonParam.getDispatchCode(),
+                            "调派前审核人",
+                            sysRole.getLevelSorting()
+                    ));
+                    //如果返回值不能鱼1则判断失败
+                    if (insert != 1){
+                        return new ReturnEntity(
+                                CodeEntity.CODE_ERROR,
+                                "添加当前项目审核人失败"
+                        );
+                    }
+                }
+
+                //调派后项目数据编码
+                if (!ObjectUtils.isEmpty(jsonParam.getLaterManagementId())){
+                    List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(sysRole.getId(), jsonParam.getLaterManagementId());
+                    if (sysPersonnels.size() < 1){
+                        return new ReturnEntity(CodeEntity.CODE_ERROR,"调派后项目没有" + sysRole.getName() + "无法提交");
+                    }
+                    SysPersonnel personnel = sysPersonnels.get(0);
+                    //添加调派后项目主管
+                    jsonParam.setLaterPersonnelId(personnel.getId());
+                    //添加默认审核状态
+                    jsonParam.setLaterVerifierState("pending");
+                    //记录审核人审核人
+                    mapPersonnel.put(personnel.getId(),personnel);
+                    int insert = iDispatchApplicationReimbursementMapper.insert(new DispatchApplicationReimbursement(
+                            null,
+                            personnel.getId(),
+                            null,
+                            "pending",
+                            null,
+                            jsonParam.getDispatchCode(),
+                            "调派后审核人",
+                            sysRole.getLevelSorting()
+                    ));
+                    //如果返回值不能鱼1则判断失败
+                    if (insert != 1){
+                        return new ReturnEntity(
+                                CodeEntity.CODE_ERROR,
+                                "添加调派后项目审核人失败"
+                        );
+                    }
+                }
             }
-            SysPersonnel personnel = sysPersonnels.get(0);
-            //添加当前项目主管
-            jsonParam.setAgoPersonnelId(personnel.getId());
-            //添加默认审核状态
-            jsonParam.setAgoVerifierState("pending");
-            //记录审核人审核人
-            agoOpenId = personnel.getOpenId();
-        }
-        //调派后项目数据编码
-        if (!ObjectUtils.isEmpty(jsonParam.getLaterManagementId())){
-            List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(roleId, jsonParam.getLaterManagementId());
-            if (sysPersonnels.size() < 1){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"调派后项目没有负责人无法提交");
-            }
-            SysPersonnel personnel = sysPersonnels.get(0);
-            //添加调派后项目主管
-            jsonParam.setLaterPersonnelId(personnel.getId());
-            //添加默认审核状态
-            jsonParam.setLaterVerifierState("pending");
-            //记录审核人手机号
-            laterOpenId = personnel.getOpenId();
         }
         //添加申请时间
         jsonParam.setApplicantTime(new Date());
@@ -369,24 +488,17 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                     MsgEntity.CODE_ERROR
             );
         }
-        //告知审核人前往审核
-        PanXiaoZhang.postWechatFer(
-                agoOpenId,
-                sysPersonnel.getName() + "提交了调派申请",
-                "",
-                "请及时前往核实",
-                "",
-                urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "from_dispatch_verify=" + true
-        );
-        //告知审核人前往审核
-        PanXiaoZhang.postWechatFer(
-                laterOpenId,
-                sysPersonnel.getName() + "提交了调派申请",
-                "",
-                "请及时前往核实",
-                "",
-                urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "from_dispatch_verify=" + true
-        );
+        mapPersonnel.forEach((key,value)->{
+            //告知审核人前往审核
+            PanXiaoZhang.postWechatFer(
+                    value.getOpenId(),
+                    sysPersonnel.getName() + "提交了调派申请",
+                    "",
+                    "请及时前往核实",
+                    "",
+                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "from_dispatch_verify=" + true
+            );
+        });
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");
     }
 
