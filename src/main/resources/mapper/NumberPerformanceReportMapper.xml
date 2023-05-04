@@ -16,53 +16,53 @@
     </resultMap>
     <select id="queryOne" resultMap="entity" parameterType="hashmap">
         select
-            (<include refid="countSql" />
+        coalesce((<include refid="countSql" />
             <include refid="relevanceSql" />
-            <include refid="whereSqlModel"/>)
+            <include refid="whereSqlModel"/>),0)
         as
             `all`
         ,
-           (<include refid="countSql"/>
+        coalesce((<include refid="countSql"/>
             <include refid="relevanceSql" />
             <include refid="whereSqlModel"/>
-            <include refid="approve" />)
+            <include refid="approve" />),0)
         as
             `approve`
         ,
-            (<include refid="countSql"/>
+        coalesce((<include refid="countSql"/>
             <include refid="relevanceSql" />
             <include refid="whereSqlModel"/>
-            <include refid="active" />)
+            <include refid="active" />),0)
         as
             `active`
         ,
-            (<include refid="countSql"/>
+        coalesce((<include refid="countSql"/>
             <include refid="relevanceSql" />
             <include refid="whereSqlModel"/>
-            <include refid="refuse" />)
+            <include refid="refuse" />),0)
         as
             `refuse`
         ,
-            (<include refid="countSql"/>
+        coalesce((<include refid="countSql"/>
             <include refid="relevanceSql" />
                 <include refid="whereSqlModel"/>
-                <include refid="pendding" />)
+                <include refid="pendding" />),0)
             as
             `pendding`
         ,
-            (<include refid="countSql"/>
+        coalesce((<include refid="countSql"/>
             <include refid="relevanceSql" />
             <include refid="whereSqlModel2"/>
             <include refid="active" />
-            <include refid="curdateTime" />)
+            <include refid="curdateTime" />),0)
         as
             `this_month_active`
         ,
-            (<include refid="countSql"/>
+        coalesce((<include refid="countSql"/>
             <include refid="relevanceSql" />
             <include refid="whereSqlModel2"/>
             <include refid="approve" />
-            <include refid="curdateTime" />)
+            <include refid="curdateTime" />),0)
         as
             `this_month_approve`,
         COUNT(1)

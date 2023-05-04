@@ -210,7 +210,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                                     "",
                                     "请及时前往核实",
                                     "",
-                                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "from_dispatch_verify=" + true
+                                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
                             );
                         }
                     }
@@ -334,7 +334,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 jsonParam,
                 new DispatchApplicationManagementNotNull(
                         "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0",
+                        "",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0"
                 )
@@ -344,6 +344,16 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         }
         //查询该人员信息
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        if (!ObjectUtils.isEmpty(sysPersonnel)){
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+            wrapper.eq("applicant_state","pending");
+            List selectList = iDispatchApplicationManagementMapper.selectList(wrapper);
+            if (selectList.size() > 0){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"当前已存在调派申请");
+            }
+        }
+
         //判断当前人员状态
         ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
         if (estimateState.getState()){
@@ -416,28 +426,30 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                         return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
                     }
                     SysPersonnel personnel = sysPersonnels.get(0);
-                    //添加当前项目主管
-                    jsonParam.setAgoPersonnelId(personnel.getId());
-                    //添加默认审核状态
-                    jsonParam.setAgoVerifierState("pending");
-                    //记录审核人审核人
-                    mapPersonnel.put(personnel.getId(),personnel);
-                    int insert = iDispatchApplicationReimbursementMapper.insert(new DispatchApplicationReimbursement(
-                            null,
-                            personnel.getId(),
-                            null,
-                            "pending",
-                            null,
-                            jsonParam.getDispatchCode(),
-                            "调派前审核人",
-                            sysRole.getLevelSorting()
-                    ));
-                    //如果返回值不能鱼1则判断失败
-                    if (insert != 1){
-                        return new ReturnEntity(
-                                CodeEntity.CODE_ERROR,
-                                "添加当前项目审核人失败"
-                        );
+                    if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))){
+                        //添加当前项目主管
+                        jsonParam.setAgoPersonnelId(personnel.getId());
+                        //添加默认审核状态
+                        jsonParam.setAgoVerifierState("pending");
+                        //记录审核人审核人
+                        mapPersonnel.put(personnel.getId(),personnel);
+                        int insert = iDispatchApplicationReimbursementMapper.insert(new DispatchApplicationReimbursement(
+                                null,
+                                personnel.getId(),
+                                null,
+                                "pending",
+                                null,
+                                jsonParam.getDispatchCode(),
+                                "调派前审核人",
+                                sysRole.getLevelSorting()
+                        ));
+                        //如果返回值不能鱼1则判断失败
+                        if (insert != 1){
+                            return new ReturnEntity(
+                                    CodeEntity.CODE_ERROR,
+                                    "添加当前项目审核人失败"
+                            );
+                        }
                     }
                 }
 
@@ -448,28 +460,30 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                         return new ReturnEntity(CodeEntity.CODE_ERROR,"调派后项目没有" + sysRole.getName() + "无法提交");
                     }
                     SysPersonnel personnel = sysPersonnels.get(0);
-                    //添加调派后项目主管
-                    jsonParam.setLaterPersonnelId(personnel.getId());
-                    //添加默认审核状态
-                    jsonParam.setLaterVerifierState("pending");
-                    //记录审核人审核人
-                    mapPersonnel.put(personnel.getId(),personnel);
-                    int insert = iDispatchApplicationReimbursementMapper.insert(new DispatchApplicationReimbursement(
-                            null,
-                            personnel.getId(),
-                            null,
-                            "pending",
-                            null,
-                            jsonParam.getDispatchCode(),
-                            "调派后审核人",
-                            sysRole.getLevelSorting()
-                    ));
-                    //如果返回值不能鱼1则判断失败
-                    if (insert != 1){
-                        return new ReturnEntity(
-                                CodeEntity.CODE_ERROR,
-                                "添加调派后项目审核人失败"
-                        );
+                    if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))) {
+                        //添加调派后项目主管
+                        jsonParam.setLaterPersonnelId(personnel.getId());
+                        //添加默认审核状态
+                        jsonParam.setLaterVerifierState("pending");
+                        //记录审核人审核人
+                        mapPersonnel.put(personnel.getId(), personnel);
+                        int insert = iDispatchApplicationReimbursementMapper.insert(new DispatchApplicationReimbursement(
+                                null,
+                                personnel.getId(),
+                                null,
+                                "pending",
+                                null,
+                                jsonParam.getDispatchCode(),
+                                "调派后审核人",
+                                sysRole.getLevelSorting()
+                        ));
+                        //如果返回值不能鱼1则判断失败
+                        if (insert != 1) {
+                            return new ReturnEntity(
+                                    CodeEntity.CODE_ERROR,
+                                    "添加调派后项目审核人失败"
+                            );
+                        }
                     }
                 }
             }
@@ -496,7 +510,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                     "",
                     "请及时前往核实",
                     "",
-                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "from_dispatch_verify=" + true
+                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
             );
         });
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");

@@ -288,12 +288,14 @@ public class ManageReimbursementCategoryServiceImpl implements IManageReimbursem
             ));
         }
         //添加关联特殊条件
-        for (int i = 0; i < jsonParam.getConditionNumber().length; i++) {
-            Integer integer = jsonParam.getConditionNumber()[i];
-            iManageRCMapper.insert(new ManageRC(
-                    jsonParam.getCategoryCoding(),
-                    integer
-            ));
+        if (!ObjectUtils.isEmpty(jsonParam.getConditionNumber())){
+            for (int i = 0; i < jsonParam.getConditionNumber().length; i++) {
+                Integer integer = jsonParam.getConditionNumber()[i];
+                iManageRCMapper.insert(new ManageRC(
+                        jsonParam.getCategoryCoding(),
+                        integer
+                ));
+            }
         }
         //将数据唯一标识设置为空，由系统生成
         jsonParam.setId(null);

@@ -76,7 +76,11 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
 
         Integer[] toArray = integerArrayList.toArray(new Integer[integerArrayList.size()]);
 
-        map.put("inManagementId",toArray);
+        if (selectList.size() < 1){
+            map.put("inManagementId",null);
+        }else {
+            map.put("inManagementId",toArray);
+        }
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,whiteRankingListMapper.queryAll(map),"");
     }
 }

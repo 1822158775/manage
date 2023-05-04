@@ -131,6 +131,11 @@ public class ILoginServiceImpl implements ILoginService {
                             null,
                             openid
                     ));
+                }else {
+                    return new ReturnEntity(
+                            CodeEntity.CODE_ERROR,
+                            "当前微信已绑定其他账号，如有疑问请联系管理员"
+                    );
                 }
             }
             return new ReturnEntity(

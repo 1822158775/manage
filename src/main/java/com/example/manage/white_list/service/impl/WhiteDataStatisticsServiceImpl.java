@@ -80,7 +80,13 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
 
         Integer[] toArray = integerArrayList.toArray(new Integer[integerArrayList.size()]);
 
-        map.put("inManagementId",toArray);
+
+
+        if (selectList.size() < 1){
+            map.put("inManagementId",null);
+        }else {
+            map.put("inManagementId",toArray);
+        }
 
         DataStatistics dataStatistics = whiteDataStatisticsMapper.queryAll(map);
         ArrayList<Object> arrayList = new ArrayList<>();

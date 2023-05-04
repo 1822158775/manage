@@ -115,6 +115,7 @@
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and <include refid="tableSqlAs" />.`id` = #{id}</if>
+        <if test="neId != null "> and <include refid="tableSqlAs" />.`id` != #{neId}</if>
         <if test="personnelId != null "> and <include refid="tableSqlAs" />.`id` = #{personnelId}</if>
         <if test="username != null "> and <include refid="tableSqlAs" />.`username` = #{username}</if>
         <if test="password != null "> and <include refid="tableSqlAs" />.`password` = #{password}</if>

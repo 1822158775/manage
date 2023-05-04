@@ -36,4 +36,10 @@ public class ManagementPersonnel implements Serializable {
         this.managementId = managementId;
         this.personnelCode = personnelCode;
     }
+
+    public ManagementPersonnel(Integer id, Integer managementId, String personnelCode) {
+        this.id = id;
+        this.managementId = managementId;
+        this.personnelCode = personnelCode;
+    }
 }

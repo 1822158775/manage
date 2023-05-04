@@ -86,7 +86,12 @@ public class WhiteSysManagementServiceImpl implements IWhiteSysManagementService
 
         Integer[] toArray = integerArrayList.toArray(new Integer[integerArrayList.size()]);
 
-        map.put("inId",toArray);
+
+        if (selectList.size() < 1){
+            map.put("inId",null);
+        }else {
+            map.put("inId",toArray);
+        }
 
         map.put("roleId",manage5);
 

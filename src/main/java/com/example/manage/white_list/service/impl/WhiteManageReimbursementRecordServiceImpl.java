@@ -227,6 +227,7 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             QueryWrapper wrapper = new QueryWrapper();
             wrapper.ne("personnel_code",personnel.getPersonnelCode());
             wrapper.eq("approval_state","pending");
+            wrapper.eq("reimbursement_record_code",manageReimbursementRecord.getDeclarationCode());
             List<ReimbursementApproval> selectList = iReimbursementApprovalMapper.selectList(wrapper);
             //如果没有了审批人
             if (selectList.size() < 1){
@@ -438,7 +439,7 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                 Double doubleD = PanXiaoZhang.doubleD(manageReimbursementCategory.getAmount() * sysRole.getNumber(), 2);
                 //判断是否超出限制
                 if (reimbursementCategory.getAmout() > doubleD){
-                    return new ReturnEntity(CodeEntity.CODE_ERROR,manageReimbursementCategory.getName() + "类目的报销上限为" + reimbursementCategory.getAmout());
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,manageReimbursementCategory.getName() + "类目的报销上限为" + manageReimbursementCategory.getAmount());
                 }
                 //获取Map存储的内容
                 Integer integer = integerMap.get(reimbursementCategory.getId());
@@ -524,7 +525,7 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             //定义当前平均金额
             Double amountAge = PanXiaoZhang.doubleD(jsonParam.getAmountDeclared() / reimbursementProjects.size(),2);
             //定义分摊金额
-            Double amountDeclared = jsonParam.getAmountDeclared() - PanXiaoZhang.doubleD(PanXiaoZhang.doubleD((jsonParam.getAmountDeclared() / reimbursementProjects.size()) , 2) * reimbursementProjects.size() - 1,2);
+            Double amountDeclared = jsonParam.getAmountDeclared() - PanXiaoZhang.doubleD(PanXiaoZhang.doubleD((jsonParam.getAmountDeclared() / reimbursementProjects.size()) , 2) * (reimbursementProjects.size() - 1),2);
             //添加相关项目
             for (int i = 0; i < reimbursementProjects.size(); i++) {
                 //获取当前数据
@@ -726,8 +727,9 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
     }
 
     public static void main(String[] args) {
-        Double d = 10.0;
-        double v = d / 3;
-        System.out.println(d - PanXiaoZhang.doubleD(PanXiaoZhang.doubleD(v , 2) * 2,2));
+        Double amountDeclared = 23.21;
+        double v = amountDeclared - PanXiaoZhang.doubleD(PanXiaoZhang.doubleD((amountDeclared / 1), 2) * (1 - 1), 2);
+        System.out.println(v);
+
     }
 }

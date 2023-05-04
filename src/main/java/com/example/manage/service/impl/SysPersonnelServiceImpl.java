@@ -125,7 +125,7 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         }
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getId());
         if (!ObjectUtils.isEmpty(jsonParam.getManagementId())){
-            SysRole sysRole = iSysRoleMapper.selectById(sysPersonnel.getRoleId());
+            SysRole sysRole = iSysRoleMapper.selectById(jsonParam.getRoleId());
             if (sysRole.getLevelSorting() > 2 && jsonParam.getManagementId().length > 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"该角色不可以拥有多个项目");
             }
@@ -153,6 +153,7 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                 }
                 hashMap.put("employmentStatus",1);
                 hashMap.put("managementId",integer);
+                hashMap.put("neId",sysPersonnel.getId());
                 //判断区域经理是否重复拥有项目
                 if (roleId.equals(roleId3)){
                     List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
@@ -190,6 +191,7 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                     }
                     hashMap.put("employmentStatus",1);
                     hashMap.put("managementId",id);
+                    hashMap.put("neId",sysPersonnel.getId());
                     //判断区域经理是否重复拥有项目
                     if (roleId.equals(roleId3)){
                         List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);

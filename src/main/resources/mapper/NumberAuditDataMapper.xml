@@ -9,28 +9,28 @@
     </resultMap>
     <select id="queryOne" resultMap="entity" parameterType="hashmap">
         select
-            (<include refid="countSql"/>
+        coalesce((<include refid="countSql"/>
             <include refid="relevanceSql" />
             <include refid="whereSqlModel"/>
-            <include refid="pending" />)
+            <include refid="pending" />),0)
         as
             `pending`
         ,
-            (<include refid="countSql"/>
+        coalesce((<include refid="countSql"/>
             <include refid="relevanceSql" />
             <include refid="whereSqlModel"/>
-            <include refid="agree" />)
+            <include refid="agree" />),0)
         as
             `agree`
         ,
-            (<include refid="countSql"/>
+        coalesce((<include refid="countSql"/>
             <include refid="relevanceSql" />
             <include refid="whereSqlModel"/>
-            <include refid="refuse" />)
+            <include refid="refuse" />),0)
         as
             `refuse`
         ,
-            COUNT(DISTINCT <include refid="tableSql" />.id)
+        coalesce(COUNT(DISTINCT <include refid="tableSql" />.id),0)
         as
             `all`
         from

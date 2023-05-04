@@ -1,7 +1,11 @@
 package com.example.manage.config;
 
+import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
+import com.example.manage.util.entity.ReturnEntity;
+import com.example.manage.white_list.service.IWhiteSysPersonnelService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -9,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.net.*;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,11 +31,25 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Value("${server.port}")
     private String port;
 
+    @Value("${url.dispatch}")
+    private String urlDispatch;
+
+    @Value("${url.transfer}")
+    private String urlTransfer;
+
+    @Value("${phone.birthday}")
+    private String personnelPhone;
+
+    @Resource
+    private IWhiteSysPersonnelService iWhiteSysPersonnelService;
+
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        try {
+    try {
             Map<String,Object> map = new HashMap();
             map.put("dateFormatBirthday",2);
+            map.put("dateFormatDispatchApplication",1);
             redisUtil.add("dateFormatBirthday",map);
             Enumeration<NetworkInterface> nifs = NetworkInterface.getNetworkInterfaces();
             while (nifs.hasMoreElements()) {
@@ -43,6 +62,7 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
                     }
                 }
             }
+            iWhiteSysPersonnelService.dimissionInform();
         } catch (SocketException e) {
             e.printStackTrace();
         }
