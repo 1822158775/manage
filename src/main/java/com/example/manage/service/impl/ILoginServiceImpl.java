@@ -48,7 +48,7 @@ public class ILoginServiceImpl implements ILoginService {
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码不存在");
             }
             Map<String,Object> map = new HashMap<>();
-            map.put("username",jsonParam.getUsername());
+            map.put("username",jsonParam.getUsername().replaceAll(" ",""));
             map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
             //查询账号信息
             List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
@@ -95,7 +95,7 @@ public class ILoginServiceImpl implements ILoginService {
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码不存在");
             }
             Map<String,Object> map = new HashMap<>();
-            map.put("username",jsonParam.getUsername());
+            map.put("username",jsonParam.getUsername().replaceAll(" ",""));
             map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
             map.put("login","login");
             //查询账号信息

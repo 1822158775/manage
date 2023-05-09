@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.example.manage.entity.data_statistics.Management;
+import com.example.manage.entity.data_statistics.Personnel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +22,7 @@ import java.util.List;
 @Data
 @ToString
 @TableName(value = "sys_personnel")
-public class SysPersonnel {
+public class SysPersonnel implements Serializable {
     @TableId(value = "id",type = IdType.AUTO)
     public Integer id;//数据编码
     @TableField(value = "phone")
@@ -50,6 +53,8 @@ public class SysPersonnel {
     public Integer chiefStewardId;//上级领导编码
     @TableField(value = "salary")
     public String salary;//工资
+    @TableField(value = "sex")
+    public String sex;//性别
     @TableField(value = "standby_application")
     public String standbyApplication;//备用
     @TableField(value = "official_or_trainee_staff")
@@ -76,6 +81,7 @@ public class SysPersonnel {
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "leave_time")
     public Date leaveTime;//离职时间
+
     @TableField(exist = false)
     public SysRole sysRole;//权限名称
     @TableField(exist = false)
@@ -84,6 +90,29 @@ public class SysPersonnel {
     public Integer[] managementId;//项目组数组
     @TableField(exist = false)
     public Integer personnelId;//人员信息
+    @TableField(exist = false)
+    public List<PunchingCardRecord> punchingCardRecords;//打卡信息
+
+
+    @TableField(exist = false)
+    public String personnelName;//主管人员名称
+    @TableField(exist = false)
+    public String managementName;//项目名称
+
+    @TableField(exist = false)
+    public Integer dutyDays;//执勤天数
+    @TableField(exist = false)
+    public Integer lateArrivals;//迟到次数
+    @TableField(exist = false)
+    public Integer earlyDepartures;//迟到次数
+    @TableField(exist = false)
+    public Integer accomodate;//缺卡次数
+
+    @TableField(exist = false)
+    public List<Personnel> personnels;//上级信息
+    @TableField(exist = false)
+    public List<Management> managements;//项目名称
+
     public SysPersonnel() {
     }
 

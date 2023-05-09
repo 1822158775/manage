@@ -24,7 +24,7 @@ public class SysPersonnelServiceController {
     // 查询人员管理接口
     @PostMapping(value = "cat")
     public ReturnEntity cat(HttpServletRequest request){
-        return iSysPersonnelService.methodMasterT(request,"cat");
+        return iSysPersonnelService.methodMaster(request,"cat");
     }
 
     // 添加人员信息
@@ -36,6 +36,6 @@ public class SysPersonnelServiceController {
     // 修改人员信息
     @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
-        return iSysPersonnelService.methodMaster(request,"edit");
+        return iSysPersonnelService.methodMasterT(request,"edit");
     }
 }

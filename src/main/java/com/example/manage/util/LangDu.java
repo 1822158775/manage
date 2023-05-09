@@ -19,7 +19,12 @@ import java.util.List;
 public class LangDu {
     //用电脑自带的语音读字符串str
     public static void main(String[] args) {
-        start(2);
+        //start(2);
+        List<String> stringList = PanXiaoZhang.getDays(PanXiaoZhang.getMonthStart(), PanXiaoZhang.getMonthEnd());
+        for (String str :
+                stringList) {
+            System.out.println(str);
+        }
     }
 
     public static List<String> urlS(String path){

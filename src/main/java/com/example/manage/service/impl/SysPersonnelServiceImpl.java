@@ -308,6 +308,10 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         jsonParam.setId(null);
         //密码进行加密
         jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));
+        //账号去除空格
+        jsonParam.setUsername(jsonParam.getUsername().replaceAll(" ",""));
+        //手机号去除空格
+        jsonParam.setPhone(jsonParam.getPhone().replaceAll(" ",""));
         int insert = iSysPersonnelMapper.insert(jsonParam);
         if (insert != 1){
             return new ReturnEntity(

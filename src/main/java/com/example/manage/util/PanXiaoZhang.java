@@ -3,6 +3,7 @@ package com.example.manage.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.example.manage.entity.SysPersonnel;
+import com.example.manage.entity.data_statistics.Personnel;
 import com.example.manage.util.entity.*;
 import com.example.manage.util.wechat.WechatMsg;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +29,8 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -139,12 +140,11 @@ public class PanXiaoZhang {
      * @return
      */
     public static  <T> T getJSONParam(HttpServletRequest request, Class<T> eClass) throws IOException {
-        T t = null;
         // 获取输入流
         BufferedReader streamReader = new BufferedReader(new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8));
         // 写入数据到Stringbuilder
         StringBuilder sb = new StringBuilder();
-        String line = null;
+        String line;
         while ((line = streamReader.readLine()) != null) {
             sb.append(line);
         }
@@ -152,7 +152,7 @@ public class PanXiaoZhang {
         //        token,
         //        sb.toString());
         log.info("请求内容:{}",sb.toString());
-        t = JSONObject.parseObject(sb.toString(), eClass);
+        T t = JSONObject.parseObject(sb.toString(), eClass);
         // 直接将json信息打印出来
         return t;
     }
@@ -404,6 +404,9 @@ public class PanXiaoZhang {
     }
     public static String yMdHms(){
         return "yyyy-MM-dd HH:mm:ss";
+    }
+    public static String Hms(){
+        return "HH:mm:ss";
     }
     public static String yMd(){
         return "yyyy-MM-dd";
@@ -852,8 +855,8 @@ public class PanXiaoZhang {
      * @param time2
      * @return
      */
-    public static Integer differentDays(Object time1,Object time2) throws ParseException {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static Integer differentDays(Object time1,Object time2,String type) throws ParseException {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(type);
         Date date1 = simpleDateFormat.parse(String.valueOf(time1));
         Date date2 = simpleDateFormat.parse(String.valueOf(time2));
         Calendar cal1 = Calendar.getInstance();
@@ -1257,38 +1260,137 @@ public class PanXiaoZhang {
         return null;
     }
 
-    public static void main(String[] args) throws ParseException {
-        //System.out.println(DateFormatUtils.format(tomorrow(new Date()),yMd()));
-        //String kunming = base64Str("zhangxun");
-        //System.out.println(kunming.equals("emhhbmd4dW5wYW5zaXJ5aW5neGlhb2Rha3VubWluZw=="));
-        //System.out.println(kunming);
-        //System.out.println(percentage(10000,5678));
-        //String str = "http://piao1.oss-cn-shanghai.aliyuncs.com/img/2020/goods/dzq/detail/fsl1577772735259493250.jpg,http://piao1.oss-cn-shanghai.aliyuncs.com/img/2020/goods/dzq/detail/fsl1577772762041692926.jpg";
-        //String s = fuImg(str);
-        //System.out.println(s);
-        //System.out.println(intRiQi(-30));
-        //String time1 = "2022-10-13 00:00:00";
-        //String time2 = "2022-09-13 00:00:00";
-        //Integer integer = null;
-        //try {
-        //    integer = differentDays(time2, time1);
-        //} catch (ParseException e) {
-        //    e.printStackTrace();
-        //}
-        //System.out.println(integer);
-        //ReturnEntity entity = postWechat(
-        //        "15830024173",
-        //        "a提交了离职申请",
-        //        "",
-        //        "请及时核实,请前往后台审核",
-        //        "",
-        //        "/pages/activities/show/show?id=38");
-        //System.out.println(entity);
-        String str = "2020-06-25";
-        DateFormat df = new SimpleDateFormat(PanXiaoZhang.yMd());
-        Date date = df.parse(str);
+    /**
+     * 判断坐标是否在经纬度范围内
+     * @param user 用户现在坐标
+     * @param polyX 经度值X
+     * @param polyY 纬度值Y
+     * @return true表示在范围内，false表示不在范围内
+     */
+    public static boolean isLocationInRange(double[] user, double[] polyX, double[] polyY) {
+        //return longitude >= MIN_LONGITUDE && longitude <= MAX_LONGITUDE && latitude >= MIN_LATITUDE
+        //        && latitude <= MAX_LATITUDE;
+        // 定义多边形顶点坐标
+        //double[] polyX = {121.453601, 121.454908, 121.454153, 121.455159};
+        //double[] polyY = {31.146111, 31.146482, 31.144543, 31.144856};
+        // 定义用户当前位置坐标121.454948,31.145026
+        //double[] user = {121.454845,31.144964};
+        double userX = user[0];
+        double userY = user[1];
 
-        Integer integer = ageYTime(new Date().toInstant().atOffset(ZoneOffset.UTC).toLocalDate() ,date.toInstant().atOffset(ZoneOffset.UTC).toLocalDate());
-        System.out.println(integer);
+        // 判断用户是否在多边形内部
+        boolean isInside = false;
+        int i, j = polyX.length - 1;
+        for (i = 0; i < polyX.length; i++) {
+            if ((polyY[i] < userY && polyY[j] >= userY || polyY[j] < userY && polyY[i] >= userY) && (polyX[i] <= userX || polyX[j] <= userX)) {
+                if (polyX[i] + (userY - polyY[i]) / (polyY[j] - polyY[i]) * (polyX[j] - polyX[i]) < userX) {
+                    isInside = !isInside;
+                }
+            }
+            j = i;
+        }
+
+        if (isInside) {
+            // 用户在多边形内部
+            // 进行相应的操作
+            return true;
+        } else {
+            // 用户不在多边形内部
+            // 进行相应的操作
+            return false;
+        }
+    }
+
+    /**
+     * 比较两个时间的先后顺序
+     *
+     * @param time1 第一个时间
+     * @param time2 第二个时间
+     * @return 如果 time1 在 time2 之前，返回-1；如果 time1 在 time2 之后，返回1；如果 time1 和 time2 相等，返回0。
+     */
+    public static int compareTime(LocalTime time1, LocalTime time2) {
+        return time1.compareTo(time2);
+    }
+
+    public static double stringDouble(String str){
+        BigDecimal decimal = new BigDecimal(str);
+        double num = decimal.doubleValue();
+        return num;
+    }
+
+    public static LocalTime dateLocalTime(String string) throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        Date date = dateFormat.parse(string);
+        Instant instant = date.toInstant();
+        ZonedDateTime zonedDateTime = instant.atZone(ZoneId.systemDefault());
+        LocalTime localTime = zonedDateTime.toLocalTime();
+        return localTime;
+    }
+
+    /**
+     * 计算工作时长
+     * @param workStartTime 工作开始时间
+     * @param workEndTime 工作结束时间
+     * @param startDateTime 上班时间
+     * @param endDateTime 下班时间
+     */
+    public static Personnel getTime(LocalTime workStartTime, LocalTime workEndTime, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        //LocalDateTime startDateTime = LocalDateTime.of(2022, 3, 1, 9, 0); // 上班时间
+        //LocalDateTime endDateTime = LocalDateTime.of(2022, 3, 3, 18, 0); // 下班时间
+        //LocalTime workStartTime = LocalTime.of(9, 0); // 工作开始时间
+        //LocalTime workEndTime = LocalTime.of(18, 0); // 工作结束时间
+        long workDays = ChronoUnit.DAYS.between(startDateTime.toLocalDate(), endDateTime.toLocalDate()); // 工作天数
+        Duration totalWorkDuration = Duration.ZERO; // 总工作时长
+        for (int i = 0; i <= workDays; i++) {
+            LocalDateTime date = startDateTime.plusDays(i);
+            LocalDateTime workStartDateTime = LocalDateTime.of(date.toLocalDate(), workStartTime);
+            LocalDateTime workEndDateTime = LocalDateTime.of(date.toLocalDate(), workEndTime);
+            if (i == 0) { // 第一天
+                workStartDateTime = startDateTime;
+            } else if (i == workDays) { // 最后一天
+                workEndDateTime = endDateTime;
+            }
+            Duration workDuration = Duration.between(workStartDateTime, workEndDateTime); // 计算工作时长
+            totalWorkDuration = totalWorkDuration.plus(workDuration); // 累计总工作时长
+        }
+        System.out.println("工作天数：" + (workDays + 1) + "天");
+        System.out.println("总工作时长：" + totalWorkDuration.toHours() + "小时" + totalWorkDuration.toMinutes() % 60 + "分钟");
+        return new Personnel(String.valueOf(workDays + 1),totalWorkDuration.toHours() + "小时" + totalWorkDuration.toMinutes() % 60 + "分钟");
+    }
+
+    /**
+     * 计算两个时间相差
+     * @param startTime 预计抵达时间
+     * @param endTime 抵达时间
+     * @return
+     */
+    public static String getDayTime(LocalTime startTime,LocalTime endTime){
+        //LocalTime startTime = LocalTime.of(9, 0); // 上班时间为 9:00
+        //LocalTime endTime = LocalTime.of(17, 30); // 下班时间为 17:30
+
+        Duration workingHours = Duration.between(startTime, endTime); // 计算工时
+        //System.out.println(workingHours.toMinutes());
+        return workingHours.toHours() + " 小时 " + workingHours.toMinutes() % 60 + " 分钟";
+    }
+
+    /**
+     * 计算两个时间相差
+     * @param startTime 预计抵达时间
+     * @param endTime 抵达时间
+     * @return
+     */
+    public static Long getMinuteTime(LocalTime startTime,LocalTime endTime){
+        //LocalTime startTime = LocalTime.of(9, 0); // 上班时间为 9:00
+        //LocalTime endTime = LocalTime.of(17, 30); // 下班时间为 17:30
+
+        Duration workingHours = Duration.between(startTime, endTime); // 计算工时
+        return workingHours.toMinutes();
+    }
+
+    public static void main(String[] args) throws ParseException {
+        LocalTime startTime = LocalTime.of(6, 0); // 上班时间为 9:00
+        LocalTime endTime = LocalTime.of(8, 30); // 下班时间为 17:30
+        String dayTime = getDayTime(startTime, endTime);
+        System.out.println(dayTime);
     }
 }

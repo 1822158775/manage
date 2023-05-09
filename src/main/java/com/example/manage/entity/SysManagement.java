@@ -4,10 +4,14 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,6 +39,41 @@ public class SysManagement implements Serializable {
     public String managementCode;//项目编码
     @TableField(value = "number_of_people")
     public Integer numberOfPeople;//人的数量
+
+    @TableField(value = "south_latitude")
+    public String southLatitude;//东南角经纬度
+    @TableField(value = "northern_latitude")
+    public String northernLatitude;//西南角经纬度
+    @TableField(value = "east_longitude")
+    public String eastLongitude;//东北角经纬度
+    @TableField(value = "west_longitude")
+    public String westLongitude;//西北角经纬度
+
+
+    @DateTimeFormat(pattern ="HH:mm:ss")
+    @JsonFormat(pattern="HH:mm:ss",timezone="GMT+8")
+    @TableField(value = "start_punch_in")
+    public String startPunchIn;//上班打卡时间开始时间
+
+    @DateTimeFormat(pattern ="HH:mm:ss")
+    @JsonFormat(pattern="HH:mm:ss",timezone="GMT+8")
+    @TableField(value = "start_noon_break_time")
+    public String startNoonBreakTime;//午休开始时间
+    @DateTimeFormat(pattern ="HH:mm:ss")
+    @JsonFormat(pattern="HH:mm:ss",timezone="GMT+8")
+    @TableField(value = "end_noon_break_time")
+    public String endNoonBreakTime;//午休结束时间
+
+    @DateTimeFormat(pattern ="HH:mm:ss")
+    @JsonFormat(pattern="HH:mm:ss",timezone="GMT+8")
+    @TableField(value = "start_clock_out")
+    public String startClockOut;//下班打卡时间开始时间
+    @DateTimeFormat(pattern ="HH:mm:ss")
+    @JsonFormat(pattern="HH:mm:ss",timezone="GMT+8")
+    @TableField(value = "end_clock_out")
+    public String endClockOut;//下班打卡时间结束时间
+
+
     @TableField(exist = false)
     public List<CardType> cardTypeS;//卡种管理
     @TableField(exist = false)

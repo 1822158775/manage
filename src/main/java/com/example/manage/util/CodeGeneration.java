@@ -510,7 +510,7 @@ public class CodeGeneration {
     }
     public static void main(String[] args) {
         try {
-            methodMaster("调派关联审批人","dispatch_application_reimbursement","DispatchApplicationReimbursement");
+            methodMaster("打卡记录表","punching_card_record","PunchingCardRecord");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

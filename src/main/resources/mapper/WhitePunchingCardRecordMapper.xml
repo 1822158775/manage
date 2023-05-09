@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.IWhitePunchingCardRecordMapper">
+    <resultMap id="entity" type="com.example.manage.entity.PunchingCardRecord">
+        <result column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="personnel_code" property="personnelCode" />
+        <result column="clock_in_time" property="clockInTime" />
+        <result column="management_id" property="managementId" />
+        <result column="working_ago_open_id" property="workingAgoOpenId" />
+        <result column="working_later_open_id" property="workingLaterOpenId" />
+        <result column="working_clock_in_state" property="workingClockInState" />
+        <result column="working_attendance_time" property="workingAttendanceTime" />
+        <result column="closed_ago_open_id" property="closedAgoOpenId" />
+        <result column="closed_later_open_id" property="closedLaterOpenId" />
+        <result column="closed_clock_in_state" property="closedClockInState" />
+        <result column="closed_attendance_time" property="closedAttendanceTime" />
+        <result column="clocking_day_time" property="clockingDayTime" />
+        <collection property="sysManagement" ofType="com.example.manage.entity.SysManagement">
+            <result column="m_id" property="id" />
+            <result column="m_name" property="name" />
+            <result column="m_project_address" property="projectAddress" />
+            <result column="m_available_balance" property="availableBalance" />
+            <result column="m_monthly_indicators" property="monthlyIndicators" />
+            <result column="m_management_state" property="managementState" />
+        </collection>
+    </resultMap>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="returnSql"/>
+        from
+        <include refid="tableSql"/>
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </select>
+    <sql id="tableSql">
+        manage.punching_card_record
+    </sql><!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSql"/>.*
+        ,sys_management.id as m_id
+        ,sys_management.name as m_name
+        ,sys_management.project_address as m_project_address
+        ,sys_management.available_balance as m_available_balance
+        ,sys_management.monthly_indicators as m_monthly_indicators
+        ,sys_management.management_state as m_management_state
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSql" />.personnel_code
+        LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="id != null "> and `id` = #{id}</if>
+        <if test="personnelCode != null "> and <include refid="tableSql" />.`personnel_code` = #{personnelCode}</if>
+    </sql>
+    <sql id="safeLIMIT">
+        <if test="queryAll != 'yes'">
+            <if test="pageNum != null and pageNum != ''">
+                LIMIT #{index},#{pageNum}
+            </if>
+        </if>
+    </sql>
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.`clocking_day_time` desc
+    </sql>
+</mapper>

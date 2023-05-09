@@ -1,5 +1,6 @@
 package com.example.manage.config;
 
+import com.example.manage.service.IPunchingCardRecordService;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
 import com.example.manage.util.entity.ReturnEntity;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.net.*;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -43,14 +45,16 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Resource
     private IWhiteSysPersonnelService iWhiteSysPersonnelService;
 
+    @Resource
+    private IPunchingCardRecordService iPunchingCardRecordService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
             Map<String,Object> map = new HashMap();
-            map.put("dateFormatBirthday",2);
-            map.put("dateFormatDispatchApplication",1);
-            redisUtil.add("dateFormatBirthday",map);
+            //map.put("dateFormatBirthday",2);
+            //map.put("dateFormatDispatchApplication",1);
+            //redisUtil.add("dateFormatBirthday",map);
             Enumeration<NetworkInterface> nifs = NetworkInterface.getNetworkInterfaces();
             while (nifs.hasMoreElements()) {
                 NetworkInterface nif = nifs.nextElement();
@@ -62,8 +66,14 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
                     }
                 }
             }
-            iWhiteSysPersonnelService.dimissionInform();
-        } catch (SocketException e) {
+            //iWhiteSysPersonnelService.dimissionInform();
+            map.put("startTime","2023-05-01");
+            map.put("endTime","2023-05-31");
+            map.put("pageNum",10);
+            map.put("index",0);
+            //ReturnEntity statistics = iPunchingCardRecordService.ceshi(map, "statistics");
+            //System.out.println(statistics + "=======================");
+    } catch (SocketException e) {
             e.printStackTrace();
         }
     }

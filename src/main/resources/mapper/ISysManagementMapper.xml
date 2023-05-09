@@ -10,6 +10,16 @@
         <result column="management_state" property="managementState" />
         <result column="management_code" property="managementCode" />
         <result column="number_of_people" property="numberOfPeople" />
+
+        <result column="south_latitude" property="southLatitude" />
+        <result column="northern_latitude" property="northernLatitude" />
+        <result column="east_longitude" property="eastLongitude" />
+        <result column="west_longitude" property="westLongitude" />
+
+        <result column="start_punch_in" property="startPunchIn" />
+        <result column="start_clock_out" property="startClockOut" />
+        <result column="end_clock_out" property="endClockOut" />
+
         <collection property="cardTypeS" ofType="com.example.manage.entity.CardType">
             <result column="c_id" property="id" />
             <result column="c_name" property="name" />

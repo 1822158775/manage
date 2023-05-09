@@ -171,7 +171,9 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         }
         ManagementPersonnel managementPersonnel = selectList.get(0);
         //设置员工账号
-        jsonParam.setUsername(jsonParam.getPhone());
+        jsonParam.setUsername(jsonParam.getPhone().replaceAll(" ",""));
+        //设置手机号
+        jsonParam.setPhone(jsonParam.getPhone().replaceAll(" ",""));
         //设置员工职位
         jsonParam.setRoleId(manage5);
         //密码加密

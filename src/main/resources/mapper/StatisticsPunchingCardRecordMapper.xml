@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.StatisticsPunchingCardRecordMapper">
+    <resultMap id="entity" type="com.example.manage.entity.SysPersonnel">
+        <result column="id" property="id" />
+        <result column="phone" property="phone" />
+        <result column="place_of_domicile" property="placeOfDomicile" />
+        <result column="personnel_code" property="personnelCode" />
+        <result column="username" property="username" />
+        <result column="role_id" property="roleId" />
+        <result column="password" property="password" />
+        <result column="name" property="name" />
+        <result column="position_post" property="positionPost" />
+        <result column="image" property="image" />
+        <result column="birthday" property="birthday" />
+        <result column="employment_status" property="employmentStatus" />
+        <result column="chief_steward_id" property="chiefStewardId" />
+        <result column="salary" property="salary" />
+        <result column="standby_application" property="standbyApplication" />
+        <result column="official_or_trainee_staff" property="officialOrTraineeStaff" />
+        <result column="social_security_payment" property="socialSecurityPayment" />
+        <result column="commercial_insurance" property="commercialInsurance" />
+        <result column="entry_time" property="entryTime" />
+        <result column="id_number" property="idNumber" />
+        <result column="emergency_contact_name" property="emergencyContactName" />
+        <result column="emergency_contact_phone" property="emergencyContactPhone" />
+        <result column="permanent_residence" property="permanentResidence" />
+        <result column="leave_time" property="leaveTime" />
+        <result column="open_id" property="openId" />
+        <result column="sex" property="sex" />
+
+        <association property="sysRole" javaType="com.example.manage.entity.SysRole">
+            <result column="r_name" property="name" />
+        </association>
+
+        <collection property="punchingCardRecords" ofType="com.example.manage.entity.PunchingCardRecord">
+            <result column="p_c_r_id" property="id" />
+            <result column="p_c_r_name" property="name" />
+            <result column="p_c_r_personnel_code" property="personnelCode" />
+            <result column="p_c_r_clock_in_time" property="clockInTime" />
+            <result column="p_c_r_management_id" property="managementId" />
+            <result column="p_c_r_working_ago_open_id" property="workingAgoOpenId" />
+            <result column="p_c_r_working_later_open_id" property="workingLaterOpenId" />
+            <result column="p_c_r_working_clock_in_state" property="workingClockInState" />
+            <result column="p_c_r_working_attendance_time" property="workingAttendanceTime" />
+            <result column="p_c_r_closed_ago_open_id" property="closedAgoOpenId" />
+            <result column="p_c_r_closed_later_open_id" property="closedLaterOpenId" />
+            <result column="p_c_r_closed_clock_in_state" property="closedClockInState" />
+            <result column="p_c_r_closed_attendance_time" property="closedAttendanceTime" />
+            <result column="p_c_r_clocking_day_time" property="clockingDayTime" />
+            <result column="p_c_r_management_start_time" property="managementStartTime" />
+            <result column="p_c_r_management_end_time" property="managementEndTime" />
+        </collection>
+
+        <collection property="sysManagement" ofType="com.example.manage.entity.SysManagement">
+            <result column="m_id" property="id" />
+            <result column="m_name" property="name" />
+            <result column="m_project_address" property="projectAddress" />
+            <result column="m_available_balance" property="availableBalance" />
+            <result column="m_monthly_indicators" property="monthlyIndicators" />
+            <result column="m_management_state" property="managementState" />
+            <result column="m_start_punch_in" property="startPunchIn" />
+            <result column="m_start_clock_out" property="startClockOut" />
+            <result column="m_end_clock_out" property="endClockOut" />
+        </collection>
+
+        <collection property="personnels" ofType="com.example.manage.entity.data_statistics.Personnel">
+            <result column="s_p_name" property="name" />
+            <result column="s_p_sex" property="sex" />
+        </collection>
+
+        <collection property="managements" ofType="com.example.manage.entity.data_statistics.Management">
+            <result column="s_m_name" property="name" />
+        </collection>
+    </resultMap>
+
+    <!--  查询总数量  -->
+    <select id="queryCount" resultType="int" parameterType="hashmap">
+        select count(DISTINCT <include refid="tableSqlAs"/>.id) as id
+        from
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModelAs"/>
+    </select>
+
+    <!--  查询分页  -->
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="returnSql"/>
+        from
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModelAs" />
+    </select>
+
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSqlAs"/>.*
+
+        ,<include refid="tableSqlRole" />.name as r_name
+
+        ,<include refid="tableSqlPunchingCardRecord" />.id as p_c_r_id
+        ,<include refid="tableSqlPunchingCardRecord" />.name as p_c_r_name
+        ,<include refid="tableSqlPunchingCardRecord" />.personnel_code as p_c_r_personnel_code
+        ,<include refid="tableSqlPunchingCardRecord" />.clock_in_time as p_c_r_clock_in_time
+        ,<include refid="tableSqlPunchingCardRecord" />.management_id as p_c_r_management_id
+        ,<include refid="tableSqlPunchingCardRecord" />.working_ago_open_id as p_c_r_working_ago_open_id
+        ,<include refid="tableSqlPunchingCardRecord" />.working_later_open_id as p_c_r_working_later_open_id
+        ,<include refid="tableSqlPunchingCardRecord" />.working_clock_in_state as p_c_r_working_clock_in_state
+        ,<include refid="tableSqlPunchingCardRecord" />.working_attendance_time as p_c_r_working_attendance_time
+        ,<include refid="tableSqlPunchingCardRecord" />.closed_ago_open_id as p_c_r_closed_ago_open_id
+        ,<include refid="tableSqlPunchingCardRecord" />.closed_later_open_id as p_c_r_closed_later_open_id
+        ,<include refid="tableSqlPunchingCardRecord" />.closed_clock_in_state as p_c_r_closed_clock_in_state
+        ,<include refid="tableSqlPunchingCardRecord" />.closed_attendance_time as p_c_r_closed_attendance_time
+        ,<include refid="tableSqlPunchingCardRecord" />.clocking_day_time as p_c_r_clocking_day_time
+        ,<include refid="tableSqlPunchingCardRecord" />.management_start_time as p_c_r_management_start_time
+        ,<include refid="tableSqlPunchingCardRecord" />.management_end_time as p_c_r_management_end_time
+
+        ,<include refid="tableSqlSysManagement" />.name as s_m_name
+
+        ,<include refid="tableSqlSysManagement" />.start_punch_in as m_start_punch_in
+        ,<include refid="tableSqlSysManagement" />.start_clock_out as m_start_clock_out
+        ,<include refid="tableSqlSysManagement" />.end_clock_out as m_end_clock_out
+        ,<include refid="tableSqlSysManagement" />.id as m_id
+        ,<include refid="tableSqlSysManagement" />.name as m_name
+        ,<include refid="tableSqlSysManagement" />.project_address as m_project_address
+        ,<include refid="tableSqlSysManagement" />.available_balance as m_available_balance
+        ,<include refid="tableSqlSysManagement" />.monthly_indicators as m_monthly_indicators
+        ,<include refid="tableSqlSysManagement" />.management_state as m_management_state
+
+        ,<include refid="tableSqlSP" />.name as s_p_name
+        ,<include refid="tableSqlSP" />.sex as s_p_sex
+    </sql>
+    <!--  虚拟表  -->
+    <sql id="tableSqlAs">
+        sys_p
+    </sql>
+
+    <!--  虚拟人员表  -->
+    <sql id="tableSqlSP">
+        s_p
+    </sql>
+
+    <!--  打卡记录表  -->
+    <sql id="tableSqlPunchingCardRecord">
+        manage.punching_card_record
+    </sql>
+
+    <!--  用户绑定项目表  -->
+    <sql id="tableSqlManagementPersonnel">
+        manage.management_personnel
+    </sql>
+
+    <!--  项目表  -->
+    <sql id="tableSqlSysManagement">
+        manage.sys_management
+    </sql>
+
+    <!--  角色表  -->
+    <sql id="tableSqlRole">
+        manage.sys_role
+    </sql>
+
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN <include refid="tableSqlRole" /> on <include refid="tableSqlRole" />.id = <include refid="tableSqlAs" />.role_id
+        LEFT JOIN <include refid="tableSqlPunchingCardRecord" /> on <include refid="tableSqlAs" />.personnel_code = <include refid="tableSqlPunchingCardRecord" />.personnel_code
+        <if test="dateFormat == 'start' "> and DATE_FORMAT(<include refid="tableSqlPunchingCardRecord" />.clocking_day_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime}</if>
+        LEFT JOIN <include refid="tableSqlManagementPersonnel" /> on <include refid="tableSqlManagementPersonnel" />.personnel_code = <include refid="tableSqlAs" />.personnel_code
+        LEFT JOIN <include refid="tableSqlSysManagement" />  on <include refid="tableSqlSysManagement" />.id = <include refid="tableSqlManagementPersonnel" />.management_id
+        LEFT JOIN
+            <include refid="tableSql" />
+         as
+            <include refid="tableSqlSP" />
+         on
+            <include refid="tableSqlSP" />.personnel_code = <include refid="tableSqlManagementPersonnel" />.personnel_code
+            <if test="sysRoleId != null and sysRoleId != ''"> and <include refid="tableSqlSP" />.`role_id` = #{sysRoleId}</if>
+    </sql>
+
+    <!--  记录表查询  -->
+    <sql id="whereSqlModelAs">
+        where 1 = 1
+        <if test="id != null "> and `id` = #{id}</if>
+    </sql>
+    <!--  分表排序  -->
+    <sql id="safeOrderByAs">
+        order by <include refid="tableSqlRole"/>.level_sorting
+    </sql>
+
+    <!--  子表  -->
+    <sql id="tableReturn">
+        select
+        <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql"/>
+        <include refid="relevanceSqlModel" />
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </sql>
+    <!--  查询主表  -->
+    <sql id="tableSql">
+        manage.sys_personnel
+    </sql>
+    <!--  主表搜索条件  -->
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="roleId != null and roleId != ''"> and <include refid="tableSql" />.`role_id` = #{roleId}</if>
+        <if test="managementId != null and managementId != ''"> and <include refid="tableSqlManagementPersonnel" />.`management_id` = #{managementId}</if>
+        <if test="inRoleId != null"> and <include refid="tableSql" />.`role_id` in
+            <foreach collection="inRoleId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <!--  主表排序  -->
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.id desc
+    </sql>
+    <!--  主表分页  -->
+    <sql id="safeLIMIT">
+        LIMIT #{index},#{pageNum}
+    </sql>
+
+    <!--  进行关联表  -->
+    <sql id="relevanceSqlModel">
+        LEFT JOIN <include refid="tableSqlManagementPersonnel" /> on <include refid="tableSqlManagementPersonnel" />.personnel_code = <include refid="tableSql" />.personnel_code
+    </sql>
+</mapper>
