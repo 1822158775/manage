@@ -52,6 +52,7 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
             Map<String,Object> map = new HashMap();
+            iWhiteSysPersonnelService.birthdayInform();
             //map.put("dateFormatBirthday",2);
             //map.put("dateFormatDispatchApplication",1);
             //redisUtil.add("dateFormatBirthday",map);

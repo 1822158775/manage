@@ -1,5 +1,7 @@
 package com.example.manage.entity.data_statistics;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.example.manage.entity.number.WorkingAgoOpenNumber;
 import lombok.Data;
 import lombok.ToString;
 
@@ -27,12 +29,14 @@ public class PunchingCardRecordStatistcs implements Serializable {
 
     public String sumTime;//总时长
 
+    public WorkingAgoOpenNumber workingAgoOpenNumber;//几个不同的微信号
+
     public List<PunchingCardRecordTime> punchingCardRecordList;//签到时间
 
     public PunchingCardRecordStatistcs() {
     }
 
-    public PunchingCardRecordStatistcs(String name, List<Personnel> personnelName, List<Management> managementName, Integer dutyDays, Integer lateArrivals, Integer earlyDepartures, Integer accomodate, String sumTime, List<PunchingCardRecordTime> punchingCardRecordList) {
+    public PunchingCardRecordStatistcs(String name, List<Personnel> personnelName, List<Management> managementName, Integer dutyDays, Integer lateArrivals, Integer earlyDepartures, Integer accomodate, String sumTime, WorkingAgoOpenNumber workingAgoOpenNumber, List<PunchingCardRecordTime> punchingCardRecordList) {
         this.name = name;
         this.personnelName = personnelName;
         this.managementName = managementName;
@@ -41,6 +45,7 @@ public class PunchingCardRecordStatistcs implements Serializable {
         this.earlyDepartures = earlyDepartures;
         this.accomodate = accomodate;
         this.sumTime = sumTime;
+        this.workingAgoOpenNumber = workingAgoOpenNumber;
         this.punchingCardRecordList = punchingCardRecordList;
     }
 }

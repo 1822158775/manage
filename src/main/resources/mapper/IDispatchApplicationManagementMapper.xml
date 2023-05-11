@@ -33,7 +33,7 @@
         </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
-        select count(<include refid="tableSql"/>.id) as id from
+        select count(DISTINCT <include refid="tableSql"/>.id) as id from
         <include refid="tableSql"/>
         <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>

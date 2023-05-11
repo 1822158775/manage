@@ -33,6 +33,11 @@
             <result column="r_name" property="name" />
         </association>
 
+        <association property="workingAgoOpenNumber" javaType="com.example.manage.entity.number.WorkingAgoOpenNumber">
+            <result column="ago_number" property="agoNumber" />
+            <result column="later_number" property="laterNumber" />
+        </association>
+
         <collection property="punchingCardRecords" ofType="com.example.manage.entity.PunchingCardRecord">
             <result column="p_c_r_id" property="id" />
             <result column="p_c_r_name" property="name" />
@@ -119,7 +124,6 @@
         ,<include refid="tableSqlPunchingCardRecord" />.clocking_day_time as p_c_r_clocking_day_time
         ,<include refid="tableSqlPunchingCardRecord" />.management_start_time as p_c_r_management_start_time
         ,<include refid="tableSqlPunchingCardRecord" />.management_end_time as p_c_r_management_end_time
-
         ,<include refid="tableSqlSysManagement" />.name as s_m_name
 
         ,<include refid="tableSqlSysManagement" />.start_punch_in as m_start_punch_in

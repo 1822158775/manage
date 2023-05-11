@@ -1106,8 +1106,9 @@ public class PanXiaoZhang {
     public static ReturnEntity postWechatFer(String openId,String keyword1,String keyword2,String keyword3,String keyword4,String pagepath){
         try {
             Token token = JSONObject.parseObject(PanXiaoZhang.getToken(), Token.class);
+            ReturnEntity entity = new ReturnEntity();
             if (!ObjectUtils.isEmpty(openId) && token.getSuccess() != false) {
-                ReturnEntity entity = WechatMsg.tuiSongXiaoXi(
+                entity = WechatMsg.tuiSongXiaoXi(
                         openId,
                         keyword1,
                         keyword2,
@@ -1117,13 +1118,13 @@ public class PanXiaoZhang {
                         token.getResponse().getAccess_token(),
                         pagepath
                 );
-                return entity;
-            }else {
+            }
+            if (!entity.getCode().equals("0")){
                 Token admin = JSONObject.parseObject(PanXiaoZhang.getOpenId("15830024173"), Token.class);
                 log.info("消息发送失败:{},{}",openId,token);
-                ReturnEntity entity = WechatMsg.tuiSongXiaoXi(
+                return WechatMsg.tuiSongXiaoXi(
                         admin.getResponse().getOpenid(),
-                        keyword1 + ",消息发送失败",
+                        keyword1,
                         keyword2,
                         keyword3,
                         keyword4,
@@ -1131,7 +1132,6 @@ public class PanXiaoZhang {
                         token.getResponse().getAccess_token(),
                         pagepath
                 );
-                return entity;
             }
         }catch (Exception e){
             log.info("捕获异常：{}",e.getMessage());
@@ -1164,6 +1164,16 @@ public class PanXiaoZhang {
     }
     //判断用户状态
     public static ReturnEntity estimateState(SysPersonnel sysPersonnel){
+        if (ObjectUtils.isEmpty(sysPersonnel)){
+            return new ReturnEntity(
+                    CodeEntity.CODE_ERROR,
+                    "",
+                    "",
+                    "人员信息不存在",
+                    0,
+                    true
+            );
+        }
         if (sysPersonnel.getEmploymentStatus().equals(0) && !isPastDate(sysPersonnel.getLeaveTime())){
             return new ReturnEntity(
                     CodeEntity.CODE_ERROR,

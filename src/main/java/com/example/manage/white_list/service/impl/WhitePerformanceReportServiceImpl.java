@@ -318,4 +318,16 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
         return new ReturnEntity(CodeEntity.CODE_SUCCEED, iPerformanceReportMapper.queryAll(map),"");
     }
+
+    public static void main(String[] args) {
+        ReturnEntity entity = PanXiaoZhang.postWechat(
+                "15297599442",
+                "提交信息",
+                "",
+                "请前往审核",
+                "",
+                "/pages/activities/show/show?from=zn&redirect_url="
+        );
+        System.out.println(entity);
+    }
 }

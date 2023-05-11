@@ -234,6 +234,7 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                         earlyDepartures,
                         accomodate,
                         (sumTime / 60) + "小时" + (sumTime % 60) + "分钟",
+                        personnel.getWorkingAgoOpenNumber(),
                         recordList
                 ));
             }

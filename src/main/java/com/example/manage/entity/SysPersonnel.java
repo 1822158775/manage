@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.manage.entity.data_statistics.Management;
 import com.example.manage.entity.data_statistics.Personnel;
+import com.example.manage.entity.number.WorkingAgoOpenNumber;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
@@ -112,6 +113,9 @@ public class SysPersonnel implements Serializable {
     public List<Personnel> personnels;//上级信息
     @TableField(exist = false)
     public List<Management> managements;//项目名称
+
+    @TableField(exist = false)
+    public WorkingAgoOpenNumber workingAgoOpenNumber;//几个不同的微信号
 
     public SysPersonnel() {
     }

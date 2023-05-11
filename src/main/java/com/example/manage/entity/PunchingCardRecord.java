@@ -74,6 +74,11 @@ public class PunchingCardRecord implements Serializable {
     @TableField(value = "management_end_time")
     public String managementEndTime;//记录打卡下班时间
 
+    @TableField(value = "check_in_time_id")
+    public Integer checkInTimeId;//打卡时间
+    @TableField(value = "check_in_time_name")
+    public String checkInTimeName;//打卡项目
+
     @TableField(exist = false)
     public String supervisor;//主管名称
     @TableField(exist = false)
@@ -96,10 +101,16 @@ public class PunchingCardRecord implements Serializable {
     @TableField(exist = false)
     public SysManagement management;//项目信息
 
+    @TableField(exist = false)
+    public String checkInId;//打卡类型
+
+    @TableField(exist = false)
+    public List<CheckInTime> checkInTimes;
+
     public PunchingCardRecord() {
     }
 
-    public PunchingCardRecord(Integer id, String name, String personnelCode, String clockInTime, Integer managementId, String workingAgoOpenId, String workingLaterOpenId, String workingClockInState, String workingAttendanceTime, String closedAgoOpenId, String closedLaterOpenId, String closedClockInState, String closedAttendanceTime, String clockingDayTime, String managementStartTime, String managementEndTime) {
+    public PunchingCardRecord(Integer id, String name, String personnelCode, String clockInTime, Integer managementId, String workingAgoOpenId, String workingLaterOpenId, String workingClockInState, String workingAttendanceTime, String closedAgoOpenId, String closedLaterOpenId, String closedClockInState, String closedAttendanceTime, String clockingDayTime, String managementStartTime, String managementEndTime,Integer checkInTimeId,String checkInTimeName) {
         this.id = id;
         this.name = name;
         this.personnelCode = personnelCode;
@@ -116,5 +127,7 @@ public class PunchingCardRecord implements Serializable {
         this.clockingDayTime = clockingDayTime;
         this.managementStartTime = managementStartTime;
         this.managementEndTime = managementEndTime;
+        this.checkInTimeId = checkInTimeId;
+        this.checkInTimeName = checkInTimeName;
     }
 }
