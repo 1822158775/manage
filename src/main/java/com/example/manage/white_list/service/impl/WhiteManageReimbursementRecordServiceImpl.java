@@ -300,9 +300,9 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(queryWrapper);
                         PanXiaoZhang.postWechatFer(
                                 sysPersonnel.getOpenId(),
-                                personnel.getName() + "提交了报销信息",
                                 "",
-                                "请前往审核",
+                                "",
+                                personnel.getName() + ":提交了报销信息,请前往审核",
                                 "",
                                 urlTransfer + "?from=zn&redirect_url=" + urlReimburse + "from_verify=" + true
                         );
@@ -704,9 +704,9 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             String openId = approvalOpenId.get(i);
             PanXiaoZhang.postWechatFer(
                     openId,
-                    personnel.getName() + "提交了报销信息",
                     "",
-                    "请前往审核",
+                    "",
+                    personnel.getName() + ":提交了报销信息,请前往审核",
                     "",
                     urlTransfer + "?from=zn&redirect_url=" + urlReimburse + "from_verify=" + true
             );

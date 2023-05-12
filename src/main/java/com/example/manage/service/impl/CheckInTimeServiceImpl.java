@@ -15,6 +15,8 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.time.LocalTime;
 import java.util.Map;
 
 /**
@@ -41,6 +43,9 @@ public class CheckInTimeServiceImpl implements ICheckInTimeService {
             }else if (name.equals("edit")){
                 CheckInTime jsonParam = PanXiaoZhang.getJSONParam(request, CheckInTime.class);
                 return edit(request,jsonParam);
+            }else if (name.equals("del")){
+                CheckInTime jsonParam = PanXiaoZhang.getJSONParam(request, CheckInTime.class);
+                return del(request,jsonParam);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
@@ -49,8 +54,80 @@ public class CheckInTimeServiceImpl implements ICheckInTimeService {
         }
     }
 
+    private ReturnEntity del(HttpServletRequest request,CheckInTime jsonParam) throws ParseException {
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(jsonParam,
+                new CheckInTimeNotNull(
+                        "isNotNullAndIsLengthNot0",
+                        "",
+                        ""
+                ));
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+
+        CheckInTime checkInTime = iCheckInTimeMapper.selectById(jsonParam.getId());
+
+        //获取当前时分秒
+        LocalTime localTime = LocalTime.now();
+
+        //不让他打卡
+        int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(checkInTime.getStartPunchIn()), localTime);
+        if (time < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法删除该数据");
+        }
+        //不让他打卡
+        time = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(checkInTime.getEndClockOut()));
+        if (time < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法删除该数据");
+        }
+        int deleteById = iCheckInTimeMapper.deleteById(jsonParam);
+        //当返回值不为1的时候判断删除失败
+        if (deleteById != 1){
+            return new ReturnEntity(
+                    CodeEntity.CODE_ERROR,
+                    jsonParam,
+                    MsgEntity.CODE_ERROR
+            );
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,jsonParam,request,MsgEntity.CODE_SUCCEED);
+    }
+
     // 修改打卡时间表
-    private ReturnEntity edit(HttpServletRequest request, CheckInTime jsonParam) {
+    private ReturnEntity edit(HttpServletRequest request, CheckInTime jsonParam) throws ParseException {
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(jsonParam,
+                new CheckInTimeNotNull(
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0"
+                ));
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("name",jsonParam.getName());
+        wrapper.ne("id",jsonParam.getId());
+        wrapper.eq("management_id",jsonParam.getManagementId());
+        CheckInTime selectOne = iCheckInTimeMapper.selectOne(wrapper);
+        if (!ObjectUtils.isEmpty(selectOne)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该规则" + selectOne.getName() + "已存在");
+        }
+
+        CheckInTime checkInTime = iCheckInTimeMapper.selectById(jsonParam.getId());
+
+        //获取当前时分秒
+        LocalTime localTime = LocalTime.now();
+
+        //不让他打卡
+        int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(checkInTime.getStartPunchIn()), localTime);
+        if (time < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法修改该数据");
+        }
+        //不让他打卡
+        time = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(checkInTime.getEndClockOut()));
+        if (time < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法修改该数据");
+        }
         int updateById = iCheckInTimeMapper.updateById(jsonParam);
         //当返回值不为1的时候判断修改失败
         if (updateById != 1){
@@ -67,6 +144,7 @@ public class CheckInTimeServiceImpl implements ICheckInTimeService {
     private ReturnEntity add(HttpServletRequest request, CheckInTime jsonParam) {
         ReturnEntity returnEntity = PanXiaoZhang.isNull(jsonParam,
                 new CheckInTimeNotNull(
+                        "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",

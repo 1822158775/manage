@@ -105,7 +105,10 @@ public class PunchingCardRecord implements Serializable {
     public String checkInId;//打卡类型
 
     @TableField(exist = false)
-    public List<CheckInTime> checkInTimes;
+    public List<CheckInTime> checkInTimes;//打卡类型
+
+    @TableField(exist = false)
+    public CheckInTime acCheckInTime;//选中打卡类型
 
     public PunchingCardRecord() {
     }

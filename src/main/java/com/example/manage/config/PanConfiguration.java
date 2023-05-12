@@ -4,6 +4,7 @@ import com.example.manage.service.IPunchingCardRecordService;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
 import com.example.manage.util.entity.ReturnEntity;
+import com.example.manage.util.mythical_creatures.MythicalCreatures;
 import com.example.manage.white_list.service.IWhiteSysPersonnelService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -51,8 +52,9 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
+            MythicalCreatures.mythical_creatures_1();
             Map<String,Object> map = new HashMap();
-            iWhiteSysPersonnelService.birthdayInform();
+            //iWhiteSysPersonnelService.birthdayInform();
             //map.put("dateFormatBirthday",2);
             //map.put("dateFormatDispatchApplication",1);
             //redisUtil.add("dateFormatBirthday",map);

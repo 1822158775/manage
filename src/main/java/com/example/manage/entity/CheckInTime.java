@@ -30,6 +30,10 @@ public class CheckInTime implements Serializable {
     @JsonFormat(pattern="HH:mm:ss",timezone="GMT+8")
     @TableField(value = "start_punch_in")
     public String startPunchIn;//上班打卡时间开始时间
+    @DateTimeFormat(pattern ="HH:mm:ss")
+    @JsonFormat(pattern="HH:mm:ss",timezone="GMT+8")
+    @TableField(value = "end_punch_in")
+    public String endPunchIn;//上班打卡时间结束时间
 
     @DateTimeFormat(pattern ="HH:mm:ss")
     @JsonFormat(pattern="HH:mm:ss",timezone="GMT+8")

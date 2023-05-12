@@ -38,4 +38,10 @@ public class CheckInTimeController {
     public ReturnEntity exit(HttpServletRequest request){
         return iCheckInTimeService.methodMaster(request,"edit");
     }
+
+    // 删除打卡时间表
+    @PostMapping(value = "del")
+    public ReturnEntity del(HttpServletRequest request){
+        return iCheckInTimeService.methodMaster(request,"del");
+    }
 }

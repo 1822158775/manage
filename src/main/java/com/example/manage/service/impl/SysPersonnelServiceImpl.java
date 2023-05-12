@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @avthor 潘小章
@@ -250,7 +251,7 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                 new SysPersonnelNotNull(
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0",
+                        "",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
@@ -272,6 +273,9 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         if (returnEntity.getState()){
             return returnEntity;
         }
+
+        jsonParam.setPersonnelCode(PanXiaoZhang.getID());
+
         SysRole sysRole = iSysRoleMapper.selectById(jsonParam.getRoleId());
         //判断等级如果大于2则不可拥有多个项目
         if (sysRole.getLevelSorting() > 2 && jsonParam.getManagementId().length > 1){

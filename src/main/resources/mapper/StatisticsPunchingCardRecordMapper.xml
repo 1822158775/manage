@@ -83,11 +83,11 @@
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(DISTINCT <include refid="tableSqlAs"/>.id) as id
         from
-        (<include refid="tableReturn" />)
+        <include refid="tableSql" />
         as
         <include refid="tableSqlAs" />
         <include refid="relevanceSql" />
-        <include refid="whereSqlModelAs"/>
+        <include refid="whereSqlModelCount"/>
     </select>
 
     <!--  查询分页  -->
@@ -205,6 +205,18 @@
         <include refid="whereSqlModel" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
+    </sql>
+    <!--  总数查询搜索条件  -->
+    <sql id="whereSqlModelCount">
+        where 1 = 1
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="roleId != null and roleId != ''"> and <include refid="tableSqlAs" />.`role_id` = #{roleId}</if>
+        <if test="managementId != null and managementId != ''"> and <include refid="tableSqlManagementPersonnel" />.`management_id` = #{managementId}</if>
+        <if test="inRoleId != null"> and <include refid="tableSqlAs" />.`role_id` in
+            <foreach collection="inRoleId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
     </sql>
     <!--  查询主表  -->
     <sql id="tableSql">

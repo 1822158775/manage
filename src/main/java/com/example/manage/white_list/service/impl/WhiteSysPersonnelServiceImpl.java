@@ -1,10 +1,7 @@
 package com.example.manage.white_list.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.manage.entity.DispatchApplicationManagement;
-import com.example.manage.entity.ManageDimission;
-import com.example.manage.entity.ManagementPersonnel;
-import com.example.manage.entity.SysPersonnel;
+import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.SysPersonnelNotNull;
 import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
@@ -50,6 +47,9 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
 
     @Value("${role.manage}")
     private Integer manage;
+
+    @Value("${role.manage3}")
+    private Integer manage3;
 
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
@@ -180,6 +180,8 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));
         //设置员工任职状态
         jsonParam.setEmploymentStatus(2);
+        //设置唯一标识
+        jsonParam.setPersonnelCode(PanXiaoZhang.getID());
         //设置员工所属项目
         int insert = iManagementPersonnelMapper.insert(new ManagementPersonnel(
                 managementPersonnel.getManagementId(),
@@ -242,17 +244,38 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
             List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
             for (int i = 0; i < sysPersonnels.size(); i++) {
                 SysPersonnel sysPersonnel = sysPersonnels.get(i);
-                System.out.println(sysPersonnel.getBirthday() + "=======================");
                 Integer ageYTime = PanXiaoZhang.ageYTime(new Date().toInstant().atOffset(ZoneOffset.UTC).toLocalDate(), sysPersonnel.getBirthday().toInstant().atOffset(ZoneOffset.UTC).toLocalDate());
-                System.out.println(ageYTime);
-                PanXiaoZhang.postWechat(
-                        birthdayPhone,
-                        "生日提醒",
-                        "",
-                        sysPersonnel.getName() + ageYTime + "岁的生日时间是" + DateFormatUtils.format(calculationDate,PanXiaoZhang.yMd()),
-                        "",
-                        ""
-                );
+                ReturnEntity entity = new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+                if (sysPersonnel.getSysManagement().size() > 0){
+                    SysManagement management = sysPersonnel.getSysManagement().get(0);
+                    Map<String, Object> hashMap = new HashMap<>();
+                    hashMap.put("managementId",management.getId());
+                    hashMap.put("roleId",manage3);
+                    List<SysPersonnel> personnels = iSysPersonnelMapper.queryAll(hashMap);
+                    if (personnels.size() > 0){
+                        SysPersonnel personnel = personnels.get(0);
+                        entity = PanXiaoZhang.postWechat(
+                                personnel.getPhone(),
+                                "",
+                                "",
+                                "生日提醒," + sysPersonnel.getName() + ageYTime + "岁的生日时间是" + DateFormatUtils.format(calculationDate, PanXiaoZhang.yMd()),
+                                "",
+                                ""
+                        );
+                        log.info("发送给区域经理:{},发送结果:{}",personnel.getName(),entity);
+                    }
+                }
+                if (!entity.getCode().equals("0")){
+                    log.info("发送给区域经理失败，转发给:{}","煅哥");
+                    PanXiaoZhang.postWechat(
+                            birthdayPhone,
+                            "",
+                            "",
+                            "生日提醒," + sysPersonnel.getName() + ageYTime + "岁的生日时间是" + DateFormatUtils.format(calculationDate,PanXiaoZhang.yMd()),
+                            "",
+                            ""
+                    );
+                }
             }
         }
         map.put("dateFormatBirthday","entryTime");

@@ -5,6 +5,7 @@
         <result column="id" property="id" />
         <result column="name" property="name" />
         <result column="start_punch_in" property="startPunchIn" />
+        <result column="end_punch_in" property="endPunchIn" />
         <result column="start_noon_break_time" property="startNoonBreakTime" />
         <result column="end_noon_break_time" property="endNoonBreakTime" />
         <result column="start_clock_out" property="startClockOut" />

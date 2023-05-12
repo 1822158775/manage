@@ -247,6 +247,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         PunchingCardRecord selectOne = iPunchingCardRecordMapper.selectOne(wrapper);
         if (!ObjectUtils.isEmpty(selectOne)){
             punchingCardRecord = selectOne;
+            CheckInTime checkInTime = iCheckInTimeMapper.selectById(punchingCardRecord.getCheckInTimeId());
+            punchingCardRecord.setAcCheckInTime(checkInTime);
         }
 
 
@@ -260,8 +262,9 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
 
 
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("management_id",jsonParam.getManagementId());
+        queryWrapper.eq("management_id",management.getId());
         punchingCardRecord.setCheckInTimes(iCheckInTimeMapper.selectList(queryWrapper));
+
 
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,punchingCardRecord,"");
     }
@@ -374,12 +377,14 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         String format = DateFormatUtils.format(date, PanXiaoZhang.Hms());
         Integer checkInTimeId = 0;//打卡类型的id
         String startPunchIn = "";//上班打卡时间开始时间
+        String endPunchIn = "";//上班打卡时间结束时间
         String startClockOut = "";//下班打卡时间开始时间
         String endClockOut = "";//下班打卡时间结束时间
         String checkInTimeName = "";//打卡项目
         //查询打卡时间
-        if (ObjectUtils.isEmpty(management.getId())){
+        if (!ObjectUtils.isEmpty(management.getId())){
             CheckInTime checkInTime = iCheckInTimeMapper.selectById(jsonParam.getCheckInId());
+            System.out.println(checkInTime+"=================");
             if (ObjectUtils.isEmpty(checkInTime)){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"未设置该类型的打卡时间");
             }
@@ -388,10 +393,16 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             endClockOut = checkInTime.getEndClockOut();
             checkInTimeId = checkInTime.getId();
             checkInTimeName = checkInTime.getName();
+            endPunchIn = checkInTime.getEndPunchIn();
         }
         if (ObjectUtils.isEmpty(punchingCardRecord)){//如果不存在则判定为上班打卡
+            //不让他打卡
+            int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(startPunchIn), localTime);
+            if (time == 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"超出上班打卡时间，无法打卡");
+            }
             //如果 time1 在 time2 之前，返回-1；如果 time1 在 time2 之后，返回1；如果 time1 和 time2 相等，返回0。
-            int compareTime = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(startPunchIn));
+            int compareTime = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(endPunchIn));
             //设置当前状态
             String workingClockInState = "打卡成功";
             if (compareTime > 0){
@@ -412,7 +423,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     null,
                     null,
                     DateFormatUtils.format(date, PanXiaoZhang.yMd()),
-                    startPunchIn,
+                    endPunchIn,
                     startClockOut,
                     checkInTimeId,
                     checkInTimeName

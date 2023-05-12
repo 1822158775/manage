@@ -604,7 +604,10 @@ public class PanXiaoZhang {
         String yyyyMMddHHmmss = DateFormatUtils.format(new Date(), "yyyyMMddHHmmss");
         return yyyyMMddHHmmss + PanXiaoZhang.ran(6)+"y";
     }
-
+    public static String getID(){
+        UUID uuid = UUID.randomUUID();
+        return String.valueOf(uuid);
+    }
     public static List<String> getDays(String startTime, String endTime) {
         // 返回的日期集合
         List<String> days = new ArrayList<String>();
@@ -1398,9 +1401,9 @@ public class PanXiaoZhang {
     }
 
     public static void main(String[] args) throws ParseException {
-        LocalTime startTime = LocalTime.of(6, 0); // 上班时间为 9:00
+        LocalTime startTime = LocalTime.of(9, 0); // 上班时间为 9:00
         LocalTime endTime = LocalTime.of(8, 30); // 下班时间为 17:30
-        String dayTime = getDayTime(startTime, endTime);
-        System.out.println(dayTime);
+        int compareTime = compareTime(endTime, startTime);
+        System.out.println(compareTime);
     }
 }

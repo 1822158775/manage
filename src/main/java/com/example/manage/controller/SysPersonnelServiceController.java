@@ -30,7 +30,9 @@ public class SysPersonnelServiceController {
     // 添加人员信息
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iSysPersonnelService.methodMasterT(request,"add");
+        synchronized (this.getClass()){
+            return iSysPersonnelService.methodMasterT(request,"add");
+        }
     }
 
     // 修改人员信息

@@ -2,6 +2,7 @@ package com.example.manage.util.wechat;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.util.wechat.entity.DataEntity;
 import com.example.manage.util.wechat.entity.StateCode;
@@ -46,7 +47,7 @@ public class WechatMsg {
         //消息主题显示相关map
         Map<String, Object> dataMap = new HashMap<String, Object>();
         if("5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg".equals(templateId)){
-            return new ReturnEntity("2", SendWeChatSignificance(token, openId, keyword1, keyword2, keyword3, keyword4, templateId,pagepath));
+            return new ReturnEntity(CodeEntity.CODE_SUCCEED, SendWeChatSignificance(token, openId, keyword1, keyword2, keyword3, keyword4, templateId,pagepath));
         }
         return new ReturnEntity("2","模板ID不正确");
     }
