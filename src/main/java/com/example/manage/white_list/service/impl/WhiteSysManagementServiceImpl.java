@@ -34,7 +34,10 @@ import java.util.Map;
 public class WhiteSysManagementServiceImpl implements IWhiteSysManagementService {
 
     @Value("${role.manage5}")
-    private String manage5;
+    private Integer manage5;
+
+    @Value("${role.manage}")
+    private Integer manage;
 
     @Resource
     private ISysManagementMapper iSysManagementMapper;
@@ -60,7 +63,7 @@ public class WhiteSysManagementServiceImpl implements IWhiteSysManagementService
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
     }
 
@@ -93,7 +96,7 @@ public class WhiteSysManagementServiceImpl implements IWhiteSysManagementService
             map.put("inId",toArray);
         }
 
-        map.put("roleId",manage5);
+        map.put("inRoleId", new Integer[]{manage,manage5});
 
         List<SysManagement> sysManagements = whiteSysManagementMapper.queryAll(map);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,sysManagements,"");

@@ -1325,6 +1325,21 @@ public class PanXiaoZhang {
         return time1.compareTo(time2);
     }
 
+    /**
+     * 判断是否历史日期
+     * @param date
+     * @return
+     */
+    public static Boolean compareDate(Date date){
+            //LocalDate date = LocalDate.of(2020, 10, 1); // 给定日期
+            LocalDate zonedDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(); // 当前日期
+            if (zonedDateTime.compareTo(now) < 0) {
+                return true;
+            } else {
+                return false;
+            }
+    }
     public static double stringDouble(String str){
         BigDecimal decimal = new BigDecimal(str);
         double num = decimal.doubleValue();
@@ -1401,9 +1416,14 @@ public class PanXiaoZhang {
     }
 
     public static void main(String[] args) throws ParseException {
-        LocalTime startTime = LocalTime.of(9, 0); // 上班时间为 9:00
-        LocalTime endTime = LocalTime.of(8, 30); // 下班时间为 17:30
-        int compareTime = compareTime(endTime, startTime);
-        System.out.println(compareTime);
+        // 获取当前时间
+        Calendar calendar = Calendar.getInstance();
+        Date today = calendar.getTime();
+
+        // 将时间设置为昨天
+        calendar.add(Calendar.DATE, -1);
+        Date yesterday = calendar.getTime();
+        Boolean aBoolean = compareDate(yesterday);
+        System.out.println(aBoolean);
     }
 }

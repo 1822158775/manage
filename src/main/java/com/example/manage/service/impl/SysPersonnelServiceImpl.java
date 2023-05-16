@@ -76,7 +76,7 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
             return new ReturnEntity(CodeEntity.CODE_ERROR, ioException.getMessage());
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
     }
 
@@ -110,7 +110,7 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
     }
 

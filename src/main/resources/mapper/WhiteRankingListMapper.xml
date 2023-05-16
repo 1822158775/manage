@@ -14,56 +14,44 @@
     </resultMap>
     <!--  查询数量  -->
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-    <choose>
-        <when test="managementId != null and managementId != ''">
-            SELECT
-            <include refid="tableSqlPersonnel" />.`name`,
-            <include refid="tableSqlCardType" />.`name` as card_type_name,
-            <include refid="tableSqlPReport" />.`report_status` as report_status,
-            CONCAT('[\"有效\",\"',
-              GROUP_CONCAT(DISTINCT <include refid="tableSqlPReport" />.`report_status`
-            ORDER BY
-              <include refid="tableSqlPersonnel" />.id SEPARATOR '\"\,\"'),'\"]')
-            as
-                already_report_status
-            ,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核已激活','批核未激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS count_number,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS activation,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核未激活','批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS approved,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('转人工') then <include refid="tableSqlPReport" />.report_number else 0 end) AS artificial,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('拒绝') then <include refid="tableSqlPReport" />.report_number else 0 end) AS refuse
-            FROM
-            <include refid="tableSqlPersonnel" />
-            <include refid="relevanceSqlPpersonnel" />
-            <include refid="whereSqlModel" />
-            <include refid="safeGroupBy" />
-            <include refid="safeOrderBy" />
-            <include refid="safeLIMIT" />
-        </when>
-        <otherwise>
-            SELECT
-            <include refid="tableSqlSManagement" />.`name`,
-            <include refid="tableSqlCardType" />.`name` as card_type_name,
-            CONCAT('[\"有效\",\"',
-            GROUP_CONCAT(DISTINCT <include refid="tableSqlPReport" />.`report_status`),'\"]')
-            as
-            already_report_status,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核已激活','批核未激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS count_number,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS activation,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核未激活','批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS approved,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('转人工') then <include refid="tableSqlPReport" />.report_number else 0 end) AS artificial,
-            sum(case when <include refid="tableSqlPReport" />.`report_status` = ('拒绝') then <include refid="tableSqlPReport" />.report_number else 0 end) AS refuse
-            FROM
-            <include refid="tableSqlSManagement" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="safeGroupBy" />
-            <include refid="safeOrderBy" />
-            <include refid="safeLIMIT" />
-        </otherwise>
-    </choose>
+        <choose>
+            <when test="managementId != null and managementId != ''">
+                SELECT
+                <include refid="tableSqlPersonnel" />.`name`,
+                <include refid="returnSql" />
+                FROM
+                <include refid="tableSqlPersonnel" />
+                <include refid="relevanceSqlPpersonnel" />
+                <include refid="whereSqlModel" />
+                <include refid="safeGroupBy" />
+                <include refid="safeOrderBy" />
+                <include refid="safeLIMIT" />
+            </when>
+            <otherwise>
+                SELECT
+                <include refid="tableSqlSManagement" />.`name`,
+                <include refid="returnSql" />
+                FROM
+                <include refid="tableSqlSManagement" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="safeGroupBy" />
+                <include refid="safeOrderBy" />
+                <include refid="safeLIMIT" />
+            </otherwise>
+        </choose>
     </select>
-
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSqlCardType" />.`name` as card_type_name,
+        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end),0) AS count_number,
+        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end),0) AS approved,
+        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.valid_number else 0 end),0) AS activation,
+        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.refuse_number else 0 end),0) AS refuse,
+        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end) -
+        SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end) -
+        SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.refuse_number else 0 end),0) AS artificial
+    </sql>
     <!--  表名称  -->
     <sql id="tableSqlCardType">
         manage.card_type
@@ -225,4 +213,56 @@
     <sql id="safeLIMIT">
         LIMIT #{index},#{pageNum}
     </sql>
+
+    <!--  历史  -->
+    <select id="queryAllTwo" resultMap="entity" parameterType="hashmap">
+        <choose>
+            <when test="managementId != null and managementId != ''">
+                SELECT
+                <include refid="tableSqlPersonnel" />.`name`,
+                <include refid="tableSqlCardType" />.`name` as card_type_name,
+                <include refid="tableSqlPReport" />.`report_status` as report_status,
+                CONCAT('[\"有效\",\"',
+                GROUP_CONCAT(DISTINCT <include refid="tableSqlPReport" />.`report_status`
+                ORDER BY
+                <include refid="tableSqlPersonnel" />.id SEPARATOR '\"\,\"'),'\"]')
+                as
+                already_report_status
+                ,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核已激活','批核未激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS count_number,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS activation,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核未激活','批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS approved,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('转人工') then <include refid="tableSqlPReport" />.report_number else 0 end) AS artificial,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('拒绝') then <include refid="tableSqlPReport" />.report_number else 0 end) AS refuse
+                FROM
+                <include refid="tableSqlPersonnel" />
+                <include refid="relevanceSqlPpersonnel" />
+                <include refid="whereSqlModel" />
+                <include refid="safeGroupBy" />
+                <include refid="safeOrderBy" />
+                <include refid="safeLIMIT" />
+            </when>
+            <otherwise>
+                SELECT
+                <include refid="tableSqlSManagement" />.`name`,
+                <include refid="tableSqlCardType" />.`name` as card_type_name,
+                CONCAT('[\"有效\",\"',
+                GROUP_CONCAT(DISTINCT <include refid="tableSqlPReport" />.`report_status`),'\"]')
+                as
+                already_report_status,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核已激活','批核未激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS count_number,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS activation,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核未激活','批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS approved,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('转人工') then <include refid="tableSqlPReport" />.report_number else 0 end) AS artificial,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('拒绝') then <include refid="tableSqlPReport" />.report_number else 0 end) AS refuse
+                FROM
+                <include refid="tableSqlSManagement" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="safeGroupBy" />
+                <include refid="safeOrderBy" />
+                <include refid="safeLIMIT" />
+            </otherwise>
+        </choose>
+    </select>
 </mapper>

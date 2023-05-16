@@ -22,6 +22,7 @@
     <sql id="returnSql">
         COUNT(DISTINCT <include refid="tableSqlPersonnel" />.id) as number_personnel,
         <include refid="tableSql" />.`name` as `name`,
+        <include refid="tableSql" />.`id` as `id`,
         <include refid="tableSql" />.number_of_people as number_of_people,
         <include refid="tableSql" />.number_of_people - COUNT(DISTINCT <include refid="tableSqlPersonnel" />.id) as real_quantity,
         format(coalesce((COUNT(DISTINCT <include refid="tableSqlPersonnel" />.id) / <include refid="tableSql" />.number_of_people) * 100,0),2) as rate_of_full_capacity
@@ -50,7 +51,14 @@
     <sql id="relevanceSql">
         LEFT JOIN <include refid="tableSqlMPersonnel" /> on <include refid="tableSqlMPersonnel" />.management_id = <include refid="tableSql" />.id
         LEFT JOIN <include refid="tableSqlPersonnel" /> on <include refid="tableSqlPersonnel" />.personnel_code = <include refid="tableSqlMPersonnel" />.personnel_code
-        AND sys_personnel.role_id = #{roleId}
+        <if test="inRoleId != null ">
+            and
+            sys_personnel.role_id
+            in
+            <foreach collection="inRoleId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
         AND sys_personnel.employment_status = 1
     </sql>
     <sql id="safeOrderBy">

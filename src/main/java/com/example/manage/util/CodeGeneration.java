@@ -372,7 +372,7 @@ public class CodeGeneration {
         arrayList.add("            return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);");
         arrayList.add("        }catch (Exception e){");
         arrayList.add("            log.info(\"捕获异常方法{},捕获异常{}\",name,e.getMessage());");
-        arrayList.add("            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());");
+        arrayList.add("            return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);");
         arrayList.add("        }");
         arrayList.add("    }");
         arrayList.add("");
@@ -483,8 +483,8 @@ public class CodeGeneration {
     public static void methodMaster(String remark,String table_name,String class_name) throws SQLException, IOException, ClassNotFoundException {
         mysql_get(table_name);
         //实体类
-        //progressBar(0,100,"准备创建实体类");
-        //addJavaEntity(remark,table_name,class_name);
+        progressBar(0,100,"准备创建实体类");
+        addJavaEntity(remark,table_name,class_name);
         progressBar(0,100,"准备创建非空实体类");
         //非空实体类
         addJavaNotNullEntity(
@@ -492,25 +492,25 @@ public class CodeGeneration {
                 table_name,
                 class_name + "NotNull"
         );
-        //progressBar(0,100,"准备创建mapper层");
-        ////mapper层创建
-        //addJavaMapper(remark,table_name,class_name);
-        //progressBar(0,100,"准备创建MyBatis xml文件");
-        // 创建MyBatis xml文件
-        //addMapperXml(remark,table_name,class_name);
-        //progressBar(0,100,"准备创建service层");
-        ////service层创建
-        //addService(remark,table_name,class_name);
-        //progressBar(0,100,"准备创建service实现层");
-        ////service实现层创建
-        //addServiceImpl(remark,table_name,class_name);
-        //progressBar(0,100,"准备创建controller层");
-        ////controller层创建
-        //addController(remark,table_name,class_name);
+        progressBar(0,100,"准备创建mapper层");
+        //mapper层创建
+        addJavaMapper(remark,table_name,class_name);
+        progressBar(0,100,"准备创建MyBatis xml文件");
+         //创建MyBatis xml文件
+        addMapperXml(remark,table_name,class_name);
+        progressBar(0,100,"准备创建service层");
+        //service层创建
+        addService(remark,table_name,class_name);
+        progressBar(0,100,"准备创建service实现层");
+        //service实现层创建
+        addServiceImpl(remark,table_name,class_name);
+        progressBar(0,100,"准备创建controller层");
+        //controller层创建
+        addController(remark,table_name,class_name);
     }
     public static void main(String[] args) {
         try {
-            methodMaster("打卡时间表","check_in_time","CheckInTime");
+            methodMaster("补卡审核人","card_replacement_reimbursement","CardReplacementReimbursement");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

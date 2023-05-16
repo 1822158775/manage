@@ -6,6 +6,7 @@ import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.PunchingCardRecordNotNull;
 import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
+import com.example.manage.util.RedisUtil;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
@@ -64,6 +65,9 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
     @Resource
     private ICheckInTimeMapper iCheckInTimeMapper;
 
+    @Resource
+    private RedisUtil redisUtil;
+
     //方法总管外加事务
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -97,7 +101,9 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             if (name.equals("cat")){
                 return cat(request);
             }else if (name.equals("area")){
-                return area(request);
+                ReturnEntity area = area(request);
+                log.info("打卡范围返回结果:{}",area);
+                return area;
             }else if (name.equals("cat_list")){
                 return cat_list(request);
             }
@@ -312,6 +318,14 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (entity.getState()){
             return entity;
         }
+
+        String s = personnel.getId() + "check_in";
+        Object o = redisUtil.get(s);
+        if (!ObjectUtils.isEmpty(o)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"请在" + redisUtil.getTime(s) + "秒后操作");
+        }
+        redisUtil.set(s,personnel.getPersonnelCode(),3);
+
         //查询人员所在项目组
         SysManagement management;
         if (!ObjectUtils.isEmpty(personnel)){
@@ -384,7 +398,6 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         //查询打卡时间
         if (!ObjectUtils.isEmpty(management.getId())){
             CheckInTime checkInTime = iCheckInTimeMapper.selectById(jsonParam.getCheckInId());
-            System.out.println(checkInTime+"=================");
             if (ObjectUtils.isEmpty(checkInTime)){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"未设置该类型的打卡时间");
             }
@@ -436,6 +449,14 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         MsgEntity.CODE_ERROR
                 );
             }
+            PanXiaoZhang.postWechat(
+                    personnel.getPhone(),
+                    "",
+                    "",
+                    personnel.getName() + ":上班打卡时间" + format + "，状态:" + workingClockInState +"",
+                    "",
+                    ""
+            );
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
         }else {//如果存在则判定为下班打卡
             //不让他打卡
@@ -479,6 +500,14 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         MsgEntity.CODE_ERROR
                 );
             }
+            PanXiaoZhang.postWechat(
+                    personnel.getPhone(),
+                    "",
+                    "",
+                    personnel.getName() + ":下班打卡时间" + format + "，状态:" + workingClockInState +"",
+                    "",
+                    ""
+            );
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
         }
     }
