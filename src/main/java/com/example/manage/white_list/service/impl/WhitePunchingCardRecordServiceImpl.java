@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.PunchingCardRecordNotNull;
 import com.example.manage.mapper.*;
+import com.example.manage.util.JqPoint;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
 import com.example.manage.util.entity.CodeEntity;
@@ -179,23 +180,17 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         ){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"项目坐标有误,请联系管理员");
         }
-        //获取当前用户的地址
-        double[] user = {jsonParam.getX(),jsonParam.getY()};
-        //获取项目的X轴的坐标
-        double[] polyX = {
-                PanXiaoZhang.stringDouble(splitEastLongitude[0])
-                ,PanXiaoZhang.stringDouble(splitSouthLatitude[0])
-                ,PanXiaoZhang.stringDouble(splitNorthernLatitude[0])
-                ,PanXiaoZhang.stringDouble(splitWestLongitude[0])
-        };
-        //获取项目的Y轴的坐标
-        double[] polyY = {
-                PanXiaoZhang.stringDouble(splitEastLongitude[1]),
-                PanXiaoZhang.stringDouble(splitSouthLatitude[1]),
-                PanXiaoZhang.stringDouble(splitNorthernLatitude[1]),
-                PanXiaoZhang.stringDouble(splitWestLongitude[1])};
+        List<JqPoint> ps = new ArrayList<>();
+        JqPoint jqPoint1 = new JqPoint(PanXiaoZhang.stringDouble(splitEastLongitude[0]),PanXiaoZhang.stringDouble(splitEastLongitude[1]));
+        JqPoint jqPoint2 = new JqPoint(PanXiaoZhang.stringDouble(splitSouthLatitude[0]),PanXiaoZhang.stringDouble(splitSouthLatitude[1]));
+        JqPoint jqPoint3 = new JqPoint(PanXiaoZhang.stringDouble(splitNorthernLatitude[0]),PanXiaoZhang.stringDouble(splitNorthernLatitude[1]));
+        JqPoint jqPoint4 = new JqPoint(PanXiaoZhang.stringDouble(splitWestLongitude[0]),PanXiaoZhang.stringDouble(splitWestLongitude[1]));
+        ps.add(jqPoint1);
+        ps.add(jqPoint2);
+        ps.add(jqPoint3);
+        ps.add(jqPoint4);
         //判断是否在范围内
-        boolean locationInRange = PanXiaoZhang.isLocationInRange(user, polyX, polyY);
+        boolean locationInRange = PanXiaoZhang.isPtInPoly(jsonParam.getX(), jsonParam.getY(), ps);
         //返回提示语
         String msg = "";
         if (locationInRange){
@@ -365,22 +360,17 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             return new ReturnEntity(CodeEntity.CODE_ERROR,"项目坐标有误");
         }
         //获取当前用户的地址
-        double[] user = {jsonParam.getX(),jsonParam.getY()};
-        //获取项目的X轴的坐标
-        double[] polyX = {
-                PanXiaoZhang.stringDouble(splitEastLongitude[0])
-                ,PanXiaoZhang.stringDouble(splitSouthLatitude[0])
-                ,PanXiaoZhang.stringDouble(splitNorthernLatitude[0])
-                ,PanXiaoZhang.stringDouble(splitWestLongitude[0])
-        };
-        //获取项目的Y轴的坐标
-        double[] polyY = {
-                PanXiaoZhang.stringDouble(splitEastLongitude[1]),
-                PanXiaoZhang.stringDouble(splitSouthLatitude[1]),
-                PanXiaoZhang.stringDouble(splitNorthernLatitude[1]),
-                PanXiaoZhang.stringDouble(splitWestLongitude[1])};
+        List<JqPoint> ps = new ArrayList<>();
+        JqPoint jqPoint1 = new JqPoint(PanXiaoZhang.stringDouble(splitEastLongitude[0]),PanXiaoZhang.stringDouble(splitEastLongitude[1]));
+        JqPoint jqPoint2 = new JqPoint(PanXiaoZhang.stringDouble(splitSouthLatitude[0]),PanXiaoZhang.stringDouble(splitSouthLatitude[1]));
+        JqPoint jqPoint3 = new JqPoint(PanXiaoZhang.stringDouble(splitNorthernLatitude[0]),PanXiaoZhang.stringDouble(splitNorthernLatitude[1]));
+        JqPoint jqPoint4 = new JqPoint(PanXiaoZhang.stringDouble(splitWestLongitude[0]),PanXiaoZhang.stringDouble(splitWestLongitude[1]));
+        ps.add(jqPoint1);
+        ps.add(jqPoint2);
+        ps.add(jqPoint3);
+        ps.add(jqPoint4);
         //判断是否在范围内
-        boolean locationInRange = PanXiaoZhang.isLocationInRange(user, polyX, polyY);
+        boolean locationInRange = PanXiaoZhang.isPtInPoly(jsonParam.getX(), jsonParam.getY(), ps);
         if (!locationInRange){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"不在服务范围内，打卡失败");
         }
