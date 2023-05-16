@@ -1415,15 +1415,93 @@ public class PanXiaoZhang {
         return workingHours.toMinutes();
     }
 
+    /**
+     * 判断某一个经纬度点是否在一组经纬度范围内
+     *
+     * @param ALon A点经度
+     * @param ALat A点纬度
+     * @param ps   范围多边形经纬度集合
+     * @author Klay
+     * @date 2023/2/8 18:06
+     */
+    public static boolean isPtInPoly(double ALon, double ALat, List<JqPoint> ps) {
+        int iSum, iCount, iIndex;
+        double dLon1 = 0, dLon2 = 0, dLat1 = 0, dLat2 = 0, dLon;
+        if (ps.size() < 3) {
+            return false;
+        }
+        iSum = 0;
+        iCount = ps.size();
+        for (iIndex = 0; iIndex < iCount; iIndex++) {
+            if (iIndex == iCount - 1) {
+                dLon1 = ps.get(iIndex).getX();
+                dLat1 = ps.get(iIndex).getY();
+                dLon2 = ps.get(0).getX();
+                dLat2 = ps.get(0).getY();
+            } else {
+                dLon1 = ps.get(iIndex).getX();
+                dLat1 = ps.get(iIndex).getY();
+                dLon2 = ps.get(iIndex + 1).getX();
+                dLat2 = ps.get(iIndex + 1).getY();
+            }
+            // 以下语句判断A点是否在边的两端点的水平平行线之间，在则可能有交点，开始判断交点是否在左射线上
+            if (((ALat >= dLat1) && (ALat < dLat2)) || ((ALat >= dLat2) && (ALat < dLat1))) {
+                if (Math.abs(dLat1 - dLat2) > 0) {
+                    //得到 A点向左射线与边的交点的x坐标：
+                    dLon = dLon1 - ((dLon1 - dLon2) * (dLat1 - ALat)) / (dLat1 - dLat2);
+                    // 如果交点在A点左侧（说明是做射线与 边的交点），则射线与边的全部交点数加一：
+                    if (dLon < ALon) {
+                        iSum++;
+                    }
+                }
+            }
+        }
+        if ((iSum % 2) != 0) {
+            return true;
+        }
+        return false;
+    }
     public static void main(String[] args) throws ParseException {
-        // 获取当前时间
-        Calendar calendar = Calendar.getInstance();
-        Date today = calendar.getTime();
+//        // 获取当前时间
+//        Calendar calendar = Calendar.getInstance();
+//        Date today = calendar.getTime();
+//
+//        // 将时间设置为昨天
+//        calendar.add(Calendar.DATE, -1);
+//        Date yesterday = calendar.getTime();
+//        Boolean aBoolean = compareDate(yesterday);
+//        System.out.println(aBoolean);
 
-        // 将时间设置为昨天
-        calendar.add(Calendar.DATE, -1);
-        Date yesterday = calendar.getTime();
-        Boolean aBoolean = compareDate(yesterday);
-        System.out.println(aBoolean);
+
+
+
+//        List<JqPoint> ps = new ArrayList<>();
+//        JqPoint jqPoint1 = new JqPoint(31.215728,121.316977);
+//        JqPoint jqPoint2 = new JqPoint(31.213508,121.354844);
+//        JqPoint jqPoint3 = new JqPoint(31.176675,121.358661);
+//        JqPoint jqPoint4 = new JqPoint(31.178112,121.31545);
+//
+//        ps.add(jqPoint1);
+//        ps.add(jqPoint2);
+//        ps.add(jqPoint3);
+//        ps.add(jqPoint4);
+//        JqPoint n1 = new JqPoint(31.218545,121.380732);
+//        JqPoint n2 = new JqPoint(31.214492,121.316686);
+//        JqPoint n3 = new JqPoint(31.18461,121.306395);
+//        JqPoint y1 = new JqPoint(31.205459,121.331445);
+//        JqPoint y2 = new JqPoint(31.1938525390625,121.32776611328126);
+//        JqPoint y4 = new JqPoint(31.187636,121.330937);
+//        System.out.println("n1:" + isPtInPoly(n1.getX(), n1.getY(), ps));
+//        System.out.println("n2:" + isPtInPoly(n2.getX(), n2.getY(), ps));
+//        System.out.println("n3:" + isPtInPoly(n3.getX(), n3.getY(), ps));
+//        System.out.println("y1:" + isPtInPoly(y1.getX(), y1.getY(), ps));
+//        System.out.println("y2:" + isPtInPoly(y2.getX(), y2.getY(), ps));
+//        System.out.println("y4:" + isPtInPoly(y4.getX(), y4.getY(), ps));
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("personnelId",21);
+        jsonObject.put("x",31.209617241753474);
+        jsonObject.put("y",121.30406087239584);
+        String send = HttpUtil.send("https://truelemonweb.topvoyage.top/api/white_list/punching_card_record/area", jsonObject.toString(), "");
+        System.out.println(send);
     }
 }
