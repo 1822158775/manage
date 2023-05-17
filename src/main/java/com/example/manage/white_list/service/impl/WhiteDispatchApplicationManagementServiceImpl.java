@@ -29,6 +29,7 @@ import java.util.Map;
 /**
  * @avthor 潘小章
  * @date 2023/4/7
+ * 调派
  */
 
 @Slf4j
@@ -78,7 +79,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
     }
 
@@ -204,11 +205,11 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                         if (reimbursement.getNumber().equals(integer)){
                             SysPersonnel selectById = iSysPersonnelMapper.selectById(reimbursement.getPersonnelId());
                             //告知审核人前往审核
-                            PanXiaoZhang.postWechatFer(
-                                    selectById.getOpenId(),
-                                    personnel.getName() + "提交了调派申请",
+                            PanXiaoZhang.postWechat(
+                                    selectById.getPhone(),
                                     "",
-                                    "请及时前往核实",
+                                    "",
+                                    personnel.getName() + "提交了调派申请",
                                     "",
                                     urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
                             );
@@ -243,9 +244,9 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             if (updateById != 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"修改数据失败");
             }
-            PanXiaoZhang.postWechatFer(
-                    personnel.getOpenId(),
-                    "调派结果通知",
+            PanXiaoZhang.postWechat(
+                    personnel.getPhone(),
+                    "",
                     "",
                     "同意调派",
                     "",
@@ -282,9 +283,9 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             if (!ObjectUtils.isEmpty(jsonParam.getRemark())){
                 remark += "，拒绝原因是：" + jsonParam.getRemark();
             }
-            PanXiaoZhang.postWechatFer(
-                    personnel.getOpenId(),
-                    "调派结果通知",
+            PanXiaoZhang.postWechat(
+                    personnel.getPhone(),
+                    "",
                     "",
                     remark,
                     "",
@@ -504,11 +505,11 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         }
         mapPersonnel.forEach((key,value)->{
             //告知审核人前往审核
-            PanXiaoZhang.postWechatFer(
-                    value.getOpenId(),
-                    sysPersonnel.getName() + "提交了调派申请",
+            PanXiaoZhang.postWechat(
+                    value.getPhone(),
                     "",
-                    "请及时前往核实",
+                    "",
+                    sysPersonnel.getName() + "提交了调派申请",
                     "",
                     urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
             );

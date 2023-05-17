@@ -41,6 +41,9 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
     @Value("${phone.personnel}")
     private String phone;
 
+    @Value("${role.manage3}")
+    private String manage3;
+
     @Value("${url.dimission}")
     private String urlDimission;
 
@@ -78,7 +81,7 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
     }
 
@@ -99,12 +102,13 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         if (returnEntity.getState()){
             return returnEntity;
         }
-        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        SysPersonnel selectById = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
         //判断当前人员状态
-        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(selectById);
         if (estimateState.getState()){
             return estimateState;
         }
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getId());
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
         ManageDimission manageDimission = iManageDimissionMapper.selectOne(wrapper);
@@ -129,7 +133,7 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
             //查询该项目主管
             Map map = new HashMap();
             map.put("managementId",jsonParam.getManagementId());
-            map.put("roleId","1");
+            map.put("roleId",manage3);
             map.put("employmentStatus","1");
             List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
             if (sysPersonnels.size() < 1){
@@ -160,20 +164,20 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         // 发送人事
         ReturnEntity entity = PanXiaoZhang.postWechat(
                 phone,
-                sysPersonnel.getName() + "提交了离职申请",
                 "",
-                "请及时核实,请前往后台审核",
+                "",
+                sysPersonnel.getName() + "提交了离职申请",
                 "",
                 ""
         );
         // 如果有上一级
         if (!ObjectUtils.isEmpty(jsonParam.getSysPersonnel().getPhone())){
             // 发送上级领导
-            PanXiaoZhang.postWechatFer(
-                    jsonParam.getSysPersonnel().getOpenId(),
-                    sysPersonnel.getName() + "提交了离职申请",
+            PanXiaoZhang.postWechat(
+                    jsonParam.getSysPersonnel().getPhone(),
                     "",
-                    "请及时核实",
+                    "",
+                    sysPersonnel.getName() + "提交了离职申请",
                     "",
                     ""
             );

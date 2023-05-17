@@ -51,6 +51,17 @@ public class PerformanceReport implements Serializable {
     public String approverTime;//审核时间
     @TableField(value = "report_number")
     public Integer reportNumber;//上报数量
+
+
+    @TableField(value = "entry_number")
+    public Integer entryNumber;//进件数
+    @TableField(value = "approved_number")
+    public Integer approvedNumber;//批核数
+    @TableField(value = "valid_number")
+    public Integer validNumber;//有效数
+    @TableField(value = "refuse_number")
+    public Integer refuseNumber;//拒绝数
+
     @TableField(exist = false)
     public SysPersonnel sysPersonnel;//申请人信息
     @TableField(exist = false)

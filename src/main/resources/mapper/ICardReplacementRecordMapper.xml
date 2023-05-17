@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.ICardReplacementRecordMapper">
+    <resultMap id="entity" type="com.example.manage.entity.CardReplacementRecord">
+        <result column="id" property="id" />
+        <result column="personnel_name" property="personnelName" />
+        <result column="personnel_id" property="personnelId" />
+        <result column="management_id" property="managementId" />
+        <result column="management_name" property="managementName" />
+        <result column="reissue_state" property="reissueState" />
+        <result column="max_number" property="maxNumber" />
+        <result column="reissue_code" property="reissueCode" />
+        <result column="reissue_type" property="reissueType" />
+        <result column="reissue_time" property="reissueTime" />
+        <result column="verifier_remark" property="verifierRemark" />
+        <result column="applicant_time" property="applicantTime" />
+    </resultMap>
+    <select id="queryCount" resultType="int" parameterType="hashmap">
+        select count(<include refid="tableSql"/>.id) as id from
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel"/>
+    </select>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </select>
+    <sql id="tableSql">
+        manage.card_replacement_record
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="id != null "> and `id` = #{id}</if>
+        <if test="personnelId != null "> and `personnel_id` = #{personnelId}</if>
+    </sql>
+    <sql id="safeLIMIT">
+        <if test="queryAll != 'yes'">
+            <if test="pageNum != null and pageNum != ''">
+                LIMIT #{index},#{pageNum}
+            </if>
+        </if>
+    </sql>
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.id desc
+    </sql>
+</mapper>

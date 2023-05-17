@@ -87,7 +87,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
     }
     //查询审核数据数字
@@ -182,20 +182,20 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         PerformanceReportNumber performanceReportNumber = numberPerformanceReportMapper.queryOne(map);
         //全部
         entityList.add(new MapEntity(
-                "",
-                "全部",
+                "进件",
+                "进件",
                 performanceReportNumber.getAll()
         ));
         //批核未激活
         entityList.add(new MapEntity(
-                "批核未激活",
-                "批核未激活",
+                "批核",
+                "批核",
                 performanceReportNumber.getApprove()
         ));
         //激活
         entityList.add(new MapEntity(
-                "批核已激活",
-                "批核已激活",
+                "有效",
+                "有效",
                 performanceReportNumber.getActive()
         ));
         //拒绝
@@ -214,8 +214,8 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         List<MapEntity> list = new ArrayList<>();
         //当月激活
         list.add(new MapEntity(
-                "当月激活",
-                "当月激活",
+                "当月进件",
+                "当月进件",
                 performanceReportNumber.getThisMonthActive()
         ));
         listList.add(list);
@@ -229,6 +229,10 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         ReturnEntity returnEntity = PanXiaoZhang.isNull(
                 jsonParam,
                 new PerformanceReportNotNull(
+                        "",
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
+                        "",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
@@ -238,11 +242,22 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         if (returnEntity.getState()){
             return returnEntity;
         }
-        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
-        //判断办卡数
-        if (jsonParam.getReportNumber() < 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"办卡数不可小于1");
+        if (
+            jsonParam.getEntryNumber() < 1
+            || jsonParam.getApprovedNumber() < 0
+            || jsonParam.getValidNumber() < 0
+            || jsonParam.getRefuseNumber() < 0
+        ){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"非法填写参数");
         }
+        //判断填报数量是否正确
+        if (jsonParam.getEntryNumber() < (jsonParam.getApprovedNumber() + jsonParam.getRefuseNumber())){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"批核加拒绝总数量不能大于进件数");
+        }
+        if (jsonParam.getApprovedNumber() < jsonParam.getValidNumber()){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"有效数不能大于批核数");
+        }
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
         //判断当前人员状态
         ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
         if (estimateState.getState()){
@@ -299,8 +314,8 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     MsgEntity.CODE_ERROR
             );
         }
-        ReturnEntity entity = PanXiaoZhang.postWechatFer(
-                jsonParam.getSysPersonnel().getOpenId(),
+        ReturnEntity entity = PanXiaoZhang.postWechat(
+                jsonParam.getSysPersonnel().getPhone(),
                 "",
                 "",
                 sysPersonnel.getName() + ":提交业绩信息,请前往审核",

@@ -10,6 +10,7 @@
         <result column="role_id" property="roleId" />
         <result column="password" property="password" />
         <result column="name" property="name" />
+        <result column="sex" property="sex" />
         <result column="position_post" property="positionPost" />
         <result column="image" property="image" />
         <result column="birthday" property="birthday" />
@@ -52,6 +53,7 @@
         <include refid="tableSql" />
         <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
+        <include refid="safeOrderBy" />
     </select>
     <!--  返回  -->
     <sql id="returnSql">
@@ -77,8 +79,18 @@
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="roleId != null "> and <include refid="tableSql" />.`role_id` = #{roleId}</if>
+        <if test="inRoleId != null and inRoleId != ''">
+            and <include refid="tableSql" />.role_id in
+            <foreach collection="inRoleId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
         <if test="personnelId != null "> and <include refid="tableSql" />.`id` = #{personnelId}</if>
         <if test="managementId != null "> and management_personnel.`management_id` = #{managementId}</if>
         <if test="employmentStatus != null "> and <include refid="tableSql" />.`employment_status` = #{employmentStatus}</if>
+        <if test="gtLevelSorting != null"> and sys_role.`level_sorting` > #{gtLevelSorting}</if>
+    </sql>
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.employment_status desc,<include refid="tableSql"/>.id desc
     </sql>
 </mapper>

@@ -49,7 +49,7 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
     }
 
@@ -70,7 +70,6 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
         ArrayList<Integer> integerArrayList = new ArrayList<>();
 
         for (int i = 0; i < selectList.size(); i++) {
-            System.out.println(selectList.get(i).getManagementId() + "===============");
             integerArrayList.add(selectList.get(i).getManagementId());
         }
 

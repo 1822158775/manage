@@ -31,6 +31,11 @@ public class PerformanceReportNotNull implements Serializable {
     public String personnelId;//当前人员的数据编码
     public String reportNumber;//办卡数
 
+    public String entryNumber;//进件数
+    public String approvedNumber;//批核数
+    public String validNumber;//有效数
+    public String refuseNumber;//拒绝数
+
     public PerformanceReportNotNull() {
     }
 
@@ -48,5 +53,16 @@ public class PerformanceReportNotNull implements Serializable {
         this.cardTypeId = cardTypeId;
         this.personnelId = personnelId;
         this.reportNumber = reportNumber;
+    }
+
+    public PerformanceReportNotNull(String reportStatus, String cardTypeId, String personnelId, String reportNumber, String entryNumber, String approvedNumber, String validNumber, String refuseNumber) {
+        this.reportStatus = reportStatus;
+        this.cardTypeId = cardTypeId;
+        this.personnelId = personnelId;
+        this.reportNumber = reportNumber;
+        this.entryNumber = entryNumber;
+        this.approvedNumber = approvedNumber;
+        this.validNumber = validNumber;
+        this.refuseNumber = refuseNumber;
     }
 }

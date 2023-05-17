@@ -79,266 +79,114 @@
             ,(SELECT concat(date_format(LAST_DAY(now()),'%Y-%m-'),'01')) as today_month_start_time
             ,(SELECT LAST_DAY(now())) as today_month_end_time
 
-            ,today_day_activation.today_day_activation
-            ,today_day_approved.today_day_approved
-            ,today_day_artificial.today_day_artificial
-            ,today_day_refuse.today_day_refuse
-            ,today_day_all.today_day_all
+            ,today_day.valid_number as today_day_activation
+            ,today_day.approved_number as today_day_approved
+            ,today_day.entry_number - today_day.approved_number - today_day.refuse_number  as today_day_artificial
+            ,today_day.refuse_number as today_day_refuse
+            ,today_day.entry_number as today_day_all
 
-            ,today_week_activation.today_week_activation
-            ,today_week_approved.today_week_approved
-            ,today_week_artificial.today_week_artificial
-            ,today_week_refuse.today_week_refuse
-            ,today_week_all.today_week_all
+            ,today_week.valid_number as today_week_activation
+            ,today_week.approved_number as today_week_approved
+            ,today_week.entry_number - today_week.approved_number - today_week.refuse_number as today_week_artificial
+            ,today_week.refuse_number as today_week_refuse
+            ,today_week.entry_number as today_week_all
 
-            ,today_month_activation.today_month_activation
-            ,today_month_approved.today_month_approved
-            ,today_month_artificial.today_month_artificial
-            ,today_month_refuse.today_month_refuse
-            ,today_month_all.today_month_all
+            ,today_month.valid_number as today_month_activation
+            ,today_month.approved_number as today_month_approved
+            ,today_month.entry_number - today_month.approved_number - today_month.refuse_number as today_month_artificial
+            ,today_month.refuse_number as today_month_refuse
+            ,today_month.entry_number as today_month_all
 
-            ,today_yester_activation.today_yester_activation
-            ,today_yester_approved.today_yester_approved
-            ,today_yester_artificial.today_yester_artificial
-            ,today_yester_refuse.today_yester_refuse
-            ,today_yester_all.today_yester_all
+            ,today_yester.valid_number as today_yester_activation
+            ,today_yester.approved_number as today_yester_approved
+            ,today_yester.entry_number - today_yester.approved_number - today_yester.refuse_number as today_yester_artificial
+            ,today_yester.refuse_number as today_yester_refuse
+            ,today_yester.entry_number as today_yester_all
 
-            ,last_week_activation.last_week_activation
-            ,last_week_approved.last_week_approved
-            ,last_week_artificial.last_week_artificial
-            ,last_week_refuse.last_week_refuse
-            ,last_week_all.last_week_all
+            ,last_week.valid_number as last_week_activation
+            ,last_week.approved_number as last_week_approved
+            ,last_week.entry_number - last_week.approved_number - last_week.refuse_number as last_week_artificial
+            ,last_week.refuse_number as last_week_refuse
+            ,last_week.entry_number as last_week_all
 
-            ,last_month_activation.last_month_activation
-            ,last_month_approved.last_month_approved
-            ,last_month_artificial.last_month_artificial
-            ,last_month_refuse.last_month_refuse
-            ,last_month_all.last_month_all
+            ,last_month.valid_number as last_month_activation
+            ,last_month.approved_number as last_month_approved
+            ,last_month.entry_number - last_month.approved_number - last_month.refuse_number as last_month_artificial
+            ,last_month.refuse_number as last_month_refuse
+            ,last_month.entry_number as last_month_all
 
-            ,format(coalesce((today_day_activation.today_day_activation
+            ,format(coalesce((today_day.valid_number
             -
-            today_yester_activation.today_yester_activation)
+            today_yester.valid_number)
             /
-            today_yester_activation.today_yester_activation
+            today_yester.valid_number
             *
             <include refid="percentageSql" />,0) , 2)
             as
             today_day_activation_growth_rate
 
-            ,format(coalesce((today_day_approved.today_day_approved
+            ,format(coalesce((today_day.approved_number - today_day.valid_number)
             -
-            today_yester_approved.today_yester_approved)
+            (today_yester.approved_number - today_yester.valid_number)
             /
-            today_yester_approved.today_yester_approved
+            (today_yester.approved_number - today_yester.valid_number)
             *
             <include refid="percentageSql" />,0),2)
             as
             today_day_approved_growth_rate
 
-            ,format(coalesce(((today_day_activation.today_day_activation)
-            -
-            (today_yester_activation.today_yester_activation))
-            /
-            (today_yester_activation.today_yester_activation)
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_day_valid_growth_rate
-
-            ,format(coalesce((today_day_activation.today_day_activation / today_day_approved.today_day_approved)
+            ,format(coalesce((today_day.approved_number / today_day.entry_number)
             *
             <include refid="percentageSql" />,0),2)
             as
             today_day_ratio_growth_rate
 
-            ,format(coalesce((today_day_artificial.today_day_artificial
-            -
-            today_yester_artificial.today_yester_artificial)
-            /
-            today_yester_artificial.today_yester_artificial
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_day_artificial_growth_rate
-
-            ,format(coalesce((today_day_all.today_day_all
-            -
-            today_yester_all.today_yester_all)
-            /
-            today_yester_all.today_yester_all
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_day_all_growth_rate
-
-            ,format(coalesce((today_week_activation.today_week_activation
-            -
-            last_week_activation.last_week_activation)
-            /
-            last_week_activation.last_week_activation
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_week_activation_growth_rate
-
-            ,format(coalesce((today_week_approved.today_week_approved
-            -
-            last_week_approved.last_week_approved)
-            /
-            last_week_approved.last_week_approved
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_week_approved_growth_rate
-
-            ,format(coalesce(((today_week_activation.today_week_activation)
-            -
-            (last_week_activation.last_week_activation))
-            /
-            (last_week_activation.last_week_activation)
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_week_valid_growth_rate
-
             ,format(coalesce(
-            (today_week_activation.today_week_activation / today_week_approved.today_week_approved)
+            (today_week.approved_number / today_week.entry_number)
             *
             <include refid="percentageSql" />,0),2)
             as
             today_week_ratio_growth_rate
 
-            ,format(coalesce((today_week_artificial.today_week_artificial
-            -
-            last_week_artificial.last_week_artificial)
-            /
-            last_week_artificial.last_week_artificial
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_week_artificial_growth_rate
-
-            ,format(coalesce((today_week_all.today_week_all
-            -
-            last_week_all.last_week_all)
-            /
-            last_week_all.last_week_all
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_week_all_growth_rate
-
-            ,format(coalesce((today_month_activation.today_month_activation
-            -
-            last_month_activation.last_month_activation)
-            /
-            last_month_activation.last_month_activation
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_month_activation_growth_rate
-
-            ,format(coalesce((today_month_approved.today_month_approved
-            -
-            last_month_approved.last_month_approved)
-            /
-            last_month_approved.last_month_approved
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_month_approved_growth_rate
-
-            ,format(coalesce((today_month_activation.today_month_activation / today_month_approved.today_month_approved)
+            ,format(coalesce((today_month.approved_number / today_month.entry_number)
             *
             <include refid="percentageSql" />,0),2)
             as
             today_month_ratio_growth_rate
 
-            ,format(coalesce(((today_month_activation.today_month_activation)
+            ,format(coalesce((today_day.approved_number
             -
-            (last_month_activation.last_month_activation))
+            (today_yester.approved_number))
             /
-            (last_month_activation.last_month_activation)
+            (today_yester.approved_number)
+            *
+            <include refid="percentageSql" />,0),2)
+            as
+            today_day_valid_growth_rate
+
+            ,format(coalesce(((today_week.approved_number)
+            -
+            (last_week.approved_number))
+            /
+            (last_week.approved_number)
+            *
+            <include refid="percentageSql" />,0),2)
+            as
+            today_week_valid_growth_rate
+
+            ,format(coalesce(((today_month.approved_number)
+            -
+            (last_month.approved_number))
+            /
+            (last_month.approved_number)
             *
             <include refid="percentageSql" />,0),2)
             as
             today_month_valid_growth_rate
-
-            ,format(coalesce((today_month_artificial.today_month_artificial
-            -
-            last_month_artificial.last_month_artificial)
-            /
-            last_month_artificial.last_month_artificial
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_month_artificial_growth_rate
-
-            ,format(coalesce((today_month_all.today_month_all
-            -
-            last_month_all.last_month_all)
-            /
-            last_month_all.last_month_all
-            *
-            <include refid="percentageSql" />,0),2)
-            as
-            today_month_all_growth_rate
 		from
             (
             SELECT
-                <include refid="returnCount" />  as today_day_activation
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusActivation" />
-                <include refid="todayDay" />
-            )
-            as
-                today_day_activation
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_day_approved
-            FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusApproved" />
-            <include refid="todayDay" />
-            )
-            as
-                today_day_approved
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_day_artificial
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusArtificial" />
-                <include refid="todayDay" />
-            )
-            as
-                today_day_artificial
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_day_refuse
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusRefuse" />
-                <include refid="todayDay" />
-            )
-            as
-                today_day_refuse
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_day_all
+                <include refid="returnCount" />
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -346,63 +194,11 @@
                 <include refid="todayDay" />
             )
             as
-                today_day_all
+                today_day
             ,
             (
             SELECT
-                <include refid="returnCount" /> as today_week_activation
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusActivation" />
-                <include refid="todayWeek" />
-            )
-            as
-                today_week_activation
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_week_approved
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusApproved" />
-                <include refid="todayWeek" />
-            )
-            as
-                today_week_approved
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_week_artificial
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusArtificial" />
-                <include refid="todayWeek" />
-            )
-            as
-                today_week_artificial
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_week_refuse
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusRefuse" />
-                <include refid="todayWeek" />
-            )
-            as
-                today_week_refuse
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_week_all
+                <include refid="returnCount" />
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -410,63 +206,11 @@
                 <include refid="todayWeek" />
             )
             as
-                today_week_all
+                today_week
             ,
             (
             SELECT
-                <include refid="returnCount" /> as today_month_activation
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusActivation" />
-                <include refid="todayMonth" />
-            )
-            as
-                today_month_activation
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_month_approved
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusApproved" />
-                <include refid="todayMonth" />
-            )
-            as
-                today_month_approved
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_month_artificial
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusArtificial" />
-                <include refid="todayMonth" />
-            )
-            as
-                today_month_artificial
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_month_refuse
-            FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="statusRefuse" />
-                <include refid="todayMonth" />
-            )
-            as
-                today_month_refuse
-            ,
-            (
-            SELECT
-                <include refid="returnCount" /> as today_month_all
+                <include refid="returnCount" />
             FROM
                 <include refid="tableSql" />
                 <include refid="relevanceSql" />
@@ -474,199 +218,43 @@
                 <include refid="todayMonth" />
             )
             as
-                today_month_all
+                today_month
             ,
-        (
-        SELECT
-            <include refid="returnCount" /> as today_yester_activation
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusActivation" />
-            <include refid="yesterday" />
-        )
-        as
-            today_yester_activation
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as today_yester_approved
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusApproved" />
-            <include refid="yesterday" />
-        )
-        as
-            today_yester_approved
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as today_yester_artificial
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusArtificial" />
-            <include refid="yesterday" />
-        )
-        as
-            today_yester_artificial
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as today_yester_refuse
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusRefuse" />
-            <include refid="yesterday" />
-        )
-        as
-            today_yester_refuse
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as today_yester_all
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="yesterday" />
-        )
-        as
-            today_yester_all
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_week_activation
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusActivation" />
-            <include refid="lastWeek" />
-        )
-        as
-            last_week_activation
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_week_approved
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusApproved" />
-            <include refid="lastWeek" />
-        )
-        as
-            last_week_approved
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_week_artificial
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusArtificial" />
-            <include refid="lastWeek" />
-        )
-        as
-            last_week_artificial
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_week_refuse
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusRefuse" />
-            <include refid="lastWeek" />
-        )
-        as
-            last_week_refuse
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_week_all
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="lastWeek" />
-        )
-        as
-            last_week_all
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_month_activation
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusActivation" />
-            <include refid="lastMonth" />
-        )
-        as
-            last_month_activation
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_month_approved
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusApproved" />
-            <include refid="lastMonth" />
-        )
-        as
-            last_month_approved
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_month_artificial
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusArtificial" />
-            <include refid="lastMonth" />
-        )
-        as
-            last_month_artificial
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_month_refuse
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="statusRefuse" />
-            <include refid="lastMonth" />
-        )
-        as
-            last_month_refuse
-        ,
-        (
-        SELECT
-            <include refid="returnCount" /> as last_month_all
-        FROM
-            <include refid="tableSql" />
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="lastMonth" />
-        )
-        as
-            last_month_all
+            (
+            SELECT
+                <include refid="returnCount" />
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="yesterday" />
+            )
+            as
+                today_yester
+            ,
+            (
+            SELECT
+                <include refid="returnCount" />
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="lastWeek" />
+            )
+            as
+                last_week
+            ,
+            (
+            SELECT
+                <include refid="returnCount" />
+            FROM
+                <include refid="tableSql" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="lastMonth" />
+            )
+            as
+                last_month
     </select>
     <sql id="whereSqlModel">
         where 1 = 1
@@ -765,6 +353,9 @@
     </sql>
     <!--  返回条数  -->
     <sql id="returnCount">
-        COALESCE(SUM(<include refid="tableSqlPReport" />.report_number), 0 )
+        COALESCE(SUM(<include refid="tableSqlPReport" />.entry_number), 0 ) as entry_number,
+        COALESCE(SUM(<include refid="tableSqlPReport" />.approved_number), 0 ) as approved_number,
+        COALESCE(SUM(<include refid="tableSqlPReport" />.valid_number), 0 ) as valid_number,
+        COALESCE(SUM(<include refid="tableSqlPReport" />.refuse_number), 0 ) as refuse_number
     </sql>
 </mapper>

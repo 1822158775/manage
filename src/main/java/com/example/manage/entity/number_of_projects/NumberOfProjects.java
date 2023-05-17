@@ -17,4 +17,5 @@ public class NumberOfProjects implements Serializable {
     public Integer realQuantity;//实际数量
     public Double rateOfFullCapacity;//实际数量
     public String name;//项目名称
+    public Integer id;//项目id
 }

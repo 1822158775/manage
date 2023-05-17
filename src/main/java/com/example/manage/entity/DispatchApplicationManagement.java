@@ -57,24 +57,29 @@ public class DispatchApplicationManagement implements Serializable {
     public String laterVerifierRemark;//调派后审核人留言
     @TableField(value = "later_verifier_state")
     public String laterVerifierState;//调派后审核人状态
+
     @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "dispathch_time")
     public Date dispathchTime;//调派时间
+
     @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "applicant_time")
     public Date applicantTime;//申请时间
+
     @TableField(value = "dispatch_code")
     public String dispatchCode;//调派代码
     @TableField(value = "max_number")
     public Integer maxNumber;//审核流转层级
     @TableField(value = "applicant_state")
     public String applicantState;//审核总状态:pending,agree,refuse
+
     @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "verifier_time")
     public Date verifierTime;//审核通过时间
+
     @TableField(exist = false)
     public SysPersonnel verifierSysPersonnel;//当前项目审批人
     @TableField(exist = false)

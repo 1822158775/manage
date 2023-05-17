@@ -45,7 +45,7 @@ public class SysTableNameServiceImpl implements ISysTableNameService {
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
     }
 
@@ -67,7 +67,7 @@ public class SysTableNameServiceImpl implements ISysTableNameService {
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return new ReturnEntity(CodeEntity.CODE_ERROR, e.getMessage());
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
     }
 

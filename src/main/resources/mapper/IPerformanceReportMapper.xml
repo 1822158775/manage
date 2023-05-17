@@ -15,6 +15,12 @@
         <result column="card_type_id" property="cardTypeId" />
         <result column="approver_time" property="approverTime" />
         <result column="report_number" property="reportNumber" />
+
+        <result column="entry_number" property="entryNumber" />
+        <result column="approved_number" property="approvedNumber" />
+        <result column="valid_number" property="validNumber" />
+        <result column="refuse_number" property="refuseNumber" />
+
         <association property="cardType" javaType="com.example.manage.entity.CardType">
             <result column="c_id" property="id" />
             <result column="c_name" property="name" />

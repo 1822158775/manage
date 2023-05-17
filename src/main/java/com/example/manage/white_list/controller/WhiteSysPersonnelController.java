@@ -28,9 +28,26 @@ public class WhiteSysPersonnelController {
         return iWhiteSysPersonnelService.methodMaster(request,"cat");
     }
 
+    // 查询项目
+    @PostMapping(value = "cat_list")
+    public ReturnEntity cat_list(HttpServletRequest request){
+        return iWhiteSysPersonnelService.methodMaster(request,"cat_list");
+    }
+    // 查询同项目组下一级人员
+    @PostMapping(value = "cat_new_list")
+    public ReturnEntity cat_new_list(HttpServletRequest request){
+        return iWhiteSysPersonnelService.methodMaster(request,"cat_new_list");
+    }
+
     // 添加员工
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
         return iWhiteSysPersonnelService.methodMasterT(request,"add");
+    }
+
+    // 编辑
+    @PostMapping(value = "edit")
+    public ReturnEntity edit(HttpServletRequest request){
+        return iWhiteSysPersonnelService.methodMasterT(request,"edit");
     }
 }
