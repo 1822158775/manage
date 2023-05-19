@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.WhiteCardReplacementRecordMapper">
-    <resultMap id="entity" type="com.example.manage.entity.CardReplacementRecord">
+<mapper namespace="com.example.manage.mapper.WhiteFurloughRecordMapper">
+    <resultMap id="entity" type="com.example.manage.entity.FurloughRecord">
         <result column="id" property="id" />
         <result column="personnel_name" property="personnelName" />
         <result column="personnel_id" property="personnelId" />
@@ -11,10 +11,11 @@
         <result column="max_number" property="maxNumber" />
         <result column="reissue_code" property="reissueCode" />
         <result column="reissue_type" property="reissueType" />
-        <result column="reissue_time" property="reissueTime" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
         <result column="verifier_remark" property="verifierRemark" />
         <result column="applicant_time" property="applicantTime" />
-        <collection property="replacementReimbursements" ofType="com.example.manage.entity.CardReplacementReimbursement">
+        <collection property="furloughReimbursements" ofType="com.example.manage.entity.FurloughReimbursement">
             <result column="c_id" property="id" />
             <result column="c_personnel_id" property="personnelId" />
             <result column="c_verifier_remark" property="verifierRemark" />
@@ -33,7 +34,7 @@
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
-            <include refid="returnSql"/>
+        <include refid="returnSql"/>
         from
         (<include refid="tableReturn" /> )
         as
@@ -43,24 +44,24 @@
         <include refid="safeOrderBy"/>
     </select>
     <sql id="tableSql">
-        c_r_r
+        f_record
     </sql>
     <sql id="tableSqlReimbursement">
-        manage.card_replacement_reimbursement
+        manage.furlough_reimbursement
     </sql>
     <sql id="tableSqlPersonnel">
         manage.sys_personnel
     </sql>
-    <sql id="tableSqlCRR">
-        manage.card_replacement_record
+    <sql id="tableSqlFR">
+        manage.furlough_record
     </sql>
     <!--  子表  -->
     <sql id="tableReturn">
         select
-        <include refid="tableSqlCRR"/>.*
+        <include refid="tableSqlFR"/>.*
         from
-        <include refid="tableSqlCRR"/>
-        <include refid="safeOrderByCRR"/>
+        <include refid="tableSqlFR"/>
+        <include refid="safeOrderByFR"/>
         <include refid="safeLIMIT"/>
     </sql>
     <!--  返回  -->
@@ -103,8 +104,8 @@
             </if>
         </if>
     </sql>
-    <sql id="safeOrderByCRR">
-        order by <include refid="tableSqlCRR"/>.id desc
+    <sql id="safeOrderByFR">
+        order by <include refid="tableSqlFR"/>.id desc
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc, <include refid="tableSqlReimbursement" />.`number` desc

@@ -25,13 +25,21 @@ public class WhitePunchingCardRecordController {
     // 添加打卡记录表
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iWhitePunchingCardRecordService.methodMasterT(request,"add");
+        synchronized (this.getClass()){
+            return iWhitePunchingCardRecordService.methodMasterT(request,"add");
+        }
     }
 
     // 查询当天打卡记录
     @PostMapping(value = "cat")
     public ReturnEntity cat(HttpServletRequest request){
         return iWhitePunchingCardRecordService.methodMaster(request,"cat");
+    }
+
+    // 查询指定日期的打卡记录
+    @PostMapping(value = "cat_day")
+    public ReturnEntity cat_day(HttpServletRequest request){
+        return iWhitePunchingCardRecordService.methodMaster(request,"cat_day");
     }
 
     // 查询历史打卡记录

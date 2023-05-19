@@ -32,14 +32,18 @@ public class WhiteManageReimbursementRecordController {
     // 信息填写
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iWhiteManageReimbursementRecordService.methodMasterT(request,"add");
+        synchronized (this.getClass()) {
+            return iWhiteManageReimbursementRecordService.methodMasterT(request, "add");
+        }
     }
 
     // 修改申请报销记录管理
     @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
         synchronized (this.getClass()){
-            return iWhiteManageReimbursementRecordService.methodMasterT(request,"edit");
+            synchronized (this.getClass()) {
+                return iWhiteManageReimbursementRecordService.methodMasterT(request, "edit");
+            }
         }
     }
 

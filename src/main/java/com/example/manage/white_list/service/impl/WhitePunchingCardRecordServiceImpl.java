@@ -107,12 +107,29 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                 return area;
             }else if (name.equals("cat_list")){
                 return cat_list(request);
+            }else if (name.equals("cat_day")){
+                return cat_day(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
+    }
+
+
+    //查询指定日期的数据
+    private ReturnEntity cat_day(HttpServletRequest request) throws IOException {
+        PunchingCardRecord jsonParam = PanXiaoZhang.getJSONParam(request, PunchingCardRecord.class);
+        if (ObjectUtils.isEmpty(jsonParam.getPersonnelId())){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+        SysPersonnel personnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",personnel.getPersonnelCode());
+        wrapper.eq("clocking_day_time",jsonParam.getClockingDayTime());
+        PunchingCardRecord punchingCardRecord = iPunchingCardRecordMapper.selectOne(wrapper);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,punchingCardRecord,MsgEntity.CODE_SUCCEED);
     }
 
     //查看当前人员打卡历史记录
@@ -236,37 +253,30 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         }
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("personnel_code",personnel.getPersonnelCode());
-
-
         List<ManagementPersonnel> selectList = iManagementPersonnelMapper.selectList(wrapper);
         if (selectList.size() < 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联所属项目");
         }
-
         PunchingCardRecord  punchingCardRecord = new PunchingCardRecord();
-        wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(clocking_day_time) = 0");
+        if (!ObjectUtils.isEmpty(jsonParam.getClockingDayTime())){
+            wrapper.eq("clocking_day_time", jsonParam.getClockingDayTime());
+        }else {
+            wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(clocking_day_time) = 0");
+        }
         PunchingCardRecord selectOne = iPunchingCardRecordMapper.selectOne(wrapper);
+
         if (!ObjectUtils.isEmpty(selectOne)){
             punchingCardRecord = selectOne;
             CheckInTime checkInTime = iCheckInTimeMapper.selectById(punchingCardRecord.getCheckInTimeId());
             punchingCardRecord.setAcCheckInTime(checkInTime);
         }
-
-
         punchingCardRecord.setSysPersonnel(personnel);
-
         ManagementPersonnel managementPersonnel = selectList.get(0);
-
         SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
-
         punchingCardRecord.setManagement(management);
-
-
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("management_id",management.getId());
         punchingCardRecord.setCheckInTimes(iCheckInTimeMapper.selectList(queryWrapper));
-
-
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,punchingCardRecord,"");
     }
 
@@ -332,6 +342,9 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             }
             ManagementPersonnel managementPersonnel = selectList.get(0);
             management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+            if (!management.getManagementState().equals(1)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
+            }
         }else {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"人员信息不存在");
         }
@@ -439,8 +452,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         MsgEntity.CODE_ERROR
                 );
             }
-            PanXiaoZhang.postWechat(
-                    personnel.getPhone(),
+            PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
                     "",
                     "",
                     personnel.getName() + ":上班打卡时间" + format + "，状态:" + workingClockInState +"",
@@ -490,8 +503,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         MsgEntity.CODE_ERROR
                 );
             }
-            PanXiaoZhang.postWechat(
-                    personnel.getPhone(),
+            PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
                     "",
                     "",
                     personnel.getName() + ":下班打卡时间" + format + "，状态:" + workingClockInState +"",

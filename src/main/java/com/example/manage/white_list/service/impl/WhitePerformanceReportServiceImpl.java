@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.R;
-import com.example.manage.entity.ManageDimission;
-import com.example.manage.entity.ManagementPersonnel;
-import com.example.manage.entity.PerformanceReport;
-import com.example.manage.entity.SysPersonnel;
+import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.PerformanceReportNotNull;
 import com.example.manage.entity.number.AuditDataNumber;
 import com.example.manage.entity.number.PerformanceReportNumber;
@@ -67,6 +64,8 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
     @Resource
     private WhiteSysPersonnelMapper whiteSysPersonnelMapper;
 
+    @Resource
+    private ISysManagementMapper iSysManagementMapper;
 
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -283,6 +282,10 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             QueryWrapper wrapper = new QueryWrapper();
             wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
             ManagementPersonnel managementPersonnel = iManagementPersonnelMapper.selectOne(wrapper);
+            SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+            if (!management.getManagementState().equals(1)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
+            }
             jsonParam.setManagementId(managementPersonnel.getManagementId());
             //查询该项目主管
             Map map = new HashMap();
@@ -314,8 +317,8 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     MsgEntity.CODE_ERROR
             );
         }
-        ReturnEntity entity = PanXiaoZhang.postWechat(
-                jsonParam.getSysPersonnel().getPhone(),
+        ReturnEntity entity = PanXiaoZhang.postWechatFer(
+                jsonParam.getSysPersonnel().getOpenId(),
                 "",
                 "",
                 sysPersonnel.getName() + ":提交业绩信息,请前往审核",

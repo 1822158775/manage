@@ -60,7 +60,7 @@ public class WhiteCheckInTimeServiceImpl implements IWhiteCheckInTimeService {
                     MsgEntity.CODE_ERROR
             );
         }
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,jsonParam,request,MsgEntity.CODE_SUCCEED);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,MsgEntity.CODE_SUCCEED);
     }
 
     // 添加打卡时间表
@@ -77,7 +77,7 @@ public class WhiteCheckInTimeServiceImpl implements IWhiteCheckInTimeService {
         //            MsgEntity.CODE_ERROR
         //    );
         //}
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,jsonParam,request,MsgEntity.CODE_SUCCEED);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,MsgEntity.CODE_SUCCEED);
     }
 
     // 查询模块
@@ -86,6 +86,6 @@ public class WhiteCheckInTimeServiceImpl implements IWhiteCheckInTimeService {
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("management_id",jsonParam.getManagementId());
         List<CheckInTime> selectList = iCheckInTimeMapper.selectList(wrapper);
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,selectList,request,MsgEntity.CODE_SUCCEED);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,selectList,MsgEntity.CODE_SUCCEED);
     }
 }

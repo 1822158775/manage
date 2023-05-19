@@ -113,18 +113,36 @@ public class DbConfig {
         return columns;
     }
     //解析普通字段和id字段
-    public static String notId(String str){
+    public static String notId(String str,String type){
         if (str.equals("id")){
             return "@TableId(value = \""+str+"\",type = IdType.AUTO)";
-        }else {
-            return "@TableField(value = \""+str+"\")";
+        } else {
+            if (type.equals("TIME")){
+                return "@DateTimeFormat(pattern =\"HH:mm:ss\")\n" +
+                        "@JsonFormat(pattern=\"HH:mm:ss\",timezone=\"GMT+8\")\n" +
+                        "@TableField(value = \""+str+"\")";
+            } else if (type.equals("DATE")){
+                return "@DateTimeFormat(pattern =\"yyyy-MM-dd\")\n" +
+                        "@JsonFormat(pattern=\"yyyy-MM-dd\",timezone=\"GMT+8\")\n" +
+                        "@TableField(value = \""+str+"\")";
+            }  else if (type.equals("DATETIME")){
+                return "@DateTimeFormat(pattern =\"yyyy-MM-dd HH:mm:ss\")\n" +
+                        "@JsonFormat(pattern=\"yyyy-MM-dd HH:mm:ss\",timezone=\"GMT+8\")\n" +
+                        "@TableField(value = \""+str+"\")";
+            } else {
+                return "@TableField(value = \""+str+"\")";
+            }
         }
     }
     //解析字段类型
     public static String notType(String str){
         if (str.equals("INT")){
             return "Integer";
-        }else {
+        }else if (str.equals("VARCHAR")){
+            return "String";
+        } else if (str.equals("DECIMAL")){
+            return "Double";
+        } else {
             return "String";
         }
     }
@@ -147,7 +165,7 @@ public class DbConfig {
     }
     //实体类字段拼装
     public static String entity(DBEntity dbEntity){
-        String str = notId(dbEntity.getTheFieldNames());
+        String str = notId(dbEntity.getTheFieldNames(),dbEntity.getType());
         System.out.println(str);
         String notType = notType(dbEntity.getType());
         System.out.println("public "+notType+" "+interceptToUppercase("_",dbEntity.theFieldNames)+";//"+dbEntity.getRemark());
@@ -156,7 +174,7 @@ public class DbConfig {
     //实体类字段拼装
     public static JSONObject entitys(DBEntity dbEntity){
         JSONObject object = new JSONObject();
-        String str = notId(dbEntity.getTheFieldNames());
+        String str = notId(dbEntity.getTheFieldNames(),dbEntity.getType());
         object.put("key",str);
         String notType = notType(dbEntity.getType());
         object.put("value","public "+notType+" "+interceptToUppercase("_",dbEntity.theFieldNames)+";//"+dbEntity.getRemark());

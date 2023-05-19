@@ -36,6 +36,8 @@ public class WhiteManageDimissionController {
     // 提交离职申请
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iWhiteManageDimissionService.methodMaster(request,"add");
+        synchronized (this.getClass()) {
+            return iWhiteManageDimissionService.methodMaster(request, "add");
+        }
     }
 }

@@ -30,13 +30,17 @@ public class WhiteCheckInTimeController {
     // 添加打卡时间表
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iWhiteCheckInTimeService.methodMaster(request,"add");
+        synchronized (this.getClass()) {
+            return iWhiteCheckInTimeService.methodMaster(request, "add");
+        }
     }
 
     // 修改打卡时间表
     @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
-        return iWhiteCheckInTimeService.methodMaster(request,"edit");
+        synchronized (this.getClass()) {
+            return iWhiteCheckInTimeService.methodMaster(request, "edit");
+        }
     }
 }
 
