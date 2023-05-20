@@ -16,25 +16,25 @@
     </resultMap>
     <select id="queryOne" resultMap="entity" parameterType="hashmap">
         select
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.entry_number else 0 end),0)
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.entry_number else 0 end),0)
         as
             `all`
         ,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.approved_number else 0 end),0)
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.approved_number else 0 end),0)
         as
             `approve`
         ,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.valid_number else 0 end),0)
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.valid_number else 0 end),0)
         as
             `active`
         ,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.refuse_number else 0 end),0)
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.refuse_number else 0 end),0)
         as
             `refuse`
         ,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.entry_number else 0 end) -
-                SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.approved_number else 0 end) -
-                SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.refuse_number else 0 end),0)
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.entry_number else 0 end) -
+                SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.approved_number else 0 end) -
+                SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.refuse_number else 0 end),0)
             as
             `pendding`
         ,
