@@ -14,6 +14,7 @@
 
         </collection>
     </resultMap>
+
     <select id="queryOne" resultMap="entity" parameterType="hashmap">
         select
         coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.entry_number else 0 end),0)
