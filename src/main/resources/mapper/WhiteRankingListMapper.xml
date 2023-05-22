@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.WhiteRankingListMapper">
+    <resultMap id="entity" type="com.example.manage.entity.ranking_list.RankingList">
+        <result column="count_number" property="countNumber" />
+        <result column="name" property="name" />
+        <result column="card_type_name" property="cardTypeName" />
+        <result column="report_status" property="reportStatus" />
+        <result column="already_report_status" property="alreadyReportStatus" />
+        <result column="activation" property="activation" />
+        <result column="approved" property="approved" />
+        <result column="artificial" property="artificial" />
+        <result column="refuse" property="refuse" />
+    </resultMap>
+    <!--  查询数量  -->
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        <choose>
+            <when test="managementId != null and managementId != ''">
+                SELECT
+                <include refid="tableSqlPersonnel" />.`name`,
+                <include refid="returnSql" />
+                FROM
+                <include refid="tableSqlPersonnel" />
+                <include refid="relevanceSqlPpersonnel" />
+                <include refid="whereSqlModel" />
+                <include refid="safeGroupBy" />
+                <include refid="safeOrderBy" />
+                <include refid="safeLIMIT" />
+            </when>
+            <otherwise>
+                SELECT
+                <include refid="tableSqlSManagement" />.`name`,
+                <include refid="returnSql" />
+                FROM
+                <include refid="tableSqlSManagement" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="safeGroupBy" />
+                <include refid="safeOrderBy" />
+                <include refid="safeLIMIT" />
+            </otherwise>
+        </choose>
+    </select>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSqlCardType" />.`name` as card_type_name,
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end),0) AS count_number,
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end),0) AS approved,
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.valid_number else 0 end),0) AS activation,
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.refuse_number else 0 end),0) AS refuse,
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end) -
+        SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end) -
+        SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.refuse_number else 0 end),0) AS artificial
+    </sql>
+    <!--  表名称  -->
+    <sql id="tableSqlCardType">
+        manage.card_type
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlPersonnel">
+        manage.sys_personnel
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlPReport">
+        manage.performance_report
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlSManagement">
+        manage.sys_management
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlMCType">
+        manage.manage_card_type
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlManagementPersonnel">
+        manage.management_personnel
+    </sql>
+    <!--  进行关联表项目  -->
+    <sql id="relevanceSql">
+        LEFT JOIN <include refid="tableSqlPReport" /> ON <include refid="tableSqlSManagement" />.id = <include refid="tableSqlPReport" />.management_id
+        <if test="type == 'day'">
+            <include refid="todayDay" />
+        </if>
+        <if test="type == 'week'">
+            <include refid="todayWeek" />
+        </if>
+        <if test="type == 'month'">
+            <include refid="todayMonth" />
+        </if>
+        <include refid="reportApproverState" />
+        <if test="reportStatus != null and reportStatus != ''">
+            and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
+        </if>
+        <if test="manageCardTypeId != null and manageCardTypeId != ''">
+            and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
+        </if>
+        LEFT JOIN <include refid="tableSqlCardType" /> ON <include refid="tableSqlCardType" />.id = <include refid="tableSqlPReport" />.card_type_id
+    </sql>
+    <!--  进行关联人员表 -->
+    <sql id="relevanceSqlPpersonnel">
+        LEFT JOIN
+        <include refid="tableSqlPReport" />
+        ON
+        <include refid="tableSqlPersonnel" />.personnel_code =
+        <include refid="tableSqlPReport" />.personnel_code
+        <if test="type == 'day'">
+            <include refid="todayDay" />
+        </if>
+        <if test="type == 'week'">
+            <include refid="todayWeek" />
+        </if>
+        <if test="type == 'month'">
+            <include refid="todayMonth" />
+        </if>
+        <if test="reportStatus != null and reportStatus != ''">
+            and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
+        </if>
+        <if test="manageCardTypeId != null and manageCardTypeId != ''">
+            and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
+        </if>
+        <include refid="reportApproverState" />
+
+        LEFT JOIN
+        <include refid="tableSqlSManagement" />
+        ON
+        <include refid="tableSqlSManagement" />.id =
+        <include refid="tableSqlPReport" />.management_id
+        <if test="managementId != null and managementId != ''">
+            and <include refid="tableSqlPReport" />.management_id = #{managementId}
+        </if>
+        <if test="inManagementId != null and inManagementId != ''">
+            and <include refid="tableSqlSManagement" />.id in
+            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        LEFT JOIN
+        <include refid="tableSqlCardType" />
+        ON
+        <include refid="tableSqlCardType" />.id =
+        <include refid="tableSqlPReport" />.card_type_id
+    </sql>
+    <!--  条件  -->
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="inManagementId != null and inManagementId != ''">
+            and <include refid="tableSqlSManagement" />.id in
+            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <!--  本日  -->
+    <sql id="todayDay">
+        AND to_days(<include refid="tableSqlPReport" />.report_time) = to_days(NOW())
+    </sql>
+    <!--  本周  -->
+    <sql id="todayWeek">
+        AND YEARWEEK(date_format(<include refid="tableSqlPReport" />.report_time ,'%Y-%m-%d') - INTERVAL 1 DAY) = YEARWEEK(now() - INTERVAL 1 DAY)
+    </sql>
+    <!--  本月  -->
+    <sql id="todayMonth">
+        AND DATE_FORMAT( <include refid="tableSqlPReport" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+    </sql>
+    <!--  通过状态  -->
+    <sql id="reportApproverState">
+        AND <include refid="tableSqlPReport" />.approver_state = 'agree'
+    </sql>
+
+    <!--  分组  -->
+    <sql id="safeGroupBy">
+        GROUP BY
+        <choose>
+            <!--            <when test="groupByManagement == 'yes' and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
+            <!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
+            <!--            </when>-->
+
+            <!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel != 'yes'">-->
+            <!--                <include refid="tableSqlSManagement" />.id-->
+            <!--            </when>-->
+            <!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
+            <!--                <include refid="tableSqlCardType" />.id-->
+            <!--            </when>-->
+            <!--            <when test="groupByManagement != 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
+            <!--                <include refid="tableSqlPersonnel" />.id-->
+            <!--            </when>-->
+
+            <!--            <when test="groupByManagement == 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
+            <!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id-->
+            <!--            </when>-->
+            <!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
+            <!--                <include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
+            <!--            </when>-->
+            <!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
+            <!--                <include refid="tableSqlPersonnel" />.id,<include refid="tableSqlSManagement" />.id-->
+            <!--            </when>-->
+            <when test="managementId != null and managementId != ''">
+                <include refid="tableSqlPersonnel" />.id
+            </when>
+            <otherwise>
+                <include refid="tableSqlSManagement" />.id
+            </otherwise>
+        </choose>
+    </sql>
+    <!--  排序  -->
+    <sql id="safeOrderBy">
+        ORDER BY approved DESC,activation DESC,<include refid="tableSqlPReport" />.report_time
+    </sql>
+    <!--  分页  -->
+    <sql id="safeLIMIT">
+        LIMIT #{index},#{pageNum}
+    </sql>
+
+    <!--  历史  -->
+    <select id="queryAllTwo" resultMap="entity" parameterType="hashmap">
+        <choose>
+            <when test="managementId != null and managementId != ''">
+                SELECT
+                <include refid="tableSqlPersonnel" />.`name`,
+                <include refid="tableSqlCardType" />.`name` as card_type_name,
+                <include refid="tableSqlPReport" />.`report_status` as report_status,
+                CONCAT('[\"有效\",\"',
+                GROUP_CONCAT(<include refid="tableSqlPReport" />.`report_status`
+                ORDER BY
+                <include refid="tableSqlPersonnel" />.id SEPARATOR '\"\,\"'),'\"]')
+                as
+                already_report_status
+                ,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核已激活','批核未激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS count_number,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS activation,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核未激活','批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS approved,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('转人工') then <include refid="tableSqlPReport" />.report_number else 0 end) AS artificial,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('拒绝') then <include refid="tableSqlPReport" />.report_number else 0 end) AS refuse
+                FROM
+                <include refid="tableSqlPersonnel" />
+                <include refid="relevanceSqlPpersonnel" />
+                <include refid="whereSqlModel" />
+                <include refid="safeGroupBy" />
+                <include refid="safeOrderBy" />
+                <include refid="safeLIMIT" />
+            </when>
+            <otherwise>
+                SELECT
+                <include refid="tableSqlSManagement" />.`name`,
+                <include refid="tableSqlCardType" />.`name` as card_type_name,
+                CONCAT('[\"有效\",\"',
+                GROUP_CONCAT(<include refid="tableSqlPReport" />.`report_status`),'\"]')
+                as
+                already_report_status,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核已激活','批核未激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS count_number,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS activation,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核未激活','批核已激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS approved,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('转人工') then <include refid="tableSqlPReport" />.report_number else 0 end) AS artificial,
+                sum(case when <include refid="tableSqlPReport" />.`report_status` = ('拒绝') then <include refid="tableSqlPReport" />.report_number else 0 end) AS refuse
+                FROM
+                <include refid="tableSqlSManagement" />
+                <include refid="relevanceSql" />
+                <include refid="whereSqlModel" />
+                <include refid="safeGroupBy" />
+                <include refid="safeOrderBy" />
+                <include refid="safeLIMIT" />
+            </otherwise>
+        </choose>
+    </select>
+</mapper>
