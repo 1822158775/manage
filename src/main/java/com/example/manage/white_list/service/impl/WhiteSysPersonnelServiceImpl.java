@@ -72,6 +72,9 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
     @Resource
     private IDispatchApplicationManagementMapper iDispatchApplicationManagementMapper;
 
+    @Resource
+    private ISysManagementMapper iSysManagementMapper;
+
     //方法总管
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -178,8 +181,8 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         if (updateById != 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"密码修改失败");
         }
-        PanXiaoZhang.postWechat(
-                sysPersonnel.getPhone(),
+        PanXiaoZhang.postWechatFer(
+                sysPersonnel.getOpenId(),
                 "",
                 "",
                 "最新密码：" + jsonParam.getPassword(),
@@ -329,6 +332,10 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
             }
         }
         ManagementPersonnel managementPersonnel = selectList.get(0);
+        SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+        if (!management.getManagementState().equals(1)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
+        }
         //设置员工账号
         jsonParam.setUsername(jsonParam.getPhone().replaceAll(" ",""));
         //设置手机号
@@ -398,6 +405,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         map.put("dateFormatBirthday","start");
         map.put("agoBirthday", format);
         map.put("backBirthday",format);
+        map.put("employmentStatus",1);
         if (true){
             //进行查询的出符合条件的数据
             List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
@@ -413,8 +421,8 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
                     List<SysPersonnel> personnels = iSysPersonnelMapper.queryAll(hashMap);
                     if (personnels.size() > 0){
                         SysPersonnel personnel = personnels.get(0);
-                        entity = PanXiaoZhang.postWechat(
-                                personnel.getPhone(),
+                        entity = PanXiaoZhang.postWechatFer(
+                                personnel.getOpenId(),
                                 "",
                                 "",
                                 "生日提醒," + sysPersonnel.getName() + ageYTime + "岁的生日时间是" + DateFormatUtils.format(calculationDate, PanXiaoZhang.yMd()),

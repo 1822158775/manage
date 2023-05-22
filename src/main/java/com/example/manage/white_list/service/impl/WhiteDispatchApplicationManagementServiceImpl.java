@@ -63,6 +63,9 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
     @Resource
     private IDispatchApplicationReimbursementMapper iDispatchApplicationReimbursementMapper;
 
+    @Resource
+    private ISysManagementMapper iSysManagementMapper;
+
     //方法总管
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -205,8 +208,8 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                         if (reimbursement.getNumber().equals(integer)){
                             SysPersonnel selectById = iSysPersonnelMapper.selectById(reimbursement.getPersonnelId());
                             //告知审核人前往审核
-                            PanXiaoZhang.postWechat(
-                                    selectById.getPhone(),
+                            PanXiaoZhang.postWechatFer(
+                                    selectById.getOpenId(),
                                     "",
                                     "",
                                     personnel.getName() + "提交了调派申请",
@@ -244,8 +247,22 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             if (updateById != 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"修改数据失败");
             }
-            PanXiaoZhang.postWechat(
-                    personnel.getPhone(),
+            Integer integer = PanXiaoZhang.eqDate(dispatchApplicationManagement.getDispathchTime());
+            if (integer < 1){
+                queryWrapper = new QueryWrapper();
+                queryWrapper.eq("personnel_code",dispatchApplicationManagement.getPersonnelCode());
+                queryWrapper.eq("management_id",dispatchApplicationManagement.getAgoManagementId());
+                int update = iManagementPersonnelMapper.update(new ManagementPersonnel(
+                        null,
+                        dispatchApplicationManagement.getLaterManagementId(),
+                        null
+                ), queryWrapper);
+                if (update != 1){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"修改项目组失败");
+                }
+            }
+            PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
                     "",
                     "",
                     "同意调派",
@@ -283,8 +300,8 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             if (!ObjectUtils.isEmpty(jsonParam.getRemark())){
                 remark += "，拒绝原因是：" + jsonParam.getRemark();
             }
-            PanXiaoZhang.postWechat(
-                    personnel.getPhone(),
+            PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
                     "",
                     "",
                     remark,
@@ -316,13 +333,12 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
         //查询该人员信息
-        List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.queryAll(jsonMap);
-        if (sysPersonnels.size() != 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(String.valueOf(jsonMap.get("personnelId")));
+        if (ObjectUtils.isEmpty(sysPersonnel)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"查无此人");
         }
         //删除用户id
         jsonMap.remove("personnelId");
-        SysPersonnel sysPersonnel = sysPersonnels.get(0);
         jsonMap.put("personnelCode",sysPersonnel.getPersonnelCode());
         List<DispatchApplicationManagement> dispatchApplicationManagements = iDispatchApplicationManagementMapper.queryAll(jsonMap);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,dispatchApplicationManagements,"");
@@ -388,6 +404,10 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             ManagementPersonnel managementPersonnel = selectList.get(0);
             if (managementPersonnel.getManagementId().equals(jsonParam.getLaterManagementId())){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"调派后项目重复");
+            }
+            SysManagement management = iSysManagementMapper.selectById(jsonParam.getLaterManagementId());
+            if (!management.getManagementState().equals(1)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
             }
             //添加当前项目数据编码
             jsonParam.setAgoManagementId(managementPersonnel.getManagementId());
@@ -505,8 +525,8 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         }
         mapPersonnel.forEach((key,value)->{
             //告知审核人前往审核
-            PanXiaoZhang.postWechat(
-                    value.getPhone(),
+            PanXiaoZhang.postWechatFer(
+                    value.getOpenId(),
                     "",
                     "",
                     sysPersonnel.getName() + "提交了调派申请",

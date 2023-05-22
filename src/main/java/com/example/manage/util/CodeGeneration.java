@@ -510,7 +510,7 @@ public class CodeGeneration {
     }
     public static void main(String[] args) {
         try {
-            methodMaster("补卡审核人","card_replacement_reimbursement","CardReplacementReimbursement");
+            methodMaster("请假审核表","furlough_reimbursement","FurloughReimbursement");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

@@ -98,7 +98,6 @@ public class WechatMsg {
             //消息主题显示相关map
             Map<String, Object> dataMap = new HashMap<String, Object>();
             //根据自己的模板定义内容和颜色
-            System.out.println(keyword1 + "============");
             //标题
             dataMap.put("first",new DataEntity(keyword1,"#173177"));
             //什么类型的工作

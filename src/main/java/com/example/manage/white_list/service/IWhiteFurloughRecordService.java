@@ -6,10 +6,11 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @avthor 潘小章
- * @date 2023/3/31
+ * @date 2023/5/17
+ * 请假
  */
 
-public interface IWhitePerformanceReportService {
+public interface IWhiteFurloughRecordService {
     ReturnEntity methodMaster(HttpServletRequest request, String name);
     ReturnEntity methodMasterT(HttpServletRequest request, String name);
 }

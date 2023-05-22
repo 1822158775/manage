@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.ICardReplacementReimbursementMapper">
-    <resultMap id="entity" type="com.example.manage.entity.CardReplacementReimbursement">
+<mapper namespace="com.example.manage.mapper.IFurloughReimbursementMapper">
+    <resultMap id="entity" type="com.example.manage.entity.FurloughReimbursement">
         <result column="id" property="id" />
         <result column="personnel_id" property="personnelId" />
         <result column="verifier_remark" property="verifierRemark" />
@@ -24,7 +24,7 @@
         <include refid="safeLIMIT"/>
     </select>
     <sql id="tableSql">
-        manage.card_replacement_reimbursement
+        manage.furlough_reimbursement
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1

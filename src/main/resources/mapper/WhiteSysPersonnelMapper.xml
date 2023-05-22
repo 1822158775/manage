@@ -27,6 +27,10 @@
         <result column="emergency_contact_name" property="emergencyContactName" />
         <result column="emergency_contact_phone" property="emergencyContactPhone" />
         <result column="permanent_residence" property="permanentResidence" />
+        <association property="sysRole" javaType="com.example.manage.entity.SysRole">
+            <result column="r_id" property="id" />
+            <result column="r_name" property="name" />
+        </association>
         <collection property="sysManagement" ofType="com.example.manage.entity.SysManagement">
             <result column="m_id" property="id" />
             <result column="m_name" property="name" />

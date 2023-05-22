@@ -5,7 +5,6 @@
         <result column="id" property="id" />
         <result column="personnel_id" property="personnelId" />
         <result column="verifier_remark" property="verifierRemark" />
-        <result column="verifier_state" property="verifierState" />
         <result column="verifier_time" property="verifierTime" />
         <result column="reissue_code" property="reissueCode" />
         <result column="reissue_state" property="reissueState" />

@@ -28,6 +28,12 @@ public class WhiteCardReplacementRecordController {
         return iWhiteCardReplacementRecordService.methodMaster(request,"cat");
     }
 
+    // 查询月次数
+    @PostMapping(value = "cat_number")
+    public ReturnEntity cat_number(HttpServletRequest request){
+        return iWhiteCardReplacementRecordService.methodMaster(request,"cat_number");
+    }
+
     // 查询历史提交的补卡
     @PostMapping(value = "cat_past_records")
     public ReturnEntity cat_past_records(HttpServletRequest request){
@@ -43,12 +49,16 @@ public class WhiteCardReplacementRecordController {
     // 添加补卡
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iWhiteCardReplacementRecordService.methodMasterT(request,"add");
+        synchronized (this.getClass()) {
+            return iWhiteCardReplacementRecordService.methodMasterT(request, "add");
+        }
     }
 
     // 修改补卡
    @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
-        return iWhiteCardReplacementRecordService.methodMasterT(request,"edit");
+       synchronized (this.getClass()) {
+           return iWhiteCardReplacementRecordService.methodMasterT(request, "edit");
+       }
     }
 }

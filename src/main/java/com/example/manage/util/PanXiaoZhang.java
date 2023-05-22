@@ -1108,6 +1108,7 @@ public class PanXiaoZhang {
     //发送消息
     public static ReturnEntity postWechatFer(String openId,String keyword1,String keyword2,String keyword3,String keyword4,String pagepath){
         try {
+            openId = openId.replaceAll("1234567.*","");
             Token token = JSONObject.parseObject(PanXiaoZhang.getToken(), Token.class);
             ReturnEntity entity = new ReturnEntity();
             if (!ObjectUtils.isEmpty(openId) && token.getSuccess() != false) {
@@ -1334,6 +1335,7 @@ public class PanXiaoZhang {
             //LocalDate date = LocalDate.of(2020, 10, 1); // 给定日期
             LocalDate zonedDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate now = LocalDate.now(); // 当前日期
+            System.out.println("日期" + zonedDateTime.compareTo(now));
             if (zonedDateTime.compareTo(now) < 0) {
                 return true;
             } else {
@@ -1461,6 +1463,27 @@ public class PanXiaoZhang {
         }
         return false;
     }
+    public static Integer eqTime(Date startDate,Date endDate){
+        if (startDate.getTime() == endDate.getTime()) {
+            return 0;
+        } else if (startDate.getTime() > endDate.getTime()) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    public static Integer eqDate(Date date){
+        LocalDate currentDate = LocalDate.now();
+        LocalDate targetDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        int compare = targetDate.compareTo(currentDate);
+        if (compare == 0) {
+            return 0;
+        } else if (compare < 0) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
     public static void main(String[] args) throws ParseException {
 //        // 获取当前时间
 //        Calendar calendar = Calendar.getInstance();
@@ -1497,11 +1520,22 @@ public class PanXiaoZhang {
 //        System.out.println("y1:" + isPtInPoly(y1.getX(), y1.getY(), ps));
 //        System.out.println("y2:" + isPtInPoly(y2.getX(), y2.getY(), ps));
 //        System.out.println("y4:" + isPtInPoly(y4.getX(), y4.getY(), ps));
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("personnelId",21);
-        jsonObject.put("x",31.209617241753474);
-        jsonObject.put("y",121.30406087239584);
-        String send = HttpUtil.send("https://truelemonweb.topvoyage.top/api/white_list/punching_card_record/area", jsonObject.toString(), "");
-        System.out.println(send);
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("personnelId",21);
+//        jsonObject.put("x",31.209617241753474);
+//        jsonObject.put("y",121.30406087239584);
+//        String send = HttpUtil.send("https://truelemonweb.topvoyage.top/api/white_list/punching_card_record/area", jsonObject.toString(), "");
+//        System.out.println(send);
+
+
+        ReturnEntity entity = PanXiaoZhang.postWechatFer(
+                "jkashdkjhsad1234567",
+                "",
+                "",
+                "提交了离职申请",
+                "",
+                ""
+        );
+        System.out.println(entity);
     }
 }

@@ -42,12 +42,16 @@ public class WhiteSysPersonnelController {
     // 添加员工
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iWhiteSysPersonnelService.methodMasterT(request,"add");
+        synchronized (this.getClass()) {
+            return iWhiteSysPersonnelService.methodMasterT(request, "add");
+        }
     }
 
     // 编辑
     @PostMapping(value = "edit")
     public ReturnEntity edit(HttpServletRequest request){
-        return iWhiteSysPersonnelService.methodMasterT(request,"edit");
+        synchronized (this.getClass()) {
+            return iWhiteSysPersonnelService.methodMasterT(request, "edit");
+        }
     }
 }

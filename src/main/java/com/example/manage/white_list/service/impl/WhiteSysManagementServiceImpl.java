@@ -104,9 +104,11 @@ public class WhiteSysManagementServiceImpl implements IWhiteSysManagementService
 
     // 查询模块
     public ReturnEntity cat(HttpServletRequest request) {
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("management_state","1");
         return new ReturnEntity(
                 CodeEntity.CODE_SUCCEED,
-                iSysManagementMapper.selectList(null),
+                iSysManagementMapper.selectList(wrapper),
                 "");
     }
 }

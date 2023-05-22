@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.ICardReplacementReimbursementMapper">
-    <resultMap id="entity" type="com.example.manage.entity.CardReplacementReimbursement">
+<mapper namespace="com.example.manage.mapper.WhiteFurloughReimbursementMapper">
+    <resultMap id="entity" type="com.example.manage.entity.FurloughReimbursement">
         <result column="id" property="id" />
         <result column="personnel_id" property="personnelId" />
         <result column="verifier_remark" property="verifierRemark" />
@@ -10,6 +10,11 @@
         <result column="reissue_state" property="reissueState" />
         <result column="number" property="number" />
     </resultMap>
+    <select id="queryMax" resultType="int" parameterType="hashmap">
+        select max(<include refid="tableSql"/>.number) from
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel"/>
+    </select>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
         <include refid="tableSql"/>
@@ -24,11 +29,14 @@
         <include refid="safeLIMIT"/>
     </select>
     <sql id="tableSql">
-        manage.card_replacement_reimbursement
+        manage.furlough_reimbursement
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
+        <if test="reissueCode != null "> and `reissue_code` = #{reissueCode}</if>
+        <if test="reissueState != null "> and `reissue_state` = #{reissueState}</if>
+        <if test="nePersonnelId != null "> and `personnel_id` != #{nePersonnelId}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

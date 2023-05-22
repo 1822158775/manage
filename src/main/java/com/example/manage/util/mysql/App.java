@@ -11,7 +11,7 @@ import java.util.List;
 public class App {
     public static void main(String[] args) throws Exception {
         Connection connection = DbConfig.getConnection();
-        List<DBEntity> tableField = DbConfig.getTableField(connection, "manage", "sys_audit_management");
+        List<DBEntity> tableField = DbConfig.getTableField(connection, "manage", "card_replacement_record");
         for (int i = 0;i < tableField.size();i++){
             DBEntity dbEntity = tableField.get(i);
             String entity = DbConfig.entity(dbEntity);

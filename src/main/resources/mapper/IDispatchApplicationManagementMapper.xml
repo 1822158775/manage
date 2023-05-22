@@ -34,28 +34,44 @@
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(DISTINCT <include refid="tableSql"/>.id) as id from
+        <include refid="tableSqlDAM" />
+        as
         <include refid="tableSql"/>
         <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
-            <include refid="returnSql"/>
+        <include refid="returnSql"/>
         from
+        (<include refid="tableReturn" /> )
+        as
         <include refid="tableSql"/>
         <include refid="relevanceSql" />
-        <include refid="whereSqlModel" />
+        <include refid="whereSqlModel"/>
         <include refid="safeOrderBy"/>
-        <include refid="safeLIMIT"/>
     </select>
     <sql id="tableSql">
-        manage.dispatch_application_management
+        d_a_m
     </sql>
     <sql id="tableSqlPersonnel">
         manage.sys_personnel
     </sql>
     <sql id="tableSqlDAReimbursement">
         manage.dispatch_application_reimbursement
+    </sql>
+    <sql id="tableSqlDAM">
+        manage.dispatch_application_management
+    </sql>
+    <!--  子表  -->
+    <sql id="tableReturn">
+        select
+        <include refid="tableSqlDAM"/>.*
+        from
+        <include refid="tableSqlDAM"/>
+        <include refid="whereSqlModelDAM" />
+        <include refid="safeOrderByDAM"/>
+        <include refid="safeLIMIT"/>
     </sql>
     <!--  返回  -->
     <sql id="returnSql">
@@ -85,13 +101,19 @@
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
         <if test="personnelCode != null "> and <include refid="tableSql" />.`personnel_code` = #{personnelCode}</if>
         <if test="personnelId != null ">
-         and
+            and
             <include refid="tableSqlDAReimbursement" />.`personnel_id` = #{personnelId}
-         </if>
+        </if>
         <if test="type == 'gt'">
             and
             <include refid="tableSqlDAReimbursement" />.`number` >= <include refid="tableSql"/>.`max_number`
         </if>
+    </sql>
+    <sql id="whereSqlModelDAM">
+        where 1 = 1
+        <if test="id != null "> and <include refid="tableSqlDAM"/>.`id` = #{id}</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlDAM" />.`applicant` like concat('%',#{keyWord},'%')</if>
+        <if test="personnelCode != null "> and <include refid="tableSqlDAM" />.`personnel_code` = #{personnelCode}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
@@ -102,5 +124,8 @@
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc,<include refid="tableSqlDAReimbursement" />.`number` desc
+    </sql>
+    <sql id="safeOrderByDAM">
+        order by <include refid="tableSqlDAM"/>.id desc
     </sql>
 </mapper>

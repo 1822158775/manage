@@ -240,7 +240,11 @@
     </sql>
     <!--  主表分页  -->
     <sql id="safeLIMIT">
-        LIMIT #{index},#{pageNum}
+        <if test="queryAll != 'yes'">
+            <if test="pageNum != null and pageNum != ''">
+                LIMIT #{index},#{pageNum}
+            </if>
+        </if>
     </sql>
 
     <!--  进行关联表  -->

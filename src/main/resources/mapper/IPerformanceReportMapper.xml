@@ -5,7 +5,7 @@
         <result column="id" property="id" />
         <result column="personnel_code" property="personnelCode" />
         <result column="report_time" property="reportTime" />
-        <result column="report_status" property="reportStatus" />
+        <result column="update_time" property="updateTime" />
         <result column="management_id" property="managementId" />
         <result column="report_coding" property="reportCoding" />
         <result column="approver_personnel_id" property="approverPersonnelId" />
@@ -85,7 +85,6 @@
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
-        <if test="reportStatus != null and reportStatus != '' "> and <include refid="tableSql" />.`report_status` = #{reportStatus}</if>
         <if test="keyWord != null and keyWord != ''"> and sys_personnel.`name` like concat('%',#{keyWord},'%')</if>
         <if test="personnelId != null "> and sys_personnel.`id` = #{personnelId}</if>
         <if test="approverState != null and approverState != ''"> and <include refid="tableSql" />.`approver_state` = #{approverState}</if>
@@ -105,7 +104,8 @@
         </if>
         <if test="orderByTime == 'yes'">
             order by
-                <include refid="tableSql"/>.report_time desc
+                <include refid="tableSql"/>.update_time desc
+                ,<include refid="tableSql"/>.report_time desc
                 ,<include refid="tableSql"/>.approver_time desc
         </if>
     </sql>

@@ -24,7 +24,9 @@ public class WhitePerformanceReportController {
     //提交业绩数据
     @PostMapping(value = "add")
     private ReturnEntity add(HttpServletRequest request){
-        return iWhitePerformanceReportService.methodMaster(request,"add");
+        synchronized (this.getClass()) {
+            return iWhitePerformanceReportService.methodMasterT(request, "add");
+        }
     }
 
     //查询业绩数据
@@ -42,7 +44,17 @@ public class WhitePerformanceReportController {
     //审批业绩
     @PostMapping(value = "edit")
     private ReturnEntity edit(HttpServletRequest request){
-        return iWhitePerformanceReportService.methodMaster(request,"edit");
+        synchronized (this.getClass()) {
+            return iWhitePerformanceReportService.methodMasterT(request, "edit");
+        }
+    }
+
+    //修改业绩业绩
+    @PostMapping(value = "update")
+    private ReturnEntity update(HttpServletRequest request){
+        synchronized (this.getClass()) {
+            return iWhitePerformanceReportService.methodMasterT(request, "update");
+        }
     }
 
     //查询业绩审批激活数据

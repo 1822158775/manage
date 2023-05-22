@@ -45,6 +45,8 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
     @Value("${role.manage3}")
     private Integer roleId3;
 
+    @Value("${role.manage3}")
+    public Integer manage;
 
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
@@ -165,6 +167,11 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                     List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
                     if (sysPersonnels.size() > 0){
                         return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnels.get(0).getName());
+                    }
+                }else if (roleId.equals(manage)){//判断主管是否重复拥有项目
+                    List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
+                    if (sysPersonnels.size() > 0){
+                        return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属主管" + sysPersonnels.get(0).getName());
                     }
                 }
                 map.put(integer * -1,new ManagementPersonnel(

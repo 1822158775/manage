@@ -29,12 +29,16 @@ public class WhiteManageBankAccountController {
     // 添加银行账户管理
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){
-        return iWhiteManageBankAccountService.methodMaster(request,"add");
+        synchronized (this.getClass()) {
+            return iWhiteManageBankAccountService.methodMaster(request, "add");
+        }
     }
 
     // 修改银行账户管理
     @PostMapping(value = "edit")
     public ReturnEntity exit(HttpServletRequest request){
-        return iWhiteManageBankAccountService.methodMaster(request,"edit");
+        synchronized (this.getClass()) {
+            return iWhiteManageBankAccountService.methodMaster(request, "edit");
+        }
     }
 }

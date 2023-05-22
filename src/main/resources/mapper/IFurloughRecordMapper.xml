@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.ICardReplacementReimbursementMapper">
-    <resultMap id="entity" type="com.example.manage.entity.CardReplacementReimbursement">
+<mapper namespace="com.example.manage.mapper.IFurloughRecordMapper">
+    <resultMap id="entity" type="com.example.manage.entity.FurloughRecord">
         <result column="id" property="id" />
+        <result column="personnel_name" property="personnelName" />
         <result column="personnel_id" property="personnelId" />
-        <result column="verifier_remark" property="verifierRemark" />
-        <result column="verifier_time" property="verifierTime" />
-        <result column="reissue_code" property="reissueCode" />
+        <result column="management_id" property="managementId" />
+        <result column="management_name" property="managementName" />
         <result column="reissue_state" property="reissueState" />
-        <result column="number" property="number" />
+        <result column="max_number" property="maxNumber" />
+        <result column="reissue_code" property="reissueCode" />
+        <result column="reissue_type" property="reissueType" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="applicant_time" property="applicantTime" />
+        <result column="verifier_remark" property="verifierRemark" />
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
@@ -24,11 +30,12 @@
         <include refid="safeLIMIT"/>
     </select>
     <sql id="tableSql">
-        manage.card_replacement_reimbursement
+        manage.furlough_record
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
+        <if test="personnelId != null "> and `personnel_id` = #{personnelId}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
