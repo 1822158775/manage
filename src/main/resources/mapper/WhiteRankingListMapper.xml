@@ -12,6 +12,7 @@
         <result column="artificial" property="artificial" />
         <result column="refuse" property="refuse" />
     </resultMap>
+
     <!--  查询数量  -->
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         <choose>
