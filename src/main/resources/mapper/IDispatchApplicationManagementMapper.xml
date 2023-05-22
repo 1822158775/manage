@@ -42,7 +42,7 @@
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
-            <include refid="returnSql"/>
+        <include refid="returnSql"/>
         from
         (<include refid="tableReturn" /> )
         as
@@ -101,9 +101,9 @@
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
         <if test="personnelCode != null "> and <include refid="tableSql" />.`personnel_code` = #{personnelCode}</if>
         <if test="personnelId != null ">
-         and
+            and
             <include refid="tableSqlDAReimbursement" />.`personnel_id` = #{personnelId}
-         </if>
+        </if>
         <if test="type == 'gt'">
             and
             <include refid="tableSqlDAReimbursement" />.`number` >= <include refid="tableSql"/>.`max_number`

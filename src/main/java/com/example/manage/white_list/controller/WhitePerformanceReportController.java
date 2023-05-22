@@ -25,7 +25,7 @@ public class WhitePerformanceReportController {
     @PostMapping(value = "add")
     private ReturnEntity add(HttpServletRequest request){
         synchronized (this.getClass()) {
-            return iWhitePerformanceReportService.methodMaster(request, "add");
+            return iWhitePerformanceReportService.methodMasterT(request, "add");
         }
     }
 
@@ -45,7 +45,15 @@ public class WhitePerformanceReportController {
     @PostMapping(value = "edit")
     private ReturnEntity edit(HttpServletRequest request){
         synchronized (this.getClass()) {
-            return iWhitePerformanceReportService.methodMaster(request, "edit");
+            return iWhitePerformanceReportService.methodMasterT(request, "edit");
+        }
+    }
+
+    //修改业绩业绩
+    @PostMapping(value = "update")
+    private ReturnEntity update(HttpServletRequest request){
+        synchronized (this.getClass()) {
+            return iWhitePerformanceReportService.methodMasterT(request, "update");
         }
     }
 

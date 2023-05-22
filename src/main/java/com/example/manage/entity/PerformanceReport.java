@@ -24,13 +24,17 @@ public class PerformanceReport implements Serializable {
     @TableId(value = "id",type = IdType.AUTO)
     public Integer id;//数据编码
     @TableField(value = "personnel_code")
+
     public String personnelCode;//资源代码
     @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @TableField(value = "report_time")
     public String reportTime;//报告时间
-    @TableField(value = "report_status")
-    public String reportStatus;//拒绝，转人工，批核未激活,批核已激活
+
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    @TableField(value = "update_time")
+    public String updateTime;//修改时间
     @TableField(value = "management_id")
     public Integer managementId;//项目数据编码
     @TableField(value = "report_coding")
@@ -81,5 +85,25 @@ public class PerformanceReport implements Serializable {
         this.commentsFromReviewers = commentsFromReviewers;
         this.approverState = approverState;
         this.approverTime = approverTime;
+    }
+
+    public PerformanceReport(Integer id, String personnelCode, String reportTime, String updateTime, Integer managementId, String reportCoding, Integer approverPersonnelId, String remark, String commentsFromReviewers, String approverState, Integer cardTypeId, String approverTime, Integer reportNumber, Integer entryNumber, Integer approvedNumber, Integer validNumber, Integer refuseNumber) {
+        this.id = id;
+        this.personnelCode = personnelCode;
+        this.reportTime = reportTime;
+        this.updateTime = updateTime;
+        this.managementId = managementId;
+        this.reportCoding = reportCoding;
+        this.approverPersonnelId = approverPersonnelId;
+        this.remark = remark;
+        this.commentsFromReviewers = commentsFromReviewers;
+        this.approverState = approverState;
+        this.cardTypeId = cardTypeId;
+        this.approverTime = approverTime;
+        this.reportNumber = reportNumber;
+        this.entryNumber = entryNumber;
+        this.approvedNumber = approvedNumber;
+        this.validNumber = validNumber;
+        this.refuseNumber = refuseNumber;
     }
 }

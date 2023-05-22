@@ -44,13 +44,13 @@
     <!--  返回  -->
     <sql id="returnSql">
         <include refid="tableSqlCardType" />.`name` as card_type_name,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end),0) AS count_number,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end),0) AS approved,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.valid_number else 0 end),0) AS activation,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.refuse_number else 0 end),0) AS refuse,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end) -
-        SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end) -
-        SUM(DISTINCT case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.refuse_number else 0 end),0) AS artificial
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end),0) AS count_number,
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end),0) AS approved,
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.valid_number else 0 end),0) AS activation,
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.refuse_number else 0 end),0) AS refuse,
+        coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end) -
+        SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end) -
+        SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.refuse_number else 0 end),0) AS artificial
     </sql>
     <!--  表名称  -->
     <sql id="tableSqlCardType">
@@ -100,10 +100,10 @@
     <!--  进行关联人员表 -->
     <sql id="relevanceSqlPpersonnel">
         LEFT JOIN
-            <include refid="tableSqlPReport" />
+        <include refid="tableSqlPReport" />
         ON
-            <include refid="tableSqlPersonnel" />.personnel_code =
-            <include refid="tableSqlPReport" />.personnel_code
+        <include refid="tableSqlPersonnel" />.personnel_code =
+        <include refid="tableSqlPReport" />.personnel_code
         <if test="type == 'day'">
             <include refid="todayDay" />
         </if>
@@ -122,10 +122,10 @@
         <include refid="reportApproverState" />
 
         LEFT JOIN
-            <include refid="tableSqlSManagement" />
+        <include refid="tableSqlSManagement" />
         ON
-            <include refid="tableSqlSManagement" />.id =
-            <include refid="tableSqlPReport" />.management_id
+        <include refid="tableSqlSManagement" />.id =
+        <include refid="tableSqlPReport" />.management_id
         <if test="managementId != null and managementId != ''">
             and <include refid="tableSqlPReport" />.management_id = #{managementId}
         </if>
@@ -137,10 +137,10 @@
         </if>
 
         LEFT JOIN
-            <include refid="tableSqlCardType" />
+        <include refid="tableSqlCardType" />
         ON
-            <include refid="tableSqlCardType" />.id =
-            <include refid="tableSqlPReport" />.card_type_id
+        <include refid="tableSqlCardType" />.id =
+        <include refid="tableSqlPReport" />.card_type_id
     </sql>
     <!--  条件  -->
     <sql id="whereSqlModel">
@@ -174,40 +174,40 @@
     <sql id="safeGroupBy">
         GROUP BY
         <choose>
-<!--            <when test="groupByManagement == 'yes' and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
-<!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
-<!--            </when>-->
+            <!--            <when test="groupByManagement == 'yes' and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
+            <!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
+            <!--            </when>-->
 
-<!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel != 'yes'">-->
-<!--                <include refid="tableSqlSManagement" />.id-->
-<!--            </when>-->
-<!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
-<!--                <include refid="tableSqlCardType" />.id-->
-<!--            </when>-->
-<!--            <when test="groupByManagement != 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
-<!--                <include refid="tableSqlPersonnel" />.id-->
-<!--            </when>-->
+            <!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel != 'yes'">-->
+            <!--                <include refid="tableSqlSManagement" />.id-->
+            <!--            </when>-->
+            <!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
+            <!--                <include refid="tableSqlCardType" />.id-->
+            <!--            </when>-->
+            <!--            <when test="groupByManagement != 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
+            <!--                <include refid="tableSqlPersonnel" />.id-->
+            <!--            </when>-->
 
-<!--            <when test="groupByManagement == 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
-<!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id-->
-<!--            </when>-->
-<!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
-<!--                <include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
-<!--            </when>-->
-<!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
-<!--                <include refid="tableSqlPersonnel" />.id,<include refid="tableSqlSManagement" />.id-->
-<!--            </when>-->
-                <when test="managementId != null and managementId != ''">
-                    <include refid="tableSqlPersonnel" />.id
-                </when>
-                <otherwise>
-                    <include refid="tableSqlSManagement" />.id
-                </otherwise>
-            </choose>
-        </sql>
-        <!--  排序  -->
+            <!--            <when test="groupByManagement == 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
+            <!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id-->
+            <!--            </when>-->
+            <!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
+            <!--                <include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
+            <!--            </when>-->
+            <!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
+            <!--                <include refid="tableSqlPersonnel" />.id,<include refid="tableSqlSManagement" />.id-->
+            <!--            </when>-->
+            <when test="managementId != null and managementId != ''">
+                <include refid="tableSqlPersonnel" />.id
+            </when>
+            <otherwise>
+                <include refid="tableSqlSManagement" />.id
+            </otherwise>
+        </choose>
+    </sql>
+    <!--  排序  -->
     <sql id="safeOrderBy">
-        ORDER BY count_number DESC
+        ORDER BY approved DESC,activation DESC,<include refid="tableSqlPReport" />.report_time
     </sql>
     <!--  分页  -->
     <sql id="safeLIMIT">
@@ -223,7 +223,7 @@
                 <include refid="tableSqlCardType" />.`name` as card_type_name,
                 <include refid="tableSqlPReport" />.`report_status` as report_status,
                 CONCAT('[\"有效\",\"',
-                GROUP_CONCAT(DISTINCT <include refid="tableSqlPReport" />.`report_status`
+                GROUP_CONCAT(<include refid="tableSqlPReport" />.`report_status`
                 ORDER BY
                 <include refid="tableSqlPersonnel" />.id SEPARATOR '\"\,\"'),'\"]')
                 as
@@ -247,7 +247,7 @@
                 <include refid="tableSqlSManagement" />.`name`,
                 <include refid="tableSqlCardType" />.`name` as card_type_name,
                 CONCAT('[\"有效\",\"',
-                GROUP_CONCAT(DISTINCT <include refid="tableSqlPReport" />.`report_status`),'\"]')
+                GROUP_CONCAT(<include refid="tableSqlPReport" />.`report_status`),'\"]')
                 as
                 already_report_status,
                 sum(case when <include refid="tableSqlPReport" />.`report_status` in ('批核已激活','批核未激活') then <include refid="tableSqlPReport" />.report_number else 0 end) AS count_number,

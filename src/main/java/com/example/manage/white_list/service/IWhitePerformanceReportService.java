@@ -11,4 +11,5 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface IWhitePerformanceReportService {
     ReturnEntity methodMaster(HttpServletRequest request, String name);
+    ReturnEntity methodMasterT(HttpServletRequest request, String name);
 }

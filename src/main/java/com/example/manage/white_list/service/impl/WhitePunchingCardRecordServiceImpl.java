@@ -215,7 +215,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         }else {
             msg = "未进入打卡范围";
         }
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,locationInRange,msg);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,jsonParam,msg);
     }
 
     //查询当天打卡记录

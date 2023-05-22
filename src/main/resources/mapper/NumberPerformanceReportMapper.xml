@@ -16,41 +16,41 @@
     </resultMap>
     <select id="queryOne" resultMap="entity" parameterType="hashmap">
         select
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.entry_number else 0 end),0)
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.entry_number else 0 end),0)
         as
-            `all`
+        `all`
         ,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.approved_number else 0 end),0)
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.approved_number else 0 end),0)
         as
-            `approve`
+        `approve`
         ,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.valid_number else 0 end),0)
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.valid_number else 0 end),0)
         as
-            `active`
+        `active`
         ,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.refuse_number else 0 end),0)
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.refuse_number else 0 end),0)
         as
-            `refuse`
+        `refuse`
         ,
-        coalesce(SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.entry_number else 0 end) -
-                SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.approved_number else 0 end) -
-                SUM(DISTINCT case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.refuse_number else 0 end),0)
-            as
-            `pendding`
+        coalesce(SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.entry_number else 0 end) -
+        SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.approved_number else 0 end) -
+        SUM(case when  <include refid="tableSql" />.id  then <include refid="tableSql" />.refuse_number else 0 end),0)
+        as
+        `pendding`
         ,
         coalesce((<include refid="acCountSql"/>
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel2"/>
-            <include refid="curdateTime" />),0)
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel2"/>
+        <include refid="curdateTime" />),0)
         as
-            `this_month_active`
+        `this_month_active`
         ,
         coalesce((<include refid="approvedCountSql"/>
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel2"/>
-            <include refid="curdateTime" />),0)
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel2"/>
+        <include refid="curdateTime" />),0)
         as
-            `this_month_approve`
+        `this_month_approve`
         from
         <include refid="tableSql" />
         <include refid="relevanceSql" />
@@ -67,9 +67,9 @@
     <!--  查询总数  -->
     <sql id="countSql">
         SELECT
-            SUM(<include refid="tableSql" />.report_number)
+        SUM(<include refid="tableSql" />.report_number)
         FROM
-            <include refid="tableSql" />
+        <include refid="tableSql" />
     </sql>
     <!--  查询总数  -->
     <sql id="acCountSql">

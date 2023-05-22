@@ -34,7 +34,7 @@
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
-            <include refid="returnSql"/>
+        <include refid="returnSql"/>
         from
         (<include refid="tableReturn" /> )
         as
