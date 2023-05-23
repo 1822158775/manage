@@ -1,24 +1,14 @@
 package com.example.manage.config;
 
-import com.example.manage.entity.ManageReimbursementCategory;
-import com.example.manage.entity.SysPersonnel;
+import com.example.manage.job.SchedulingSysManagementService;
+import com.example.manage.job.SchedulingSysPersonnelService;
 import com.example.manage.mapper.IManageReimbursementCategoryMapper;
-import com.example.manage.mapper.ISysPersonnelMapper;
-import com.example.manage.mapper.IWhiteManageReimbursementCategoryMapper;
-import com.example.manage.util.PanXiaoZhang;
-import com.example.manage.util.RedisUtil;
-import com.example.manage.white_list.service.IWhiteSysPersonnelService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @avthor 潘小章
@@ -30,7 +20,10 @@ import java.util.Map;
 public class SchedulingConfig {
 
     @Resource
-    private IWhiteSysPersonnelService iWhiteSysPersonnelService;
+    private SchedulingSysManagementService schedulingSysManagement;
+
+    @Resource
+    private SchedulingSysPersonnelService schedulingSysPersonnelService;
 
     @Resource
     private IManageReimbursementCategoryMapper iManageReimbursementCategoryMapper;
@@ -73,13 +66,19 @@ public class SchedulingConfig {
     //每天10点查询2天后的人员生日和周年纪念
     @Scheduled(cron="0 0 10 * * ?")
     public void ExecuteOncePerSecond(){
-        iWhiteSysPersonnelService.birthdayInform();
+        schedulingSysPersonnelService.birthdayInform();
     }
 
     //每天23点查询离职
     @Scheduled(cron="0 0 23 * * ?")
     public void DimissionOncePerSecond(){
-        iWhiteSysPersonnelService.dimissionInform();
+        schedulingSysPersonnelService.dimissionInform();
+    }
+
+    //每月1号凌晨1点执行定时任务
+    @Scheduled(cron = "0 0 1 1 * ?")
+    public void MonthHoursDayofMonth(){
+        schedulingSysManagement.windUpAnAccount();
     }
 
     //@Scheduled(cron = "59 59 23 * * ?")
