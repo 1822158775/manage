@@ -95,7 +95,7 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
 
         Object thisEndTime = map.get("endTime");
         if (ObjectUtils.isEmpty(thisEndTime)){
-            thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 1);
+            thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 0);
         }
 
         Long dayTime = PanXiaoZhang.getDayTime(String.valueOf(thisStartTime), String.valueOf(thisEndTime));
@@ -123,6 +123,8 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
         map.put("thisEndTime",thisEndTime + " 23:59:59");
         map.put("thatStartTime",thatStartTime + " 00:00:00");
         map.put("thatEndTime",thatEndTime + " 23:59:59");
+        map.put("startTime",thisStartTime);
+        map.put("endTime",thisEndTime);
 
         DataStatistics dataStatistics = whiteDataStatisticsMapper.queryAll(map);
         ArrayList<Object> arrayList = new ArrayList<>();
