@@ -13,12 +13,14 @@ import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.white_list.service.IWhiteRankingListService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -80,6 +82,19 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
         }else {
             map.put("inManagementId",toArray);
         }
+
+        Object thisStartTime = map.get("startTime");
+        if (ObjectUtils.isEmpty(thisStartTime)){
+            thisStartTime = DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
+        }
+
+        Object thisEndTime = map.get("endTime");
+        if (ObjectUtils.isEmpty(thisEndTime)){
+            thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 1);
+        }
+
+        map.put("thisStartTime",thisStartTime);
+        map.put("thisEndTime",thisEndTime);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,whiteRankingListMapper.queryAll(map),"");
     }
 }

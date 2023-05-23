@@ -30,6 +30,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -1206,6 +1207,36 @@ public class PanXiaoZhang {
                 false
         );
     }
+
+    public static Long getDayTime(String startTime,String endTime){
+
+        // 解析日期字符串为LocalDate对象
+        LocalDate localDate1 = LocalDate.parse(startTime, DateTimeFormatter.ISO_DATE);
+        LocalDate localDate2 = LocalDate.parse(endTime, DateTimeFormatter.ISO_DATE);
+
+        // 计算日期差异
+        long daysBetween = ChronoUnit.DAYS.between(localDate1, localDate2);
+        return daysBetween;
+    }
+
+    public static String GetNextDay(String dateString,Integer integer) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar calendar = Calendar.getInstance();
+        Date date;
+
+        try {
+            date = sdf.parse(dateString);
+            calendar.setTime(date);
+            calendar.add(Calendar.DAY_OF_MONTH, integer);
+            date = calendar.getTime();
+            String nextDay = sdf.format(date);
+            return nextDay;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
+    }
+
     /**
      * 两个日期相差多少年多少天
      * @param targetDate 目标日期 不能为null
@@ -1529,13 +1560,14 @@ public class PanXiaoZhang {
 
 
         ReturnEntity entity = PanXiaoZhang.postWechatFer(
-                "jkashdkjhsad1234567",
+                "o_QtX5m2Zb6wAt_xqtr1gen-Jghk1234567",
                 "",
                 "",
-                "提交了离职申请",
+                "补卡",
                 "",
-                ""
+                "/pages/guide/guide?from=zn&redirect_url=/packageZn/pages/repair_check_list/repair_check_list?fromDispatchVerify=true"
         );
-        System.out.println(entity);
+        //System.out.println(entity);
+
     }
 }

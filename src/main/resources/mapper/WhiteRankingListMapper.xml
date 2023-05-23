@@ -89,6 +89,9 @@
         <if test="type == 'month'">
             <include refid="todayMonth" />
         </if>
+        <if test="type == '自定义'">
+            <include refid="todayStartCustom" />
+        </if>
         <include refid="reportApproverState" />
         <if test="reportStatus != null and reportStatus != ''">
             and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
@@ -113,6 +116,9 @@
         </if>
         <if test="type == 'month'">
             <include refid="todayMonth" />
+        </if>
+        <if test="type == '自定义'">
+            <include refid="todayStartCustom" />
         </if>
         <if test="reportStatus != null and reportStatus != ''">
             and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
@@ -165,6 +171,10 @@
     <!--  本月  -->
     <sql id="todayMonth">
         AND DATE_FORMAT( <include refid="tableSqlPReport" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+    </sql>
+    <!--  自定义日期  -->
+    <sql id="todayStartCustom">
+        AND <include refid="tableSqlPReport" />.report_time BETWEEN #{thisStartTime} AND #{thisEndTime}
     </sql>
     <!--  通过状态  -->
     <sql id="reportApproverState">

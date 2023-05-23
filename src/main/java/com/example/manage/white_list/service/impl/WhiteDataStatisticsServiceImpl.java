@@ -13,12 +13,14 @@ import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.white_list.service.IWhiteDataStatisticsService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -80,16 +82,51 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
 
         Integer[] toArray = integerArrayList.toArray(new Integer[integerArrayList.size()]);
 
-
-
         if (selectList.size() < 1){
             map.put("inManagementId",null);
         }else {
             map.put("inManagementId",toArray);
         }
 
+        Object thisStartTime = map.get("startTime");
+        if (ObjectUtils.isEmpty(thisStartTime)){
+            thisStartTime = DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
+        }
+
+        Object thisEndTime = map.get("endTime");
+        if (ObjectUtils.isEmpty(thisEndTime)){
+            thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 1);
+        }
+
+        Long dayTime = PanXiaoZhang.getDayTime(String.valueOf(thisStartTime), String.valueOf(thisEndTime));
+
+        if (dayTime > 31){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"查询天数最多一个月");
+        }
+
+        if (dayTime < 0){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"开始时间不可以大于结束时间");
+        }
+
+        Object thatEndTime = map.get("thatEndTime");
+        if (ObjectUtils.isEmpty(thatEndTime)){
+            thatEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), -1);
+        }
+
+        Object thatStartTime = map.get("thatStartTime");
+        if (ObjectUtils.isEmpty(thatStartTime)){
+            thatStartTime = PanXiaoZhang.GetNextDay(String.valueOf(thatEndTime), Integer.valueOf((dayTime * -1) + ""));
+        }
+
+
+        map.put("thisStartTime",thisStartTime + " 00:00:00");
+        map.put("thisEndTime",thisEndTime + " 23:59:59");
+        map.put("thatStartTime",thatStartTime + " 00:00:00");
+        map.put("thatEndTime",thatEndTime + " 23:59:59");
+
         DataStatistics dataStatistics = whiteDataStatisticsMapper.queryAll(map);
         ArrayList<Object> arrayList = new ArrayList<>();
+        arrayList.addAll(dataStatistics.getDataStatisticsTodayCustoms());
         arrayList.addAll(dataStatistics.getDataStatisticsTodayDays());
         arrayList.addAll(dataStatistics.getDataStatisticsTodayWeeks());
         arrayList.addAll(dataStatistics.getDataStatisticsTodayMonths());

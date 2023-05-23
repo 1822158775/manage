@@ -62,22 +62,88 @@
             <result column="today_month_ratio_growth_rate" property="ratioGrowthRate" />
         </collection>
 
+        <collection property="dataStatisticsTodayCustoms" ofType="com.example.manage.entity.data_statistics.DataStatisticsTodayCustom">
+            <result column="today_custom_activation" property="activation" />
+            <result column="today_custom_approved" property="approved" />
+            <result column="today_custom_artificial" property="artificial" />
+            <result column="today_custom_refuse" property="refuse" />
+            <result column="today_custom_all" property="all" />
+
+            <result column="today_custom_name" property="nametype" />
+            <result column="today_custom_start_time" property="startTime" />
+            <result column="today_custom_end_time" property="endTime" />
+
+            <result column="today_custom_activation_growth_rate" property="activationGrowthRate" />
+            <result column="today_custom_approved_growth_rate" property="approvedGrowthRate" />
+            <result column="today_custom_artificial_growth_rate" property="artificialGrowthRate" />
+            <result column="today_custom_refuse_growth_rate" property="refuseGrowthRate" />
+            <result column="today_custom_all_growth_rate" property="allGrowthRate" />
+            <result column="today_custom_valid_growth_rate" property="validGrowthRate" />
+            <result column="today_custom_ratio_growth_rate" property="ratioGrowthRate" />
+        </collection>
+
     </resultMap>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select
+            select
             count(1)
 
             ,'日' as today_day_name
             ,'周' as today_week_name
             ,'月' as today_month_name
+            ,'自定义' as today_custom_name
 
             ,(SELECT CURDATE()) as today_day_start_time
 
-            ,(select date_sub(curdate(),INTERVAL WEEKDAY(curdate()) + 1 DAY)) as today_week_start_time
+            ,(select date_sub(curdate(),INTERVAL WEEKDAY(curdate()) DAY)) as today_week_start_time
             ,(select date_sub(curdate(),INTERVAL WEEKDAY(curdate()) - 6 DAY)) as today_week_end_time
 
             ,(SELECT concat(date_format(LAST_DAY(now()),'%Y-%m-'),'01')) as today_month_start_time
             ,(SELECT LAST_DAY(now())) as today_month_end_time
+
+            ,#{startTime}  as today_custom_start_time
+            ,#{endTime}  as today_custom_end_time
+
+            ,today_start_custom.valid_number as today_custom_activation
+            ,today_start_custom.approved_number as today_custom_approved
+            ,today_start_custom.entry_number - today_start_custom.approved_number - today_start_custom.refuse_number  as today_custom_artificial
+            ,today_start_custom.refuse_number as today_custom_refuse
+            ,today_start_custom.entry_number as today_custom_all
+
+            ,format(coalesce((today_start_custom.valid_number
+            -
+            today_end_yester.valid_number)
+            /
+            today_end_yester.valid_number
+            *
+            <include refid="percentageSql" />,0) , 2)
+            as
+            today_custom_activation_growth_rate
+
+            ,format(coalesce((today_start_custom.approved_number - today_start_custom.valid_number)
+            -
+            (today_end_yester.approved_number - today_end_yester.valid_number)
+            /
+            (today_end_yester.approved_number - today_end_yester.valid_number)
+            *
+            <include refid="percentageSql" />,0),2)
+            as
+            today_custom_approved_growth_rate
+
+            ,format(coalesce((today_start_custom.approved_number / today_start_custom.entry_number)
+            *
+            <include refid="percentageSql" />,0),2)
+            as
+            today_custom_ratio_growth_rate
+
+            ,format(coalesce((today_start_custom.approved_number
+            -
+            (today_end_yester.approved_number))
+            /
+            (today_end_yester.approved_number)
+            *
+            <include refid="percentageSql" />,0),2)
+            as
+            today_custom_valid_growth_rate
 
             ,today_day.valid_number as today_day_activation
             ,today_day.approved_number as today_day_approved
@@ -183,78 +249,102 @@
             <include refid="percentageSql" />,0),2)
             as
             today_month_valid_growth_rate
-		from
+            from
             (
             SELECT
-                <include refid="returnCount" />
+            <include refid="returnCount" />
             FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="todayDay" />
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="todayStartCustom" />
             )
             as
-                today_day
+            today_start_custom
             ,
             (
             SELECT
-                <include refid="returnCount" />
+            <include refid="returnCount" />
             FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="todayWeek" />
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="todayEndCustom" />
             )
             as
-                today_week
+            today_end_yester
             ,
             (
             SELECT
-                <include refid="returnCount" />
+            <include refid="returnCount" />
             FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="todayMonth" />
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="todayDay" />
             )
             as
-                today_month
+            today_day
             ,
             (
             SELECT
-                <include refid="returnCount" />
+            <include refid="returnCount" />
             FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="yesterday" />
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="yesterday" />
             )
             as
-                today_yester
+            today_yester
             ,
             (
             SELECT
-                <include refid="returnCount" />
+            <include refid="returnCount" />
             FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="lastWeek" />
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="todayWeek" />
             )
             as
-                last_week
+            today_week
             ,
             (
             SELECT
-                <include refid="returnCount" />
+            <include refid="returnCount" />
             FROM
-                <include refid="tableSql" />
-                <include refid="relevanceSql" />
-                <include refid="whereSqlModel" />
-                <include refid="lastMonth" />
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="todayMonth" />
             )
             as
-                last_month
+            today_month
+            ,
+            (
+            SELECT
+            <include refid="returnCount" />
+            FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="lastWeek" />
+            )
+            as
+            last_week
+            ,
+            (
+            SELECT
+            <include refid="returnCount" />
+            FROM
+            <include refid="tableSql" />
+            <include refid="relevanceSql" />
+            <include refid="whereSqlModel" />
+            <include refid="lastMonth" />
+            )
+            as
+            last_month
     </select>
     <sql id="whereSqlModel">
         where 1 = 1
@@ -315,6 +405,14 @@
     <sql id="todayMonth">
         AND DATE_FORMAT( <include refid="tableSqlPReport" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
     </sql>
+    <!--  自定义日期  -->
+    <sql id="todayStartCustom">
+        AND <include refid="tableSqlPReport" />.report_time BETWEEN #{thisStartTime} AND #{thisEndTime}
+    </sql>
+    <!--  自定义日期  -->
+    <sql id="todayEndCustom">
+        AND <include refid="tableSqlPReport" />.report_time BETWEEN #{thatStartTime} AND #{thatEndTime}
+    </sql>
     <!--  30分钟内记录  -->
     <sql id="within30Minutes">
         AND <include refid="tableSqlPReport" />.report_time > CURRENT_TIMESTAMP - INTERVAL 30 MINUTE
@@ -329,7 +427,7 @@
     </sql>
     <!--  上周记录  -->
     <sql id="lastWeek">
-        AND YEARWEEK(date_format(<include refid="tableSqlPReport" />.report_time,'%Y-%m-%d')) = YEARWEEK(now()) - 1
+        AND WEEK(<include refid="tableSqlPReport" />.report_time, 1) = WEEK(DATE_SUB(NOW(), INTERVAL 1 WEEK), 1)
     </sql>
     <!--  上月记录  -->
     <sql id="lastMonth">

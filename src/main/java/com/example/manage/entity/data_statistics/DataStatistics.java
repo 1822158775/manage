@@ -17,4 +17,5 @@ public class DataStatistics implements Serializable {
     public List<DataStatisticsTodayDay> dataStatisticsTodayDays;//本日
     public List<DataStatisticsTodayWeek> dataStatisticsTodayWeeks;//本周
     public List<DataStatisticsTodayMonth> dataStatisticsTodayMonths;//本月s
+    public List<DataStatisticsTodayCustom> dataStatisticsTodayCustoms;//自定义
 }

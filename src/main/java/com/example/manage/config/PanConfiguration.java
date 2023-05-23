@@ -1,5 +1,8 @@
 package com.example.manage.config;
 
+import com.example.manage.job.SchedulingSysManagementService;
+import com.example.manage.mapper.ICardTypeMapper;
+import com.example.manage.mapper.IPerformanceReportMapper;
 import com.example.manage.service.IPunchingCardRecordService;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
@@ -49,11 +52,16 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Resource
     private IPunchingCardRecordService iPunchingCardRecordService;
 
+    @Resource
+    private SchedulingSysManagementService schedulingSysManagementService;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
+
             MythicalCreatures.mythical_creatures_1();
-            Map<String,Object> map = new HashMap();
+            schedulingSysManagementService.windUpAnAccount();
+            //Map<String,Object> map = new HashMap();
             //iWhiteSysPersonnelService.birthdayInform();
             //map.put("dateFormatBirthday",2);
             //map.put("dateFormatDispatchApplication",1);
@@ -70,10 +78,10 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
                 }
             }
             //iWhiteSysPersonnelService.dimissionInform();
-            map.put("startTime","2023-05-01");
-            map.put("endTime","2023-05-31");
-            map.put("pageNum",10);
-            map.put("index",0);
+            //map.put("startTime","2023-05-01");
+            //map.put("endTime","2023-05-31");
+            //map.put("pageNum",10);
+            //map.put("index",0);
             //ReturnEntity statistics = iPunchingCardRecordService.ceshi(map, "statistics");
             //System.out.println(statistics + "=======================");
     } catch (SocketException e) {
