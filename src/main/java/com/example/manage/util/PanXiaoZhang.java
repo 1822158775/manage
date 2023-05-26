@@ -1515,6 +1515,7 @@ public class PanXiaoZhang {
             return 1;
         }
     }
+
     public static void main(String[] args) throws ParseException {
 //        // 获取当前时间
 //        Calendar calendar = Calendar.getInstance();
@@ -1558,7 +1559,7 @@ public class PanXiaoZhang {
 //        String send = HttpUtil.send("https://truelemonweb.topvoyage.top/api/white_list/punching_card_record/area", jsonObject.toString(), "");
 //        System.out.println(send);
 
-
+        Map<String,Integer> map = new HashMap<String,Integer>();
         ReturnEntity entity = PanXiaoZhang.postWechatFer(
                 "o_QtX5m2Zb6wAt_xqtr1gen-Jghk1234567",
                 "",

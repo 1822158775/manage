@@ -93,8 +93,8 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
             thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 1);
         }
 
-        map.put("thisStartTime",thisStartTime);
-        map.put("thisEndTime",thisEndTime);
+        map.put("thisStartTime",thisStartTime + " 00:00:00");
+        map.put("thisEndTime",thisEndTime + " 23:59:59");
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,whiteRankingListMapper.queryAll(map),"");
     }
 }

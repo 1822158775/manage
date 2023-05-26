@@ -417,7 +417,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             //不让他打卡
             int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(startPunchIn), localTime);
             if (time == 1){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"超出上班打卡时间，无法打卡");
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"未到上班打卡时间，无法打卡");
             }
             //如果 time1 在 time2 之前，返回-1；如果 time1 在 time2 之后，返回1；如果 time1 和 time2 相等，返回0。
             int compareTime = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(endPunchIn));
