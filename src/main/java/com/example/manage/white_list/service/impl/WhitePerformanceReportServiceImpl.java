@@ -160,13 +160,19 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
         //将当前所属项目加入
         QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
-        ManagementPersonnel managementPersonnel = iManagementPersonnelMapper.selectOne(wrapper);
-        SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+        if (ObjectUtils.isEmpty(jsonParam.getManagementId())){
+            wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+            List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(wrapper);
+            if (managementPersonnels.size() < 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联项目");
+            }
+            ManagementPersonnel managementPersonnel = managementPersonnels.get(0);
+            jsonParam.setManagementId(managementPersonnel.getManagementId());
+        }
+        SysManagement management = iSysManagementMapper.selectById(jsonParam.getManagementId());
         if (!management.getManagementState().equals(1)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
         }
-        jsonParam.setManagementId(managementPersonnel.getManagementId());
         //查询该项目主管
         Map map = new HashMap();
         map.put("managementId",jsonParam.getManagementId());
@@ -300,6 +306,17 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     "审核失败"
             );
         }
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",performanceReport.getPersonnelCode());
+        SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
+        ReturnEntity entity = PanXiaoZhang.postWechatFer(
+                personnel.getOpenId(),
+                "",
+                "",
+                performanceReport.getReportTime() + "提交的业绩信息,已通过",
+                "",
+                urlTransfer + "?from=zn&redirect_url=" + urlPerformance
+        );
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
     }
 
@@ -428,14 +445,20 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             //将人员资源代码加入进去
             jsonParam.setPersonnelCode(sysPersonnel.getPersonnelCode());
             //将当前所属项目加入
-            wrapper = new QueryWrapper();
-            wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
-            ManagementPersonnel managementPersonnel = iManagementPersonnelMapper.selectOne(wrapper);
-            SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
-            if (!management.getManagementState().equals(1)){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
+            if (ObjectUtils.isEmpty(jsonParam.getManagementId())){
+                wrapper = new QueryWrapper();
+                wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+                List<ManagementPersonnel> list = iManagementPersonnelMapper.selectList(wrapper);
+                if (list.size() < 1){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联项目组");
+                }
+                ManagementPersonnel managementPersonnel = list.get(0);
+                SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+                if (!management.getManagementState().equals(1)){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
+                }
+                jsonParam.setManagementId(managementPersonnel.getManagementId());
             }
-            jsonParam.setManagementId(managementPersonnel.getManagementId());
             //查询该项目主管
             Map map = new HashMap();
             map.put("managementId",jsonParam.getManagementId());

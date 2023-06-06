@@ -177,6 +177,7 @@ public class SchedulingSysPersonnelServiceImpl implements SchedulingSysPersonnel
                 DispatchApplicationManagement applicationManagement = selectList.get(i);
                 QueryWrapper queryWrapper = new QueryWrapper();
                 queryWrapper.eq("personnel_code",applicationManagement.getPersonnelCode());
+                queryWrapper.eq("management_id",applicationManagement.getAgoManagementId());
                 ManagementPersonnel managementPersonnel = iManagementPersonnelMapper.selectOne(queryWrapper);
                 iManagementPersonnelMapper.updateById(new ManagementPersonnel(
                         managementPersonnel.getId(),

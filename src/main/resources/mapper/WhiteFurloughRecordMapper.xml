@@ -15,6 +15,7 @@
         <result column="end_time" property="endTime" />
         <result column="verifier_remark" property="verifierRemark" />
         <result column="applicant_time" property="applicantTime" />
+
         <collection property="furloughReimbursements" ofType="com.example.manage.entity.FurloughReimbursement">
             <result column="c_id" property="id" />
             <result column="c_personnel_id" property="personnelId" />
@@ -24,6 +25,11 @@
             <result column="c_reissue_state" property="reissueState" />
             <result column="c_number" property="number" />
             <result column="c_personnel_name" property="personnelName" />
+        </collection>
+
+        <collection property="reimbursementImages" ofType="com.example.manage.entity.ReimbursementImage">
+            <result column="path_code" property="pathCode" />
+            <result column="path_url" property="pathUrl" />
         </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
@@ -57,6 +63,9 @@
     <sql id="tableSqlFR">
         manage.furlough_record
     </sql>
+    <sql id="tableSqlRI">
+        manage.reimbursement_image
+    </sql>
     <!--  子表  -->
     <sql id="tableReturn">
         select
@@ -80,11 +89,15 @@
         <include refid="tableSqlReimbursement"/>.number as c_number
         ,<include refid="tableSqlPersonnel" />.`name` as c_personnel_name
 
+        ,<include refid="tableSqlRI" />.`path_url`
+        ,<include refid="tableSqlRI" />.`path_code`
+
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
         LEFT JOIN <include refid="tableSqlReimbursement" /> on <include refid="tableSqlReimbursement" />.reissue_code = <include refid="tableSql" />.reissue_code
         LEFT JOIN <include refid="tableSqlPersonnel" /> on <include refid="tableSqlPersonnel" />.id = <include refid="tableSqlReimbursement" />.personnel_id
+        LEFT JOIN <include refid="tableSqlRI" /> on <include refid="tableSqlRI" />.path_code = <include refid="tableSql" />.reissue_code
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1

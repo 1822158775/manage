@@ -35,3 +35,4 @@
  * sys_table_authority 权限管理
  * sys_table_name 表名管理
  * furlough_record 休假记录
+ * reading_record 阅读记录

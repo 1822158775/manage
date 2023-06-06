@@ -70,6 +70,9 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
     @Resource
     private IManagementPersonnelMapper iManagementPersonnelMapper;
 
+    @Resource
+    private IReimbursementImageMapper iReimbursementImageMapper;
+
     //方法总管
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -271,6 +274,21 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
         jsonParam.setApplicantTime(new Date());
         //将数据唯一标识设置为空，由系统生成
         jsonParam.setId(null);
+        //录入附件
+        List<ReimbursementImage> reimbursementImages = jsonParam.getReimbursementImages();
+        for (int i = 0; i < reimbursementImages.size(); i++) {
+            ReimbursementImage reimbursementImage = reimbursementImages.get(i);
+            int insertImage = iReimbursementImageMapper.insert(new ReimbursementImage(
+                    reimbursementImage.getPathUrl(),
+                    jsonParam.getReissueCode()
+            ));
+            if (insertImage != 1){
+                return new ReturnEntity(
+                        CodeEntity.CODE_ERROR,
+                        "附件添加失败"
+                );
+            }
+        }
         //没有任何问题将数据录入进数据库
         int insert = iFurloughRecordMapper.insert(jsonParam);
         //如果返回值不能鱼1则判断失败

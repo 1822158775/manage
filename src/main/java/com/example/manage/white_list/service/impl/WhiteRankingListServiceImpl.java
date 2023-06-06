@@ -3,7 +3,6 @@ package com.example.manage.white_list.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.ManagementPersonnel;
 import com.example.manage.entity.SysPersonnel;
-import com.example.manage.entity.ranking_list.RankingList;
 import com.example.manage.mapper.IManagementPersonnelMapper;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.mapper.WhiteRankingListMapper;
