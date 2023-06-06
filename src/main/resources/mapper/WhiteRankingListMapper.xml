@@ -2,6 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.manage.mapper.WhiteRankingListMapper">
     <resultMap id="entity" type="com.example.manage.entity.ranking_list.RankingList">
+        <result column="id" property="id" />
         <result column="count_number" property="countNumber" />
         <result column="name" property="name" />
         <result column="card_type_name" property="cardTypeName" />
@@ -44,6 +45,7 @@
     </select>
     <!--  返回  -->
     <sql id="returnSql">
+        <include refid="tableSqlSManagement" />.id as id,
         <include refid="tableSqlCardType" />.`name` as card_type_name,
         coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end),0) AS count_number,
         coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end),0) AS approved,
@@ -89,6 +91,9 @@
         <if test="type == 'month'">
             <include refid="todayMonth" />
         </if>
+        <if test="type == '自定义'">
+            <include refid="todayStartCustom" />
+        </if>
         <include refid="reportApproverState" />
         <if test="reportStatus != null and reportStatus != ''">
             and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
@@ -113,6 +118,9 @@
         </if>
         <if test="type == 'month'">
             <include refid="todayMonth" />
+        </if>
+        <if test="type == '自定义'">
+            <include refid="todayStartCustom" />
         </if>
         <if test="reportStatus != null and reportStatus != ''">
             and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
@@ -166,6 +174,10 @@
     <sql id="todayMonth">
         AND DATE_FORMAT( <include refid="tableSqlPReport" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
     </sql>
+    <!--  自定义日期  -->
+    <sql id="todayStartCustom">
+        AND <include refid="tableSqlPReport" />.report_time BETWEEN #{thisStartTime} AND #{thisEndTime}
+    </sql>
     <!--  通过状态  -->
     <sql id="reportApproverState">
         AND <include refid="tableSqlPReport" />.approver_state = 'agree'
@@ -212,7 +224,9 @@
     </sql>
     <!--  分页  -->
     <sql id="safeLIMIT">
-        LIMIT #{index},#{pageNum}
+        <if test="index != null">
+            LIMIT #{index},#{pageNum}
+        </if>
     </sql>
 
     <!--  历史  -->

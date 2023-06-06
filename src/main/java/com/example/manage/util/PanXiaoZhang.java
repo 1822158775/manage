@@ -30,6 +30,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -1206,6 +1207,36 @@ public class PanXiaoZhang {
                 false
         );
     }
+
+    public static Long getDayTime(String startTime,String endTime){
+
+        // 解析日期字符串为LocalDate对象
+        LocalDate localDate1 = LocalDate.parse(startTime, DateTimeFormatter.ISO_DATE);
+        LocalDate localDate2 = LocalDate.parse(endTime, DateTimeFormatter.ISO_DATE);
+
+        // 计算日期差异
+        long daysBetween = ChronoUnit.DAYS.between(localDate1, localDate2);
+        return daysBetween;
+    }
+
+    public static String GetNextDay(String dateString,Integer integer) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar calendar = Calendar.getInstance();
+        Date date;
+
+        try {
+            date = sdf.parse(dateString);
+            calendar.setTime(date);
+            calendar.add(Calendar.DAY_OF_MONTH, integer);
+            date = calendar.getTime();
+            String nextDay = sdf.format(date);
+            return nextDay;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
+    }
+
     /**
      * 两个日期相差多少年多少天
      * @param targetDate 目标日期 不能为null
@@ -1484,6 +1515,7 @@ public class PanXiaoZhang {
             return 1;
         }
     }
+
     public static void main(String[] args) throws ParseException {
 //        // 获取当前时间
 //        Calendar calendar = Calendar.getInstance();
@@ -1498,44 +1530,45 @@ public class PanXiaoZhang {
 
 
 
-//        List<JqPoint> ps = new ArrayList<>();
-//        JqPoint jqPoint1 = new JqPoint(31.215728,121.316977);
-//        JqPoint jqPoint2 = new JqPoint(31.213508,121.354844);
-//        JqPoint jqPoint3 = new JqPoint(31.176675,121.358661);
-//        JqPoint jqPoint4 = new JqPoint(31.178112,121.31545);
-//
-//        ps.add(jqPoint1);
-//        ps.add(jqPoint2);
-//        ps.add(jqPoint3);
-//        ps.add(jqPoint4);
-//        JqPoint n1 = new JqPoint(31.218545,121.380732);
-//        JqPoint n2 = new JqPoint(31.214492,121.316686);
-//        JqPoint n3 = new JqPoint(31.18461,121.306395);
-//        JqPoint y1 = new JqPoint(31.205459,121.331445);
-//        JqPoint y2 = new JqPoint(31.1938525390625,121.32776611328126);
-//        JqPoint y4 = new JqPoint(31.187636,121.330937);
-//        System.out.println("n1:" + isPtInPoly(n1.getX(), n1.getY(), ps));
-//        System.out.println("n2:" + isPtInPoly(n2.getX(), n2.getY(), ps));
-//        System.out.println("n3:" + isPtInPoly(n3.getX(), n3.getY(), ps));
-//        System.out.println("y1:" + isPtInPoly(y1.getX(), y1.getY(), ps));
-//        System.out.println("y2:" + isPtInPoly(y2.getX(), y2.getY(), ps));
-//        System.out.println("y4:" + isPtInPoly(y4.getX(), y4.getY(), ps));
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("personnelId",21);
-//        jsonObject.put("x",31.209617241753474);
-//        jsonObject.put("y",121.30406087239584);
-//        String send = HttpUtil.send("https://truelemonweb.topvoyage.top/api/white_list/punching_card_record/area", jsonObject.toString(), "");
-//        System.out.println(send);
+        //List<JqPoint> ps = new ArrayList<>();
+        //JqPoint jqPoint1 = new JqPoint(34.272644,117.308166);
+        //JqPoint jqPoint2 = new JqPoint(34.271483,117.301839);
+        //JqPoint jqPoint3 = new JqPoint(34.263085,117.311008);
+        //JqPoint jqPoint4 = new JqPoint(34.261602,117.304064);
+        //
+        //ps.add(jqPoint1);
+        //ps.add(jqPoint2);
+        //ps.add(jqPoint3);
+        //ps.add(jqPoint4);
+        //JqPoint n1 = new JqPoint(34.268167,117.303398);
+        //JqPoint n2 = new JqPoint(34.265656,117.304198);
+        //JqPoint n3 = new JqPoint(34.26336,117.306483);
+        //JqPoint y1 = new JqPoint(34.263632,117.308461);
+        //JqPoint y2 = new JqPoint(34.267525,117.308579);
+        //JqPoint y4 = new JqPoint(34.269218,117.30799);
+        //System.out.println("n1:" + isPtInPoly(n1.getX(), n1.getY(), ps));
+        //System.out.println("n2:" + isPtInPoly(n2.getX(), n2.getY(), ps));
+        //System.out.println("n3:" + isPtInPoly(n3.getX(), n3.getY(), ps));
+        //System.out.println("y1:" + isPtInPoly(y1.getX(), y1.getY(), ps));
+        //System.out.println("y2:" + isPtInPoly(y2.getX(), y2.getY(), ps));
+        //System.out.println("y4:" + isPtInPoly(y4.getX(), y4.getY(), ps));
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("personnelId",59);
+        jsonObject.put("x",34.268167);
+        jsonObject.put("y",117.303398);
+        String send = HttpUtil.send("https://truelemonweb.topvoyage.top/api/white_list/punching_card_record/area", jsonObject.toString(), "");
+        System.out.println(send);
 
+        //Map<String,Integer> map = new HashMap<String,Integer>();
+        //ReturnEntity entity = PanXiaoZhang.postWechatFer(
+        //        "o_QtX5m2Zb6wAt_xqtr1gen-Jghk1234567",
+        //        "",
+        //        "",
+        //        "补卡",
+        //        "",
+        //        "/pages/guide/guide?from=zn&redirect_url=/packageZn/pages/repair_check_list/repair_check_list?fromDispatchVerify=true"
+        //);
+        //System.out.println(entity);
 
-        ReturnEntity entity = PanXiaoZhang.postWechatFer(
-                "jkashdkjhsad1234567",
-                "",
-                "",
-                "提交了离职申请",
-                "",
-                ""
-        );
-        System.out.println(entity);
     }
 }

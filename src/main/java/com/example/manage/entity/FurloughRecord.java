@@ -61,7 +61,10 @@ public class FurloughRecord implements Serializable {
     public String verifierRemark;//备注
 
     @TableField(exist = false)
-    public List<FurloughReimbursement> furloughReimbursements;
+    public List<FurloughReimbursement> furloughReimbursements;//审核人流程
+
+    @TableField(exist = false)
+    public List<ReimbursementImage> reimbursementImages;//附件
 
     public FurloughRecord() {
     }

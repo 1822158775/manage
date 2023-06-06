@@ -13,6 +13,7 @@ import java.io.Serializable;
 @Data
 @ToString
 public class RankingList implements Serializable {
+    public Integer id;//项目编号
     public Integer countNumber;//项目数据数量
     public String name;//项目名称
     public String cardTypeName;//卡名称名称

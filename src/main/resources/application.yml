@@ -7,13 +7,13 @@ spring:
     password: znrlsp123
     database: 4
   datasource:
-#    url: jdbc:mysql://106.15.56.132:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
-#    username: manage
-#    password: manage
+    url: jdbc:mysql://106.15.56.132:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
+    username: manage
+    password: manage
 
-    url: jdbc:mysql://127.0.0.1:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
-    username: root
-    password: znrlsp123
+#    url: jdbc:mysql://127.0.0.1:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
+#    username: root
+#    password: znrlsp123
 magicalcoder:
   file:
     upload:
@@ -79,7 +79,7 @@ url:
   system: /pages/activities/show/show
   reimburse: /packageZn/pages/reimburse_list/reimburse_list
   birthday: /pages/activities/show/show
-  repair_check: packageZn/pages/repair_check_list/repair_check_list
+  repair_check: /packageZn/pages/repair_check_list/repair_check_list
   rest_list: /packageZn/pages/rest_list/rest_list?fromRestVerify=true
 card:
   number: 5

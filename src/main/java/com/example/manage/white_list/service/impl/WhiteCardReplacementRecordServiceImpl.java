@@ -4,11 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.CardReplacementRecordNotNull;
 import com.example.manage.entity.is_not_null.CardReplacementReimbursementNotNull;
-import com.example.manage.entity.is_not_null.ManageReimbursementRecordNotNull;
 import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.ReturnEntity;
-import com.example.manage.service.ICardReplacementRecordService;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.white_list.service.IWhiteCardReplacementRecordService;
@@ -39,7 +37,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class WhiteCardReplacementRecordService implements IWhiteCardReplacementRecordService {
+public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacementRecordService {
 
     @Value("${url.repair_check}")
     private String repairCheck;
@@ -451,10 +449,11 @@ public class WhiteCardReplacementRecordService implements IWhiteCardReplacementR
         if (ObjectUtils.isEmpty(jsonParam.getManagementId())){
             wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
             //查询关联的项目
-            ManagementPersonnel managementPersonnel = iManagementPersonnelMapper.selectOne(wrapper);
-            if (ObjectUtils.isEmpty(managementPersonnel)){
+            List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(wrapper);
+            if (managementPersonnels.size() < 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联项目组");
             }
+            ManagementPersonnel managementPersonnel = managementPersonnels.get(0);
             jsonParam.setManagementId(managementPersonnel.getManagementId());
             wrapper = new QueryWrapper();
         }

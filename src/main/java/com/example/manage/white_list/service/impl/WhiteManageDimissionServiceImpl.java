@@ -126,10 +126,16 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
             //将人员资源代码加入进去
             jsonParam.setPersonnelCode(sysPersonnel.getPersonnelCode());
             //将当前所属项目加入
-            QueryWrapper<ManagementPersonnel> personnelQueryWrapper = new QueryWrapper<>();
-            personnelQueryWrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
-            ManagementPersonnel managementPersonnel = iManagementPersonnelMapper.selectOne(personnelQueryWrapper);
-            jsonParam.setManagementId(managementPersonnel.getManagementId());
+            if (ObjectUtils.isEmpty(jsonParam.getManagementId())){
+                QueryWrapper<ManagementPersonnel> personnelQueryWrapper = new QueryWrapper<>();
+                personnelQueryWrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+                List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(personnelQueryWrapper);
+                if (managementPersonnels.size() < 1){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联项目");
+                }
+                ManagementPersonnel managementPersonnel = managementPersonnels.get(0);
+                jsonParam.setManagementId(managementPersonnel.getManagementId());
+            }
             //查询该项目主管
             Map map = new HashMap();
             map.put("managementId",jsonParam.getManagementId());

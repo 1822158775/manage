@@ -129,7 +129,7 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getId());
         if (!ObjectUtils.isEmpty(jsonParam.getManagementId())){
             SysRole sysRole = iSysRoleMapper.selectById(jsonParam.getRoleId());
-            if (sysRole.getLevelSorting() > 2 && jsonParam.getManagementId().length > 1){
+            if (sysRole.getLevelSorting() > 3 && jsonParam.getManagementId().length > 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"该角色不可以拥有多个项目");
             }
             //存储已有的内容
@@ -269,8 +269,8 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0",
+                        "",
+                        "",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
@@ -285,7 +285,7 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
 
         SysRole sysRole = iSysRoleMapper.selectById(jsonParam.getRoleId());
         //判断等级如果大于2则不可拥有多个项目
-        if (sysRole.getLevelSorting() > 2 && jsonParam.getManagementId().length > 1){
+        if (sysRole.getLevelSorting() > 3 && jsonParam.getManagementId().length > 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该角色不可以拥有多个项目");
         }
         if (jsonParam.getManagementId().length < 1){
