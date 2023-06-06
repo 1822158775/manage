@@ -356,7 +356,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该状态下不可审核");
         }
         //当前时间
-        String format = DateFormatUtils.format(new Date(), PanXiaoZhang.yMd());
+        String format = DateFormatUtils.format(new Date(), PanXiaoZhang.yMdHms());
         //至此拦截机制结束
         if (!ObjectUtils.isEmpty(sysPersonnel)){
             //查询该数据

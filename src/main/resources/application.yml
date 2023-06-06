@@ -80,6 +80,7 @@ url:
   reimburse: /packageZn/pages/reimburse_list/reimburse_list
   birthday: /pages/activities/show/show
   repair_check: /packageZn/pages/repair_check_list/repair_check_list
-  rest_list: /packageZn/pages/rest_list/rest_list?fromRestVerify=true
+  rest_list: /packageZn/pages/rest_list/rest_list
+  achievement_day_list: /packageZn/pages/achievement_day_list/achievement_day_list
 card:
   number: 5

@@ -37,11 +37,10 @@ public class WhiteReadingRecordServiceImpl implements IWhiteReadingRecordService
     @Value("${role.manage3}")
     private Integer manage3;
 
-
     @Value("${url.transfer}")
     private String urlTransfer;
 
-    @Value("${url.performance}")
+    @Value("${url.achievement_day_list}")
     private String urlPerformance;
 
     @Resource
