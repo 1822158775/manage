@@ -20,6 +20,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.lang.Boolean;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -34,6 +35,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
+
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.*;
 
 /**
  * @avthor 潘小章
@@ -441,7 +448,7 @@ public class PanXiaoZhang {
         return parse.compareTo(new Date());
     }
     //更新时间
-    public static Boolean forThreeValues(String one,String two,String there){
+    public static Boolean forThreeValues(String one, String two, String there){
         if (
             PanXiaoZhang.isNull(one)
             || PanXiaoZhang.isNull(two)
@@ -1516,7 +1523,55 @@ public class PanXiaoZhang {
         }
     }
 
-    public static void main(String[] args) throws ParseException {
+    /**
+     * 读取excel文件数据
+     * @param path
+     * @throws IOException
+     * @throws BiffException
+     */
+    public static List<GetExcel> getExcel(String path) throws IOException, BiffException {
+        //读取文件
+        File file = new File(path);
+        //用字符接文件数据
+        FileInputStream fileInputStream = new FileInputStream(file);
+        //解析字符流
+        Workbook workbook = Workbook.getWorkbook(fileInputStream);
+        //读取文件判断是什么工作簿
+        Sheet sheet = workbook.getSheet(0);
+        int rows = sheet.getRows();
+        int columns = sheet.getColumns();
+        //返回所有内容
+        List<GetExcel> stringList = new ArrayList<>();
+        for (int j = 0; j < columns; j++) {
+            //存储每行数据
+            List<String> list = new ArrayList<>();
+            //记录标题名称
+            String title = sheet.getRow(0)[j].getContents();
+            for (int i = 1; i < rows; i++) {
+                //读取每行数据
+                Cell[] row = sheet.getRow(i);
+                try {
+                    //获取可以查到的数据
+                    byte[] bytes = row[j].getContents().getBytes(StandardCharsets.UTF_8);
+                    //将数据添加至集合中
+                    list.add(new String(bytes));
+                    //数据打印
+                    //log.info("contents:{}",contents);
+                }catch (Exception e){
+                    //数据获取失败
+                    log.info("获取异常");
+                }
+            }
+            //将数据存储到主体内容中
+            stringList.add(new GetExcel(
+                    title,
+                    list
+            ));
+        }
+        return stringList;
+    }
+
+    public static void main(String[] args) throws ParseException, IOException, BiffException {
 //        // 获取当前时间
 //        Calendar calendar = Calendar.getInstance();
 //        Date today = calendar.getTime();
@@ -1526,9 +1581,7 @@ public class PanXiaoZhang {
 //        Date yesterday = calendar.getTime();
 //        Boolean aBoolean = compareDate(yesterday);
 //        System.out.println(aBoolean);
-
-
-
+        System.out.println(PanXiaoZhang.getOpenId("18637871061"));
 
         //List<JqPoint> ps = new ArrayList<>();
         //JqPoint jqPoint1 = new JqPoint(34.272644,117.308166);
@@ -1552,12 +1605,12 @@ public class PanXiaoZhang {
         //System.out.println("y1:" + isPtInPoly(y1.getX(), y1.getY(), ps));
         //System.out.println("y2:" + isPtInPoly(y2.getX(), y2.getY(), ps));
         //System.out.println("y4:" + isPtInPoly(y4.getX(), y4.getY(), ps));
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("personnelId",59);
-        jsonObject.put("x",34.268167);
-        jsonObject.put("y",117.303398);
-        String send = HttpUtil.send("https://truelemonweb.topvoyage.top/api/white_list/punching_card_record/area", jsonObject.toString(), "");
-        System.out.println(send);
+        //JSONObject jsonObject = new JSONObject();
+        //jsonObject.put("personnelId",59);
+        //jsonObject.put("x",34.268167);
+        //jsonObject.put("y",117.303398);
+        //String send = HttpUtil.send("https://truelemonweb.topvoyage.top/api/white_list/punching_card_record/area", jsonObject.toString(), "");
+        //System.out.println(send);
 
         //Map<String,Integer> map = new HashMap<String,Integer>();
         //ReturnEntity entity = PanXiaoZhang.postWechatFer(

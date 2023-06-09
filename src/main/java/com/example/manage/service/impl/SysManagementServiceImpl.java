@@ -42,7 +42,9 @@ public class SysManagementServiceImpl implements ISysManagementService {
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
         try {
             if (name.equals("cat")){
-                return cat(request);
+                ReturnEntity cat = cat(request);
+                System.out.println(cat + "=============");
+                return cat;
             }else if (name.equals("add")){
                 SysManagement jsonParam = PanXiaoZhang.getJSONParam(request, SysManagement.class);
                 return add(request,jsonParam);
@@ -224,9 +226,10 @@ public class SysManagementServiceImpl implements ISysManagementService {
     // 查询模块
     public ReturnEntity cat(HttpServletRequest request) {
         Map map = PanXiaoZhang.getJsonMap(request);
+        List<SysManagement> managements = iSysManagementMapper.queryAll(map);
         return new ReturnEntity(
                 CodeEntity.CODE_SUCCEED,
-                iSysManagementMapper.queryAll(map),
+                managements,
                 iCardTypeMapper.selectList(null),
                 request,
                 MsgEntity.CODE_SUCCEED,

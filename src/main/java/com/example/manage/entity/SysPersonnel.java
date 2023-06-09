@@ -83,6 +83,11 @@ public class SysPersonnel implements Serializable {
     @TableField(value = "leave_time")
     public Date leaveTime;//离职时间
 
+    @DateTimeFormat(pattern ="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    @TableField(value = "trial_date")
+    public Date trialDate;//试岗时间
+
     @TableField(exist = false)
     public SysRole sysRole;//权限名称
     @TableField(exist = false)
@@ -169,5 +174,34 @@ public class SysPersonnel implements Serializable {
         this.emergencyContactName = emergencyContactName;
         this.emergencyContactPhone = emergencyContactPhone;
         this.permanentResidence = permanentResidence;
+    }
+
+    public SysPersonnel(Integer id, String phone, String placeOfDomicile, String personnelCode, String username, Integer roleId, String password, String name, Integer positionPost, String image, Date birthday, Integer employmentStatus, Integer chiefStewardId, String salary, String sex, String standbyApplication, Integer officialOrTraineeStaff, Integer socialSecurityPayment, Integer commercialInsurance, Date entryTime, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence, String openId, Date leaveTime) {
+        this.id = id;
+        this.phone = phone;
+        this.placeOfDomicile = placeOfDomicile;
+        this.personnelCode = personnelCode;
+        this.username = username;
+        this.roleId = roleId;
+        this.password = password;
+        this.name = name;
+        this.positionPost = positionPost;
+        this.image = image;
+        this.birthday = birthday;
+        this.employmentStatus = employmentStatus;
+        this.chiefStewardId = chiefStewardId;
+        this.salary = salary;
+        this.sex = sex;
+        this.standbyApplication = standbyApplication;
+        this.officialOrTraineeStaff = officialOrTraineeStaff;
+        this.socialSecurityPayment = socialSecurityPayment;
+        this.commercialInsurance = commercialInsurance;
+        this.entryTime = entryTime;
+        this.idNumber = idNumber;
+        this.emergencyContactName = emergencyContactName;
+        this.emergencyContactPhone = emergencyContactPhone;
+        this.permanentResidence = permanentResidence;
+        this.openId = openId;
+        this.leaveTime = leaveTime;
     }
 }

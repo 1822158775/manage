@@ -6,6 +6,7 @@ import com.example.manage.mapper.IPerformanceReportMapper;
 import com.example.manage.service.IPunchingCardRecordService;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
+import com.example.manage.util.XlsxReader;
 import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.util.mythical_creatures.MythicalCreatures;
 import com.example.manage.white_list.service.IWhiteSysPersonnelService;
@@ -34,6 +35,7 @@ import java.util.Map;
 public class PanConfiguration implements ApplicationListener<ApplicationReadyEvent> {
     @Resource
     private RedisUtil redisUtil;
+
     @Value("${server.port}")
     private String port;
 
@@ -55,12 +57,14 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Resource
     private SchedulingSysManagementService schedulingSysManagementService;
 
+    @Resource
+    private XlsxReader xlsxReader;
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
 
             MythicalCreatures.mythical_creatures_1();
-            schedulingSysManagementService.windUpAnAccount();
+            //schedulingSysManagementService.windUpAnAccount();
             //Map<String,Object> map = new HashMap();
             //iWhiteSysPersonnelService.birthdayInform();
             //map.put("dateFormatBirthday",2);
@@ -84,6 +88,8 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
             //map.put("index",0);
             //ReturnEntity statistics = iPunchingCardRecordService.ceshi(map, "statistics");
             //System.out.println(statistics + "=======================");
+            //xlsxReader.add(23,"天府东航");
+
     } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -100,7 +106,6 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
                     if (addr instanceof Inet4Address) {
                         System.out.println("网卡名称：" + nif.getName());
                         System.out.println("网络接口地址：" + addr.getHostAddress());
-                        System.out.println();
                     }
                 }
             }

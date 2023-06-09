@@ -88,6 +88,7 @@
         <if test="keyWord != null and keyWord != ''"> and sys_personnel.`name` like concat('%',#{keyWord},'%')</if>
         <if test="personnelId != null "> and sys_personnel.`id` = #{personnelId}</if>
         <if test="approverState != null and approverState != ''"> and <include refid="tableSql" />.`approver_state` = #{approverState}</if>
+        <if test="startTime != null and startTime != '' and endTime != null and endTime != ''"> and <include refid="tableSql" />.`report_time` BETWEEN #{startTime} AND #{endTime}</if>
         <if test="managementId != null and managementId != ''"> and <include refid="tableSql" />.`management_id` = #{managementId}</if>
         <if test="approverPersonnelId != null and approverPersonnelId != ''"> and <include refid="tableSql" />.`approver_personnel_id` = #{approverPersonnelId}</if>
     </sql>

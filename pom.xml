@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>manage</artifactId>
-    <version>1.2.3</version>
+    <version>1.2.5</version>
     <name>manage</name>
     <description>管理系统</description>
     <properties>
@@ -117,6 +117,12 @@
             <groupId>com.github.binarywang</groupId>
             <artifactId>weixin-java-cp</artifactId>
             <version>3.7.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.jexcelapi</groupId>
+            <artifactId>jxl</artifactId>
+            <version>2.6.12</version>
         </dependency>
     </dependencies>
 

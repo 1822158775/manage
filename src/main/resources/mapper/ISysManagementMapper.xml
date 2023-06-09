@@ -42,7 +42,6 @@
         as
             <include refid="tableSqlAs" />
             <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
     </select>
     <!--  返回  -->
     <sql id="returnSql">
@@ -65,6 +64,7 @@
         <include refid="tableSql"/>.*
         from
         <include refid="tableSql"/>
+        <include refid="whereSqlModelAs"/>
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
     </sql>
@@ -84,6 +84,12 @@
         <if test="id != null "> and <include refid="tableSqlAs" />.`id` = #{id}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
         <if test="managementState != null "> and <include refid="tableSqlAs" />.`management_state` = #{managementState}</if>
+    </sql>
+    <sql id="whereSqlModelAs">
+        where 1 = 1
+        <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="managementState != null "> and <include refid="tableSql" />.`management_state` = #{managementState}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

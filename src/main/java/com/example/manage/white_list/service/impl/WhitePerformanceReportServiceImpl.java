@@ -328,6 +328,16 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
         List<List<MapEntity>> listList = new ArrayList<>();
         List<MapEntity> entityList = new ArrayList<>();
+
+        Object startTime = map.get("startTime");
+        if (!ObjectUtils.isEmpty(startTime)){
+            map.put("startTime",startTime + " 00:00:00");
+        }
+        Object endTime = map.get("endTime");
+        if (!ObjectUtils.isEmpty(endTime)){
+            map.put("endTime",endTime + " 23:59:59");
+        }
+
         PerformanceReportNumber performanceReportNumber = numberPerformanceReportMapper.queryOne(map);
         //全部
         entityList.add(new MapEntity(
@@ -507,6 +517,14 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         Map map = PanXiaoZhang.getJsonMap(request);
         if (ObjectUtils.isEmpty(map.get("personnelId"))){
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+        Object startTime = map.get("startTime");
+        if (!ObjectUtils.isEmpty(startTime)){
+            map.put("startTime",startTime + " 00:00:00");
+        }
+        Object endTime = map.get("endTime");
+        if (!ObjectUtils.isEmpty(endTime)){
+            map.put("endTime",endTime + " 23:59:59");
         }
         return new ReturnEntity(CodeEntity.CODE_SUCCEED, iPerformanceReportMapper.queryAll(map),"");
     }

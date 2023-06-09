@@ -91,11 +91,13 @@
         where 1 = 1
         <if test="personnelId != null"> and sys_personnel.`id` = #{personnelId}</if>
         <if test="approverState != null and approverState != ''"> and <include refid="tableSql" />.`approver_state` = #{approverState}</if>
+        <if test="startTime != null and startTime != '' and endTime != null and endTime != ''"> and <include refid="tableSql" />.`report_time` BETWEEN #{startTime} AND #{endTime}</if>
     </sql>
     <!--  条件2  -->
     <sql id="whereSqlModel2">
         where 1 = 1
         <if test="personnelId != null"> and sys_personnel.`id` = #{personnelId}</if>
+        <if test="startTime != null and startTime != '' and endTime != null and endTime != ''"> and <include refid="tableSql" />.`report_time` BETWEEN #{startTime} AND #{endTime}</if>
     </sql>
     <!--  批核未激活  -->
     <sql id="approve">

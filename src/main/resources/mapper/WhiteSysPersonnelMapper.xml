@@ -27,6 +27,7 @@
         <result column="emergency_contact_name" property="emergencyContactName" />
         <result column="emergency_contact_phone" property="emergencyContactPhone" />
         <result column="permanent_residence" property="permanentResidence" />
+        <result column="trial_date" property="trialDate" />
         <association property="sysRole" javaType="com.example.manage.entity.SysRole">
             <result column="r_id" property="id" />
             <result column="r_name" property="name" />

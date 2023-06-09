@@ -28,6 +28,7 @@
         <result column="leave_time" property="leaveTime" />
         <result column="open_id" property="openId" />
         <result column="sex" property="sex" />
+        <result column="trial_date" property="trialDate" />
         <association property="sysRole" javaType="com.example.manage.entity.SysRole">
             <result column="r_id" property="id" />
             <result column="r_name" property="name" />

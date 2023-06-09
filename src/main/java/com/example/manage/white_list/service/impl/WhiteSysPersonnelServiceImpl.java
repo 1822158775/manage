@@ -314,22 +314,17 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"请联系后台人员关联自己的项目");
         }
         //查询资源代码
-        if (true){
-            QueryWrapper queryWrapper = new QueryWrapper();
-            queryWrapper.eq("personnel_code",jsonParam.getPersonnelCode());
-            SysPersonnel personnel = iSysPersonnelMapper.selectOne(queryWrapper);
-            if (!ObjectUtils.isEmpty(personnel)){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"该资源代码已绑定人员");
-            }
+        wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",jsonParam.getPersonnelCode());
+        SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
+        if (!ObjectUtils.isEmpty(personnel)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该资源代码已绑定人员");
         }
         //查询账号
-        if (true){
-            QueryWrapper queryWrapper = new QueryWrapper();
-            queryWrapper.eq("username",jsonParam.getPhone());
-            SysPersonnel personnel = iSysPersonnelMapper.selectOne(queryWrapper);
-            if (!ObjectUtils.isEmpty(personnel)){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"该账号已存在");
-            }
+        wrapper = new QueryWrapper();
+        wrapper.eq("username",jsonParam.getPhone());
+        if (!ObjectUtils.isEmpty(iSysPersonnelMapper.selectOne(wrapper))){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该账号已存在");
         }
         ManagementPersonnel managementPersonnel = selectList.get(0);
         SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
@@ -360,8 +355,10 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         if (insertPersonnel != 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"员工录入失败");
         }
-        PanXiaoZhang.postWechat(
-                personnelPhone,
+        wrapper = new QueryWrapper();
+        wrapper.eq("username",personnelPhone);
+        PanXiaoZhang.postWechatFer(
+                iSysPersonnelMapper.selectOne(wrapper).getOpenId(),
                 "",
                 "",
                 jsonParam.getName() + "提交了入职申请,请前往后台审核",

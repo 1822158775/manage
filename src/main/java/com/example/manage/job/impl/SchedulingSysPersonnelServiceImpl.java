@@ -88,14 +88,27 @@ public class SchedulingSysPersonnelServiceImpl implements SchedulingSysPersonnel
                     List<SysPersonnel> personnels = iSysPersonnelMapper.queryAll(hashMap);
                     if (personnels.size() > 0){
                         SysPersonnel personnel = personnels.get(0);
-                        entity = PanXiaoZhang.postWechatFer(
-                                personnel.getOpenId(),
-                                "",
-                                "",
-                                "生日提醒," + sysPersonnel.getName() + ageYTime + "岁的生日时间是" + DateFormatUtils.format(calculationDate, PanXiaoZhang.yMd()),
-                                "",
-                                ""
-                        );
+                        if (management.getId().equals(1) || management.getId().equals(2)){
+                            entity = PanXiaoZhang.postWechatFer(
+                                    personnel.getOpenId(),
+                                    "",
+                                    "",
+                                    "生日提醒," + sysPersonnel.getName() + ageYTime + "岁的生日时间是" + DateFormatUtils.format(calculationDate, PanXiaoZhang.yMd()),
+                                    "",
+                                    ""
+                            );
+                        }else {
+                            QueryWrapper wrapper = new QueryWrapper();
+                            wrapper.eq("username",birthdayPhone);
+                            entity = PanXiaoZhang.postWechatFer(
+                                    iSysPersonnelMapper.selectOne(wrapper).getOpenId(),
+                                    "",
+                                    "",
+                                    "生日提醒," + sysPersonnel.getName() + ageYTime + "岁的生日时间是" + DateFormatUtils.format(calculationDate, PanXiaoZhang.yMd()),
+                                    "",
+                                    ""
+                            );
+                        }
                         log.info("发送给区域经理:{},发送结果:{}",personnel.getName(),entity);
                     }
                 }
@@ -118,8 +131,10 @@ public class SchedulingSysPersonnelServiceImpl implements SchedulingSysPersonnel
             List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
             for (int i = 0; i < sysPersonnels.size(); i++) {
                 SysPersonnel sysPersonnel = sysPersonnels.get(i);
-                PanXiaoZhang.postWechat(
-                        birthdayPhone,
+                QueryWrapper wrapper = new QueryWrapper();
+                wrapper.eq("username",birthdayPhone);
+                PanXiaoZhang.postWechatFer(
+                        iSysPersonnelMapper.selectOne(wrapper).getOpenId(),
                         "",
                         "",
                         sysPersonnel.getName() + "入职第" +
