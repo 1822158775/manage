@@ -68,4 +68,12 @@ public class WhitePerformanceReportController {
     public ReturnEntity cat_number(HttpServletRequest request){
         return iWhitePerformanceReportService.methodMaster(request,"cat_number");
     }
+
+    //一键审核业绩数据
+    @PostMapping(value = "all_edit")
+    private ReturnEntity all_edit(HttpServletRequest request){
+        synchronized (this.getClass()) {
+            return iWhitePerformanceReportService.methodMasterT(request, "all_edit");
+        }
+    }
 }

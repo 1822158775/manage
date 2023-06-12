@@ -11,4 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface IWhiteCardTypeService {
     ReturnEntity methodMaster(HttpServletRequest request, String name);
+
+
+
 }

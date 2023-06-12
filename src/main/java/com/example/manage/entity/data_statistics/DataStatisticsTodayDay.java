@@ -24,13 +24,13 @@ public class DataStatisticsTodayDay implements Serializable {
     public Integer refuse;//本日拒绝
     public Integer all;//本日所有数据
 
-    public Double activationGrowthRate;//本日批核已激活上升率
-    public Double approvedGrowthRate;//本日批核未激活上升率
-    public Double artificialGrowthRate;//本日转人工上升率
-    public Double refuseGrowthRate;//本日拒绝上升率
-    public Double allGrowthRate;//本日所有数据上升率
-    public Double validGrowthRate;//本日有效的率
-    public Double ratioGrowthRate;//本日对比率
+    public String activationGrowthRate;//本日批核已激活上升率
+    public String approvedGrowthRate;//本日批核未激活上升率
+    public String artificialGrowthRate;//本日转人工上升率
+    public String refuseGrowthRate;//本日拒绝上升率
+    public String allGrowthRate;//本日所有数据上升率
+    public String validGrowthRate;//本日有效的率
+    public String ratioGrowthRate;//本日对比率
 
     public DataStatisticsTodayDay() {
     }

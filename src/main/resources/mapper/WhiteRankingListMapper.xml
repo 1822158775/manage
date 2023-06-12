@@ -37,6 +37,7 @@
                 <include refid="tableSqlSManagement" />
                 <include refid="relevanceSql" />
                 <include refid="whereSqlModel" />
+                <include refid="managementState"/>
                 <include refid="safeGroupBy" />
                 <include refid="safeOrderBy" />
                 <include refid="safeLIMIT" />
@@ -181,6 +182,10 @@
     <!--  通过状态  -->
     <sql id="reportApproverState">
         AND <include refid="tableSqlPReport" />.approver_state = 'agree'
+    </sql>
+    <!--  项目状态  -->
+    <sql id="managementState">
+        AND <include refid="tableSqlSManagement" />.management_state = 1
     </sql>
 
     <!--  分组  -->

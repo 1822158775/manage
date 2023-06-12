@@ -223,12 +223,13 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
             if (!password){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"请输入大于5位小于17位的密码");
             }
+            jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));
         }
         SysPersonnel personnel = new SysPersonnel(
                 jsonParam.getId(),
                 jsonParam.getPhone(),
                 jsonParam.getPlaceOfDomicile(),
-                PanXiaoZhang.getPassword(jsonParam.getPassword()),
+                jsonParam.getPassword(),
                 jsonParam.getName(),
                 jsonParam.getPositionPost(),
                 jsonParam.getImage(),

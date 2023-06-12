@@ -24,11 +24,11 @@ public class DataStatisticsTodayMonth implements Serializable {
     public Integer refuse;//本月拒绝
     public Integer all;//本月所有数据
 
-    public Double activationGrowthRate;//上月批核已激活数据上升率
-    public Double approvedGrowthRate;//上月批核未激活上升率
-    public Double artificialGrowthRate;//上月转人工上升率
-    public Double refuseGrowthRate;//上月拒绝上升率
-    public Double allGrowthRate;//上月所有数据上升率
-    public Double validGrowthRate;//上月有效的率
-    public Double ratioGrowthRate;//上月对比率
+    public String activationGrowthRate;//上月批核已激活数据上升率
+    public String approvedGrowthRate;//上月批核未激活上升率
+    public String artificialGrowthRate;//上月转人工上升率
+    public String refuseGrowthRate;//上月拒绝上升率
+    public String allGrowthRate;//上月所有数据上升率
+    public String validGrowthRate;//上月有效的率
+    public String ratioGrowthRate;//上月对比率
 }

@@ -91,20 +91,27 @@ public class ILoginServiceImpl implements ILoginService {
                 return returnEntity;
             }
             //判断账号和密码是否符合条件
-            if (!PanXiaoZhang.isAccount(jsonParam.getUsername()) || !PanXiaoZhang.isPassword(jsonParam.getPassword())){
-                return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码不存在");
+            if (!PanXiaoZhang.isAccount(jsonParam.getUsername())){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"请输入大于5位小于17位的账号");
+            }
+            if (!PanXiaoZhang.isPassword(jsonParam.getPassword())){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"请输入大于5位小于17位的密码");
             }
             Map<String,Object> map = new HashMap<>();
-            map.put("username",jsonParam.getUsername().replaceAll(" ",""));
-            map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
+            map.put("username",jsonParam.getUsername().replaceAll("[^a-zA-Z0-9]",""));
+            //map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
             map.put("login","login");
             //查询账号信息
             List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
             //判断如果账号查到唯一个就成功登录
-            if (sysPersonnels.size() != 1){
-                return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码错误");
+            if (sysPersonnels.size() < 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR, "账号不存在");
             }
             SysPersonnel sysPersonnel = sysPersonnels.get(0);
+            //判断密码是否正确
+            if (sysPersonnel.equals(PanXiaoZhang.getPassword(jsonParam.getPassword()))){
+                return new ReturnEntity(CodeEntity.CODE_ERROR, "密码错误");
+            }
             //判断当前账户的状态
             if(sysPersonnel.getEmploymentStatus().equals(0)){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"已离职");
@@ -150,10 +157,11 @@ public class ILoginServiceImpl implements ILoginService {
     }
 
     public static void main(String[] args) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("token","sRYZMRiAH9dzMxqrYs72");
-        String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid_by_token", jsonObject.toString(), "");
-        Token token = JSONObject.parseObject(send, Token.class);
-        System.out.println(token);
+        //JSONObject jsonObject = new JSONObject();
+        //jsonObject.put("token","sRYZMRiAH9dzMxqrYs72");
+        //String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid_by_token", jsonObject.toString(), "");
+        //Token token = JSONObject.parseObject(send, Token.class);
+        //System.out.println(token);
+        System.out.println(PanXiaoZhang.getPassword("null"));
     }
 }

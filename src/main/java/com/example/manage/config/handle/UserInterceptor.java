@@ -34,6 +34,7 @@ public class UserInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HttpSession session = request.getSession();
+        session.setMaxInactiveInterval(240 * 60);
         Object reglister = session.getAttribute("user");
         String roleId = String.valueOf(session.getAttribute("roleId"));
         String userId = String.valueOf(reglister);

@@ -307,7 +307,7 @@ public class PanXiaoZhang {
     }
     //判断是否符合账号
     public static boolean isAccount(String str){
-        return !isNull(str) && isLetterDigit(str) && str.length() < 17;
+        return !isNull(str) && isLetterDigit(str) && str.length() < 17 && str.length() > 5;
     }
     //判断是否符合密码
     public static boolean isPassword(String str){
@@ -1581,7 +1581,7 @@ public class PanXiaoZhang {
 //        Date yesterday = calendar.getTime();
 //        Boolean aBoolean = compareDate(yesterday);
 //        System.out.println(aBoolean);
-        System.out.println(PanXiaoZhang.getOpenId("18637871061"));
+        System.out.println(DateFormatUtils.format(new Date().getTime() + 7200000,PanXiaoZhang.yMdHms()));
 
         //List<JqPoint> ps = new ArrayList<>();
         //JqPoint jqPoint1 = new JqPoint(34.272644,117.308166);

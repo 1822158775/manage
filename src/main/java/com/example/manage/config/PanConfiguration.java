@@ -88,7 +88,7 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
             //map.put("index",0);
             //ReturnEntity statistics = iPunchingCardRecordService.ceshi(map, "statistics");
             //System.out.println(statistics + "=======================");
-            //xlsxReader.add(23,"天府东航");
+            //xlsxReader.add(34,"兰州机场");
 
     } catch (SocketException e) {
             e.printStackTrace();

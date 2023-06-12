@@ -24,11 +24,11 @@ public class DataStatisticsTodayWeek implements Serializable {
     public Integer refuse;//本周拒绝
     public Integer all;//本周所有数据
 
-    public Double activationGrowthRate;//上周批核已激活上升率
-    public Double approvedGrowthRate;//上周批核未激活上升率
-    public Double artificialGrowthRate;//上周转人工上升率
-    public Double refuseGrowthRate;//上周拒绝上升率
-    public Double allGrowthRate;//上周所有数据上升率
-    public Double validGrowthRate;//上周有效的率
-    public Double ratioGrowthRate;//上周对比率
+    public String activationGrowthRate;//上周批核已激活上升率
+    public String approvedGrowthRate;//上周批核未激活上升率
+    public String artificialGrowthRate;//上周转人工上升率
+    public String refuseGrowthRate;//上周拒绝上升率
+    public String allGrowthRate;//上周所有数据上升率
+    public String validGrowthRate;//上周有效的率
+    public String ratioGrowthRate;//上周对比率
 }

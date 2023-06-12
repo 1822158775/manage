@@ -97,7 +97,13 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
     @Override
     public ReturnEntity methodMasterT(HttpServletRequest request, String name) {
         try {
-            if (name.equals("edit")){
+            if (name.equals("all_edit")){
+                ReturnEntity returnEntity = all_edit(request);
+                if (!returnEntity.getCode().equals("0")){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                }
+                return returnEntity;
+            }else if (name.equals("edit")){
                 ReturnEntity returnEntity = edit(request);
                 if (!returnEntity.getCode().equals("0")){
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -123,6 +129,77 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
+    }
+
+    //一键审核所有数据
+    private ReturnEntity all_edit(HttpServletRequest request) throws IOException {
+        PerformanceReport jsonParam = PanXiaoZhang.getJSONParam(request, PerformanceReport.class);
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
+
+        if (ObjectUtils.isEmpty(jsonParam.getApproverState())){
+            jsonParam.setApproverState("agree");
+        }
+
+        QueryWrapper wrapper = new QueryWrapper();
+
+        ArrayList<Integer> integerArrayList = new ArrayList<>();
+
+        if (ObjectUtils.isEmpty(jsonParam.getManagementId())){
+            wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+            List<ManagementPersonnel> selectList = iManagementPersonnelMapper.selectList(wrapper);
+            for (int i = 0; i < selectList.size(); i++) {
+                integerArrayList.add(selectList.get(i).getManagementId());
+            }
+        }else {
+            integerArrayList.add(jsonParam.getManagementId());
+        }
+
+        wrapper = new QueryWrapper();
+        wrapper.eq("approver_state","pending");
+        wrapper.in("management_id",integerArrayList);
+        List<PerformanceReport> performanceReports = iPerformanceReportMapper.selectList(wrapper);
+        if (performanceReports.size() < 1){
+            return new ReturnEntity(CodeEntity.CODE_SUCCEED,"没有需要审核的数据");
+        }
+        int numberUpdate = 0;
+        for (int i = 0; i < performanceReports.size(); i++) {
+            PerformanceReport performanceReport = performanceReports.get(i);
+            //进行审批修改
+            int updateById = iPerformanceReportMapper.updateById(new PerformanceReport(
+                    performanceReport.getId(),
+                    jsonParam.getCommentsFromReviewers(),
+                    jsonParam.getApproverState(),
+                    DateFormatUtils.format(new Date(),PanXiaoZhang.yMdHms())
+            ));
+            //当返回值不为1的时候判断修改失败
+            if (updateById != 1){
+                return new ReturnEntity(
+                        CodeEntity.CODE_ERROR,
+                        "报告编码为" + performanceReport.getId() + "审核失败"
+                );
+            }
+            numberUpdate += updateById;
+        }
+        for (int i = 0; i < performanceReports.size(); i++) {
+            PerformanceReport performanceReport = performanceReports.get(i);
+            wrapper = new QueryWrapper();
+            wrapper.eq("personnel_code",performanceReport.getPersonnelCode());
+            SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
+            PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
+                    "",
+                    "",
+                    performanceReport.getReportTime() + "提交的业绩信息,已审核",
+                    "",
+                    urlTransfer + "?from=zn&redirect_url=" + urlPerformance
+            );
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功(" + numberUpdate + "/" + performanceReports.size() + ")");
     }
 
     //更正
@@ -158,8 +235,18 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         if (performanceReport.getApproverState().equals("pending")){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该业绩信息处于审核状态中，不可修改");
         }
-        //将当前所属项目加入
+        //查询当前是否有提交的数据
         QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",performanceReport.getPersonnelCode());
+        wrapper.apply(true, "report_time = '" + performanceReport.getReportTime() + "'");
+        wrapper.eq("card_type_id",jsonParam.getCardTypeId());
+        wrapper.ne("approver_state","refuse");
+        List<PerformanceReport> selectList = iPerformanceReportMapper.selectList(wrapper);
+        if (selectList.size() > 0){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"数据不可重复");
+        }
+        //将当前所属项目加入
+        wrapper = new QueryWrapper();
         if (ObjectUtils.isEmpty(jsonParam.getManagementId())){
             wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
             List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(wrapper);
@@ -217,7 +304,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     MsgEntity.CODE_ERROR
             );
         }
-        ReturnEntity entity = PanXiaoZhang.postWechatFer(
+       PanXiaoZhang.postWechatFer(
                 personnel.getOpenId(),
                 "",
                 "",
@@ -313,7 +400,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 personnel.getOpenId(),
                 "",
                 "",
-                performanceReport.getReportTime() + "提交的业绩信息,已通过",
+                performanceReport.getReportTime() + "提交的业绩信息,已审核",
                 "",
                 urlTransfer + "?from=zn&redirect_url=" + urlPerformance
         );
