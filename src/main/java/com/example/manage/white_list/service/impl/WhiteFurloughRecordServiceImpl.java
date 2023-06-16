@@ -303,7 +303,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     value.getOpenId(),
-                    "",
+                    "请假信息",
                     "",
                     sysPersonnel.getName() + "提交了请假信息",
                     "",
@@ -406,7 +406,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
                             //告知审核人前往审核
                             PanXiaoZhang.postWechatFer(
                                     selectById.getOpenId(),
-                                    "",
+                                    "请假信息",
                                     "",
                                     sysPersonnel.getName() + "提交了的请假信息",
                                     "",
@@ -437,7 +437,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
             }
             PanXiaoZhang.postWechatFer(
                     sysPersonnel.getOpenId(),
-                    "",
+                    "请假信息",
                     "",
                     "请假申请通过",
                     "",
@@ -468,7 +468,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
             }
             PanXiaoZhang.postWechatFer(
                     sysPersonnel.getOpenId(),
-                    "",
+                    "请假信息",
                     "",
                     remark,
                     "",

@@ -27,4 +27,10 @@ public class WhiteRankingListController {
     public ReturnEntity cat(HttpServletRequest request){
         return iWhiteRankingListService.methodMaster(request,"cat");
     }
+
+    // 查询项目进度条
+    @PostMapping(value = "cat_progress_bar")
+    public ReturnEntity cat_progress_bar(HttpServletRequest request){
+        return iWhiteRankingListService.methodMaster(request,"cat_progress_bar");
+    }
 }

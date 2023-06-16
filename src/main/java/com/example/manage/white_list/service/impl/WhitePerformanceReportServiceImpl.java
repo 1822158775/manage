@@ -1,21 +1,23 @@
 package com.example.manage.white_list.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.api.R;
 import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.PerformanceReportNotNull;
 import com.example.manage.entity.number.AuditDataNumber;
 import com.example.manage.entity.number.PerformanceReportNumber;
+import com.example.manage.entity.ranking_list.RankingList;
 import com.example.manage.mapper.*;
-import com.example.manage.util.HttpUtil;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.*;
-import com.example.manage.util.wechat.WechatMsg;
+import com.example.manage.util.excel.ExcelExportUtil;
+import com.example.manage.util.excel.XlsxLayoutReader;
+import com.example.manage.util.file.config.UploadFilePathConfig;
 import com.example.manage.white_list.service.IWhitePerformanceReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,12 +26,16 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 /**
  * @avthor 潘小章
  * @date 2023/3/31
+ * 业绩上报
  */
 
 @Slf4j
@@ -47,6 +53,13 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
 
     @Value("${url.performance}")
     private String urlPerformance;
+
+    @Resource
+    private UploadFilePathConfig uploadFilePathConfig;
+
+    /*上传目录*/
+    @Value("${magicalcoder.file.upload.useDisk.mapping.ap:}")
+    private String ap;
 
     @Resource
     private IPerformanceReportMapper iPerformanceReportMapper;
@@ -72,6 +85,12 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
     @Resource
     private ICardTypeMapper iCardTypeMapper;
 
+    @Resource
+    private WhiteRankingListMapper whiteRankingListMapper;
+
+    @Resource
+    private IPerformanceReportSalesMapper iPerformanceReportSalesMapper;
+
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
         try {
@@ -83,12 +102,206 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 return cat_audit_number(request);
             }else if (name.equals("cat_audit")){
                 return cat_audit(request);
+            }else if (name.equals("cat_xlsx")){
+                return cat_xlsx(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
+    }
+
+    //导出数据
+    private ReturnEntity cat_xlsx(HttpServletRequest request) throws IOException {
+        PerformanceReport jsonParam = PanXiaoZhang.getJSONParam(request, PerformanceReport.class);
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
+        //查询所有卡种
+        List<CardType> cardTypes = iCardTypeMapper.selectList(null);
+        //查询当前人员关联项目组
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+        List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(wrapper);
+        if (managementPersonnels.size() < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联项目组");
+        }
+        ArrayList<Integer> integerArrayList = new ArrayList<>();
+        for (int i = 0; i < managementPersonnels.size(); i++) {
+            ManagementPersonnel managementPersonnel = managementPersonnels.get(i);
+            integerArrayList.add(managementPersonnel.getManagementId());
+        }
+        Integer[] toArray = integerArrayList.toArray(new Integer[integerArrayList.size()]);
+        //存储内容
+        HashMap<String, String> stringMap = new HashMap<>();
+        //存储内容
+        HashMap<String, Integer> integerMap = new HashMap<>();
+        //查询该项目主管
+        Map map = new HashMap();
+        map.put("inManagementId",toArray);
+        map.put("roleId",roleId);
+        List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
+        ArrayList<Integer> arrayList = new ArrayList<>();
+        for (int i = 0; i < sysPersonnels.size(); i++) {
+            SysPersonnel personnel = sysPersonnels.get(i);
+            List<SysManagement> sysManagement = personnel.getSysManagement();
+            for (int j = 0; j < sysManagement.size(); j++) {
+                SysManagement management = sysManagement.get(j);
+                stringMap.put("personnel" + management.getId(),personnel.getName());
+                stringMap.put("management" + management.getId(),management.getName());
+                arrayList.add(management.getId());
+            }
+        }
+        map.put("inManagementId",arrayList.toArray(new Integer[arrayList.size()]));
+        map.put("type","month");
+        //本月数据
+        List<RankingList> rankingLists = whiteRankingListMapper.queryCount(map);
+        for (int i = 0; i < rankingLists.size(); i++) {
+            RankingList rankingList = rankingLists.get(i);
+            stringMap.put("monthCardType" + rankingList.getCardTypeId(),String.valueOf(rankingList.getActivation()));
+        }
+        if (ObjectUtils.isEmpty(jsonParam.getRiqiDay())){
+            map.put("type","day");
+            jsonParam.setRiqiDay("今日");
+        }else if (jsonParam.getRiqiDay().equals("day")){
+            jsonParam.setRiqiDay("今日");
+        }else if (jsonParam.getRiqiDay().equals("week")){
+            jsonParam.setRiqiDay("本周");
+        }else if (jsonParam.getRiqiDay().equals("month")){
+            jsonParam.setRiqiDay("本月");
+        }else {
+            jsonParam.setRiqiDay("自定义时间");
+            map.put("type",jsonParam.getRiqiDay());
+
+            Object thisStartTime = map.get("startTime");
+            if (ObjectUtils.isEmpty(thisStartTime)){
+                thisStartTime = DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
+            }
+
+            Object thisEndTime = map.get("endTime");
+            if (ObjectUtils.isEmpty(thisEndTime)){
+                thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 0);
+            }
+
+            Long dayTime = PanXiaoZhang.getDayTime(String.valueOf(thisStartTime), String.valueOf(thisEndTime));
+
+            if (dayTime > 31){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"查询天数最多一个月");
+            }
+
+            if (dayTime < 0){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"开始时间不可以大于结束时间");
+            }
+
+            map.put("thisStartTime",thisStartTime + " 00:00:00");
+            map.put("thisEndTime",thisEndTime + " 23:59:59");
+            stringMap.put("thisStartTime",thisStartTime + " 00:00:00");
+            stringMap.put("thisEndTime",thisEndTime + " 23:59:59");
+        }
+        //查询签到人数
+        List<RankingList> queryPunchingCount = whiteRankingListMapper.queryPunchingCount(map);
+        for (int i = 0; i < queryPunchingCount.size(); i++) {
+            RankingList rankingList = queryPunchingCount.get(i);
+            integerMap.put("attendance" + rankingList.getId(),rankingList.getAttendance());
+            integerMap.put("numberOfPeople" + rankingList.getId(),rankingList.getNumberOfPeople());
+        }
+        //本月数据
+        List<RankingList> queryCount = whiteRankingListMapper.queryCount(map);
+        for (int i = 0; i < queryCount.size(); i++) {
+            RankingList rankingList = queryCount.get(i);
+            stringMap.put("dayCardType" + rankingList.getCardTypeId(),String.valueOf(rankingList.getActivation()));
+        }
+        List<GetExcel> getExcels = ExcelExportUtil.init(stringMap,ap,cardTypes,jsonParam.getRiqiDay());
+        int row = 7;
+        //详情数据
+        for (int i = 0; i < cardTypes.size(); i++) {
+            CardType cardType = cardTypes.get(i);
+            map.put("manageCardTypeId",cardType.getId());
+            List<RankingList> queryAllCount = whiteRankingListMapper.queryAllCount(map);
+
+            Integer countNumber = 0;
+            Integer approved = 0;
+            Integer activation = 0;
+
+            Integer countAttendance = 0;
+            Integer countNumberOfPeople = 0;
+            for (int j = 0; j < queryAllCount.size(); j++) {
+                RankingList rankingList = queryAllCount.get(j);
+
+                countNumber += rankingList.getCountNumber();
+                approved += rankingList.getApproved();
+                activation += rankingList.getActivation();
+
+
+                Integer integerAttendance = integerMap.get("attendance" + rankingList.getId());
+                Integer attendance = (ObjectUtils.isEmpty(integerAttendance)) ? 0 : integerAttendance;
+                countAttendance += attendance;
+                Integer integerNumberOfPeople = integerMap.get("numberOfPeople" + rankingList.getId());
+                Integer numberOfPeople = (ObjectUtils.isEmpty(integerNumberOfPeople)) ? 0 : integerNumberOfPeople;
+                countNumberOfPeople += numberOfPeople;
+                if (j == 0){
+                        getExcels.add(new GetExcel(
+                                row,
+                                row,
+                                XlsxLayoutReader.template1(
+                                        cardType,
+                                        row,
+                                        queryAllCount,
+                                        stringMap,
+                                        rankingList,
+                                        numberOfPeople,
+                                        attendance
+                                ),
+                                false
+                        ));
+                    }else {
+                        getExcels.add(new GetExcel(
+                                row,
+                                row,
+                                XlsxLayoutReader.template2(
+                                        cardType,
+                                        row,
+                                        queryAllCount,
+                                        stringMap,
+                                        rankingList,
+                                        numberOfPeople,
+                                        attendance
+                                ),
+                                false
+                        ));
+                }
+                row++;
+            }
+            //合计
+            getExcels.add(new GetExcel(
+                    row,
+                    row,
+                    XlsxLayoutReader.template3(
+                        cardType,
+                        row,
+                        countNumber,
+                        approved,
+                        activation,
+                        countAttendance,
+                        countNumberOfPeople
+                    ),
+                    true)
+            );
+            row++;
+        }
+        String format = DateFormatUtils.format(new Date(), PanXiaoZhang.yMd(1));
+        String path = ap + format;
+        File file = new File(path);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        File tmpFile = File.createTempFile(format,".xlsx",new File(path));
+        ExcelExportUtil.writeExcelToTemp(new ArrayList<>(),getExcels,tmpFile);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,uploadFilePathConfig.getFileExtraAddPrefix() + format + "/" + tmpFile.getName(),MsgEntity.CODE_SUCCEED);
     }
 
 
@@ -192,7 +405,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "",
+                    "业绩信息",
                     "",
                     performanceReport.getReportTime() + "提交的业绩信息,已审核",
                     "",
@@ -306,7 +519,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
        PanXiaoZhang.postWechatFer(
                 personnel.getOpenId(),
-                "",
+                "业绩信息",
                 "",
                 sysPersonnel.getName() + ":修改了业绩信息,请前往审核",
                 "",
@@ -398,7 +611,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
         ReturnEntity entity = PanXiaoZhang.postWechatFer(
                 personnel.getOpenId(),
-                "",
+                "业绩信息",
                 "",
                 performanceReport.getReportTime() + "提交的业绩信息,已审核",
                 "",
@@ -579,6 +792,24 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         jsonParam.setUpdateTime(format);
         //添加默认状态
         jsonParam.setApproverState("pending");
+        //关联权益
+        if (!ObjectUtils.isEmpty(jsonParam.getSalesList())){
+            for (int i = 0; i < jsonParam.getSalesList().size(); i++) {
+                PerformanceReportSales performanceReportSales = jsonParam.getSalesList().get(i);
+                if (ObjectUtils.isEmpty(performanceReportSales.getType())){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"权益名称不可为空");
+                }
+                performanceReportSales.setReportCoding(jsonParam.getReportCoding());
+                int insert = iPerformanceReportSalesMapper.insert(performanceReportSales);
+                //如果返回值不能鱼1则判断失败
+                if (insert != 1){
+                    return new ReturnEntity(
+                            CodeEntity.CODE_ERROR,
+                            MsgEntity.CODE_ERROR
+                    );
+                }
+            }
+        }
         //没有任何问题将数据录入进数据库
         int insert = iPerformanceReportMapper.insert(jsonParam);
         //如果返回值不能鱼1则判断失败
@@ -591,7 +822,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
         ReturnEntity entity = PanXiaoZhang.postWechatFer(
                 jsonParam.getSysPersonnel().getOpenId(),
-                "",
+                "业绩信息",
                 "",
                 sysPersonnel.getName() + ":提交业绩信息,请前往审核",
                 "",
@@ -617,14 +848,29 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
     }
 
     public static void main(String[] args) {
-        ReturnEntity entity = PanXiaoZhang.postWechat(
-                "15297599442",
-                "提交信息",
-                "",
-                "请前往审核",
-                "",
-                "/pages/activities/show/show?from=zn&redirect_url="
-        );
-        System.out.println(entity);
+        String filePath = "D:\\home\\equity\\manage\\target\\classes\\upload\\ceshi5125891660107796633.xlsx";
+        String binaryFilePath = "path/to/binary/file";
+        try {
+            // 创建 FileInputStream 对象
+            FileInputStream fileInputStream = new FileInputStream(filePath);
+
+            // 创建 FileOutputStream 对象
+            //FileOutputStream fileOutputStream = new FileOutputStream(binaryFilePath);
+
+            // 读取文件并写入 FileOutputStream
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                System.out.println(buffer);
+                //fileOutputStream.write(buffer, 0, bytesRead);
+            }
+
+            // 关闭流
+            fileInputStream.close();
+            //fileOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
 }

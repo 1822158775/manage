@@ -94,6 +94,12 @@
         <if test="managementId != null "> and management_personnel.`management_id` = #{managementId}</if>
         <if test="employmentStatus != null "> and <include refid="tableSql" />.`employment_status` = #{employmentStatus}</if>
         <if test="gtLevelSorting != null"> and sys_role.`level_sorting` > #{gtLevelSorting}</if>
+        <if test="inManagementId != null and inManagementId != ''">
+            and management_personnel.`management_id` in
+            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.employment_status desc,<include refid="tableSql"/>.id desc

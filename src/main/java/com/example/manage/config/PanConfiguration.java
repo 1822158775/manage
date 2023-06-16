@@ -59,10 +59,11 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
 
     @Resource
     private XlsxReader xlsxReader;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
-
+            iWhiteSysPersonnelService.ceshi();
             MythicalCreatures.mythical_creatures_1();
             //schedulingSysManagementService.windUpAnAccount();
             //Map<String,Object> map = new HashMap();

@@ -42,6 +42,7 @@
         as
             <include refid="tableSqlAs" />
             <include refid="relevanceSql" />
+            <include refid="safeOrderBySMM" />
     </select>
     <!--  返回  -->
     <sql id="returnSql">
@@ -100,5 +101,8 @@
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc
+    </sql>
+    <sql id="safeOrderBySMM">
+        order by <include refid="tableSqlAs"/>.id desc
     </sql>
 </mapper>

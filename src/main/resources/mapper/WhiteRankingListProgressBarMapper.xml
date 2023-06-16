@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.WhiteRankingListMapper">
+<mapper namespace="com.example.manage.mapper.WhiteRankingListProgressBarMapper">
     <resultMap id="entity" type="com.example.manage.entity.ranking_list.RankingList">
         <result column="id" property="id" />
         <result column="count_number" property="countNumber" />
+        <result column="day_time" property="dayTime" />
         <result column="name" property="name" />
         <result column="card_type_name" property="cardTypeName" />
         <result column="report_status" property="reportStatus" />
@@ -12,93 +13,65 @@
         <result column="approved" property="approved" />
         <result column="artificial" property="artificial" />
         <result column="refuse" property="refuse" />
-        <result column="card_type_id" property="cardTypeId" />
-        <result column="attendance" property="attendance" />
-        <result column="number_of_people" property="numberOfPeople" />
     </resultMap>
-    <!--  查询签到次数  -->
-    <select id="queryPunchingCount" resultMap="entity" resultType="hashmap">
-        SELECT
-        <include refid="tableSqlSManagement" />.id as id,
-        COUNT(DISTINCT <include refid="tableSqlPunchingCardRecord" />.id) as attendance,
-        <include refid="tableSqlSManagement" />.number_of_people
-        FROM
-        <include refid="tableSqlSManagement" />
-        <include refid="relevanceSqlPunchingCardRecord" />
-        <include refid="whereSqlModel" />
-        <include refid="managementState"/>
-        <include refid="dayWeekMonth" />
-        <if test="type == '自定义'">
-            <include refid="todayPunStartCustom" />
-        </if>
-        <include refid="safeGroupBySManagement" />
-    </select>
-    <!--  查询当月数量  -->
-    <select id="queryCount" resultMap="entity" resultType="hashmap">
-        SELECT
-        <include refid="tableSqlSManagement" />.id as id,
-        <include refid="tableSqlSManagement" />.`name`,
-        <include refid="returnSql" />,
-        <include refid="tableSqlPReport" />.`card_type_id`
-        FROM
-        <include refid="tableSqlSManagement" />
-        <include refid="relevanceSql" />
-        <include refid="whereSqlModel" />
-        <include refid="managementState"/>
-        <include refid="safeGroupByCardType" />
-    </select>
-    <!--  查询当月数量  -->
-    <select id="queryAllCount" resultMap="entity" resultType="hashmap">
-        SELECT
-        <include refid="tableSqlSManagement" />.id as id,
-        <include refid="tableSqlSManagement" />.`name`,
-        <include refid="returnSql" />,
-        <include refid="tableSqlCardType" />.`id` as card_type_id
-        FROM
-        <include refid="tableSqlSManagement" />
-        <include refid="relevanceSql" />
-        <include refid="relevanceSqlManagementCardType" />
-        <include refid="whereSqlModel" />
-        <include refid="managementState"/>
-        <include refid="manageCardTypeId" />
-        <include refid="safeGroupByMCT" />
-        <include refid="safeOrderBy" />
-    </select>
+
     <!--  查询数量  -->
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
+
         <choose>
-            <when test="managementId != null and managementId != ''">
+            <when test="mId != null and mId != '' or managementId != null and managementId != ''">
                 SELECT
-                <include refid="tableSqlPersonnel" />.id as id,
-                <include refid="tableSqlPersonnel" />.`name`,
-                <include refid="returnSql" />
-                FROM
-                <include refid="tableSqlPersonnel" />
-                <include refid="relevanceSqlPpersonnel" />
-                <include refid="whereSqlModel" />
-                <include refid="safeGroupBy" />
-                <include refid="safeOrderBy" />
-                <include refid="safeLIMIT" />
-            </when>
-            <otherwise>
-                SELECT
-                <include refid="tableSqlSManagement" />.id as id,
-                <include refid="tableSqlSManagement" />.`name`,
+                <choose>
+                    <when test="managementId != null and managementId != ''">
+                        <include refid="tableSqlSManagement" />.`name`,
+                    </when>
+                    <otherwise>
+                        '全部' as `name`,
+                    </otherwise>
+                </choose>
+                DATE_FORMAT(<include refid="tableSqlPReport" />.report_time, '%Y-%m-%d') as day_time,
                 <include refid="returnSql" />
                 FROM
                 <include refid="tableSqlSManagement" />
                 <include refid="relevanceSql" />
                 <include refid="whereSqlModel" />
                 <include refid="managementState"/>
+                <include refid="managementId"/>
                 <include refid="safeGroupBy" />
                 <include refid="safeOrderBy" />
-                <include refid="safeLIMIT" />
+            </when>
+            <otherwise>
+                SELECT
+                <choose>
+                    <when test="sysPersonnelId != null and sysPersonnelId != ''">
+                        <include refid="tableSqlPersonnel" />.`name`,
+                    </when>
+                    <otherwise>
+                        '全部' as `name`,
+                    </otherwise>
+                </choose>
+                DATE_FORMAT(<include refid="tableSqlPReport" />.report_time, '%Y-%m-%d') as day_time,
+                <include refid="returnSql" />
+                FROM
+                <include refid="tableSqlPersonnel" />
+                <include refid="relevanceSqlPpersonnel" />
+                <include refid="whereSqlModel" />
+                <include refid="sysPersonnelId"/>
+                <include refid="safeGroupBy" />
+                <include refid="safeOrderBy" />
             </otherwise>
         </choose>
     </select>
     <!--  返回  -->
     <sql id="returnSql">
-        <include refid="tableSqlCardType" />.`name` as card_type_name,
+        <choose>
+            <when test="manageCardTypeId != null and manageCardTypeId != ''">
+                <include refid="tableSqlCardType" />.`name` as card_type_name,
+            </when>
+            <otherwise>
+                '全部' as `card_type_name`,
+            </otherwise>
+        </choose>
         coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.entry_number else 0 end),0) AS count_number,
         coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.approved_number else 0 end),0) AS approved,
         coalesce(SUM(case when  <include refid="tableSqlPReport" />.id  then <include refid="tableSqlPReport" />.valid_number else 0 end),0) AS activation,
@@ -130,10 +103,6 @@
     <!--  关联表  -->
     <sql id="tableSqlManagementPersonnel">
         manage.management_personnel
-    </sql>
-    <!--  打卡表  -->
-    <sql id="tableSqlPunchingCardRecord">
-        manage.punching_card_record
     </sql>
     <!--  进行关联表项目  -->
     <sql id="relevanceSql">
@@ -191,15 +160,6 @@
         ON
         <include refid="tableSqlSManagement" />.id =
         <include refid="tableSqlPReport" />.management_id
-        <if test="managementId != null and managementId != ''">
-            and <include refid="tableSqlPReport" />.management_id = #{managementId}
-        </if>
-        <if test="inManagementId != null and inManagementId != ''">
-            and <include refid="tableSqlSManagement" />.id in
-            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
-                #{item}
-            </foreach>
-        </if>
 
         LEFT JOIN
         <include refid="tableSqlCardType" />
@@ -207,20 +167,18 @@
         <include refid="tableSqlCardType" />.id =
         <include refid="tableSqlPReport" />.card_type_id
     </sql>
-    <!--  关联项目卡表  -->
-    <sql id="relevanceSqlManagementCardType">
-        LEFT JOIN <include refid="tableSqlMCType" /> ON <include refid="tableSqlMCType" />.manage_code = <include refid="tableSqlSManagement" />.management_code
-    </sql>
-    <!--  关联打卡表  -->
-    <sql id="relevanceSqlPunchingCardRecord">
-        LEFT JOIN <include refid="tableSqlPunchingCardRecord" /> ON <include refid="tableSqlPunchingCardRecord" />.management_id = <include refid="tableSqlSManagement" />.id
-    </sql>
     <!--  条件  -->
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="inManagementId != null and inManagementId != ''">
+        <if test="mId != null and mId != ''">
             and <include refid="tableSqlSManagement" />.id in
             <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="pId != null and pId != ''">
+            and <include refid="tableSqlPersonnel" />.id in
+            <foreach collection="inPersonnelId" separator="," item="item" open="(" close=")">
                 #{item}
             </foreach>
         </if>
@@ -238,21 +196,6 @@
     <sql id="todayMonth">
         AND DATE_FORMAT( <include refid="tableSqlPReport" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
     </sql>
-
-
-    <!--  本日  -->
-    <sql id="todayPunDay">
-        AND to_days(<include refid="tableSqlPunchingCardRecord" />.clocking_day_time) = to_days(NOW())
-    </sql>
-    <!--  本周  -->
-    <sql id="todayPunWeek">
-        AND YEARWEEK(date_format(<include refid="tableSqlPunchingCardRecord" />.clocking_day_time ,'%Y-%m-%d') - INTERVAL 1 DAY) = YEARWEEK(now() - INTERVAL 1 DAY)
-    </sql>
-    <!--  本月  -->
-    <sql id="todayPunMonth">
-        AND DATE_FORMAT( <include refid="tableSqlPunchingCardRecord" />.clocking_day_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
-    </sql>
-
     <!--  自定义日期  -->
     <sql id="todayStartCustom">
         AND <include refid="tableSqlPReport" />.report_time BETWEEN #{thisStartTime} AND #{thisEndTime}
@@ -265,79 +208,25 @@
     <sql id="managementState">
         AND <include refid="tableSqlSManagement" />.management_state = 1
     </sql>
-    <!--  卡类型  -->
-    <sql id="manageCardTypeId">
-        <if test="manageCardTypeId != null and manageCardTypeId != ''">
-            and <include refid="tableSqlMCType" />.card_type_id = #{manageCardTypeId}
+    <!--  项目编码  -->
+    <sql id="managementId">
+        <if test="managementId != null and managementId != ''">
+            and <include refid="tableSqlPReport" />.management_id = #{managementId}
         </if>
     </sql>
-    <!--  打卡时间  -->
-    <sql id="dayWeekMonth">
-        <if test="type == 'day'">
-            <include refid="todayPunDay" />
+    <!--  人员状态  -->
+    <sql id="sysPersonnelId">
+        <if test="sysPersonnelId != null and sysPersonnelId != ''">
+            and <include refid="tableSqlPersonnel" />.id = #{sysPersonnelId}
         </if>
-        <if test="type == 'week'">
-            <include refid="todayPunWeek" />
-        </if>
-        <if test="type == 'month'">
-            <include refid="todayPunMonth" />
-        </if>
-    </sql>
-    <!--  打卡自定义日期  -->
-    <sql id="todayPunStartCustom">
-        AND <include refid="tableSqlPunchingCardRecord" />.clocking_day_time BETWEEN #{thisStartTime} AND #{thisEndTime}
     </sql>
     <!--  分组  -->
     <sql id="safeGroupBy">
-        GROUP BY
-        <choose>
-            <!--            <when test="groupByManagement == 'yes' and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
-            <!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
-            <!--            </when>-->
-
-            <!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel != 'yes'">-->
-            <!--                <include refid="tableSqlSManagement" />.id-->
-            <!--            </when>-->
-            <!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
-            <!--                <include refid="tableSqlCardType" />.id-->
-            <!--            </when>-->
-            <!--            <when test="groupByManagement != 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
-            <!--                <include refid="tableSqlPersonnel" />.id-->
-            <!--            </when>-->
-
-            <!--            <when test="groupByManagement == 'yes'  and groupByCardType == 'yes' and groupByPersonnel != 'yes'">-->
-            <!--                <include refid="tableSqlSManagement" />.id,<include refid="tableSqlCardType" />.id-->
-            <!--            </when>-->
-            <!--            <when test="groupByManagement != 'yes'  and groupByCardType == 'yes' and groupByPersonnel == 'yes'">-->
-            <!--                <include refid="tableSqlCardType" />.id,<include refid="tableSqlPersonnel" />.id-->
-            <!--            </when>-->
-            <!--            <when test="groupByManagement == 'yes'  and groupByCardType != 'yes' and groupByPersonnel == 'yes'">-->
-            <!--                <include refid="tableSqlPersonnel" />.id,<include refid="tableSqlSManagement" />.id-->
-            <!--            </when>-->
-            <when test="managementId != null and managementId != ''">
-                <include refid="tableSqlPersonnel" />.id
-            </when>
-            <otherwise>
-                <include refid="tableSqlSManagement" />.id
-            </otherwise>
-        </choose>
+        GROUP BY DATE_FORMAT(<include refid="tableSqlPReport" />.report_time, '%Y-%m-%d')
     </sql>
-    <!--  分组  -->
-    <sql id="safeGroupByCardType">
-        GROUP BY <include refid="tableSqlCardType" />.id
-    </sql>
-    <!--  分组  -->
-    <sql id="safeGroupBySManagement">
-        GROUP BY <include refid="tableSqlSManagement" />.id
-    </sql>
-    <!--  分组  -->
-    <sql id="safeGroupByMCT">
-        GROUP BY <include refid="tableSqlCardType" />.id,<include refid="tableSqlSManagement" />.id
-    </sql>
-    <!--  分组  -->
     <!--  排序  -->
     <sql id="safeOrderBy">
-        ORDER BY approved DESC,activation DESC,<include refid="tableSqlPReport" />.report_time
+        ORDER BY DATE_FORMAT(<include refid="tableSqlPReport" />.report_time, '%Y-%m-%d') DESC
     </sql>
     <!--  分页  -->
     <sql id="safeLIMIT">

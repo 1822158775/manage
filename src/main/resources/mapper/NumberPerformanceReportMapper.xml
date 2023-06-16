@@ -10,6 +10,7 @@
         <result column="this_month_active" property="thisMonthActive" />
         <result column="this_month_approve" property="thisMonthApprove" />
         <result column="approverState" property="approverState" />
+
         <collection property="performanceReport" ofType="com.example.manage.entity.number.PerformanceReportNumber">
 
         </collection>

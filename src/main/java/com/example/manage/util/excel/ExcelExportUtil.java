@@ -1,29 +1,30 @@
 package com.example.manage.util.excel;
 
+import com.example.manage.entity.CardType;
 import com.example.manage.entity.data_statistics.DataStatisticsTodayDay;
-import org.apache.poi.hssf.usermodel.HSSFPatriarch;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
+import com.example.manage.util.PanXiaoZhang;
+import com.example.manage.util.entity.GetExcel;
+import org.apache.commons.collections4.Get;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
-import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.springframework.util.ObjectUtils;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
+
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.xssf.usermodel.*;
+
 
 /**
  * @program：潘小章
@@ -34,7 +35,7 @@ public class ExcelExportUtil {
     /*文件上传额外添加的前缀*/
     //@Value("${magicalcoder.file.upload.useDisk.mapping.fileExtraAddPrefix:}")
     //private static String fileExtraAddPrefix;
-    private static String fileExtraAddPrefix = "D:\\home\\equity\\manage\\target\\classes\\upload\\";
+    private static String fileExtraAddPrefix = "/www/springboot/manage/upload";
 
     public List<String> riqi(Integer tianshu){
         //获取当前日期
@@ -79,85 +80,110 @@ public class ExcelExportUtil {
 
     /**
      * 潘Sir
-     * @param pageList
-     * @param titles
-     * @param tmpFile
+     * @param pageList 主干内容
+     * @param getExcels 抬头内容
+     * @param tmpFile 输出文件
      */
-    public static void writeExcelToTemp(List<List<DataStatisticsTodayDay>> pageList, String[] titles, File tmpFile) {
+    public static void writeExcelToTemp(List<List<DataStatisticsTodayDay>> pageList, List<GetExcel> getExcels, File tmpFile) {
         FileOutputStream out = null;
-        SXSSFWorkbook wb = new SXSSFWorkbook(1000); // keep 100 rows in memory, exceeding rows will be flushed to disk
-        Sheet sh = wb.createSheet();
+        XSSFWorkbook wb = new XSSFWorkbook();; // keep 100 rows in memory, exceeding rows will be flushed to disk
+        XSSFSheet sh = wb.createSheet("Sheet1");
         try {
-            //头部 第1行
-            Row headRow = sh.createRow(0);
-            //第几列
-            Integer titleCellNumber = 0;
-            for(int i = 0;i < titles.length;i++){
-                // 创建 Drawing 对象
-                Drawing drawing = sh.createDrawingPatriarch();
-                // 创建 ClientAnchor 对象
-                int row = 0;
-                int col = 0;
-                byte[] byteArray = Files.readAllBytes(Paths.get("C:\\Users\\Administrator\\Downloads\\1.png"));
-                int pictureIndex = wb.addPicture(byteArray, Workbook.PICTURE_TYPE_JPEG);
-                //col1 ：从左向右数 | 的线（从0）
-                //row1 ：从上到下数 —— 的线（从0）
-                //col2 ：同col1
-                //row2 ：同row1
-                ClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, titleCellNumber, row, col, row);
-                anchor.setAnchorType(ClientAnchor.MOVE_AND_RESIZE);
-                // 创建 Picture 对象，并将其添加到 Drawing 中
-                Picture picture = drawing.createPicture(anchor, pictureIndex);
+            for (int i = 0; i < getExcels.size(); i++) {
+                GetExcel getExcel = getExcels.get(i);
+                Row headRow = sh.createRow(getExcel.getFirstRow());
+                List<GetExcel> excels = getExcel.getGetExcels();
+                for (int j = 0; j < excels.size(); j++) {
+                    GetExcel excel = excels.get(j);
+                    //设置样式
+                    XSSFCellStyle cellStyle = wb.createCellStyle();
+                    //指定合并开始行、合并结束行 合并开始列、合并结束列
+                    CellRangeAddress rangeAddress = new CellRangeAddress(
+                            excel.getFirstRow()
+                            , excel.getLastRow()
+                            , excel.getFirstCol()
+                            , excel.getLastCol()
+                    );
+                    if (excel.getMergeSwitch()){
+                        //添加要合并地址到表格
+                        sh.addMergedRegion(rangeAddress);
+                    }
+                    if (getExcel.getRowBorderSwitch()){
+                        RegionUtil.setBorderBottom(BorderStyle.THICK,rangeAddress,sh);
+                    }
+                    //居中
+                    cellStyle.setAlignment(excel.getHorizontalAlignment());
+                    cellStyle.setVerticalAlignment(excel.getVerticalAlignment());
+                    if (excel.getType().equals("image")){
+                        // 创建 Drawing 对象
+                        Drawing drawing = sh.createDrawingPatriarch();
+                        // 创建 ClientAnchor 对象
+                        byte[] byteArray = Files.readAllBytes(Paths.get(excel.getName()));
+                        int pictureIndex = wb.addPicture(byteArray, Workbook.PICTURE_TYPE_JPEG);
+                        //col1 ：从左向右数 | 的线（从0）
+                        //row1 ：从上到下数 —— 的线（从0）
+                        //col2 ：同col1
+                        //row2 ：同row1
+                        ClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, excel.getFirstCol(), getExcel.getFirstRow(), excel.getLastCol(), getExcel.getLastRow());
+                        // 创建 Picture 对象，并将其添加到 Drawing 中
+                        Picture picture = drawing.createPicture(anchor, pictureIndex);
+                        // 设置 Picture 的大小
+                        picture.resize(1.5,1.5);
+                    }else if (excel.getType().equals("text")){
+                        // 创建工作表
+                        sh.setDefaultRowHeight((short) 500);
+                        sh.setColumnWidth(excel.getFirstCol(), 3000);
+                        //创建单元格，指定起始列号，从0开始
+                        Cell cell = headRow.createCell(excel.getFirstCol());
+                        //设置单元格内容
+                        cell.setCellValue(excel.getName());
+                        //设置单元格类型
+                        cell.setCellType(CellType.STRING);
+                        //设置背景颜色
+                        cellStyle.setFillForegroundColor(excel.getBgcolor());
+                        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-                // 设置 Picture 的大小
-                picture.resize(0.2);
-                //指定合并开始行、合并结束行 合并开始列、合并结束列
-                CellRangeAddress rangeAddress = new CellRangeAddress(0, 0, titleCellNumber, (titleCellNumber + 2) - 1);
-                //添加要合并地址到表格
-                sh.addMergedRegion(rangeAddress);
-                //创建单元格，指定起始列号，从0开始
-                Cell cell = headRow.createCell(titleCellNumber);
-                //设置单元格内容
-                cell.setCellValue(titles[i]);
-                //设置单元格类型
-                cell.setCellType(Cell.CELL_TYPE_STRING);
-                //设置样式
-                XSSFCellStyle style = (XSSFCellStyle)wb.createCellStyle();
-                //style.setFillForegroundColor(IndexedColors.GREEN.getIndex());
-                //设置背景颜色
-                XSSFColor color = new XSSFColor(new java.awt.Color(111, 111, 111));
-                //将颜色加入样式中
-                style.setFillForegroundColor(color);
-                //让这个设置生效
-                style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                //设置字体颜色
-                Font font = wb.createFont();
-                font.setColor(IndexedColors.BLACK.getIndex());
-                style.setFont(font);
-                //将设置好的加入单元格中
-                cell.setCellStyle(style);
-                //设置下一个是第几列
-                titleCellNumber = titleCellNumber + 2;
-            }
-            //数据
-            for(int i = 0; i < pageList.size();i++){
-                //创建行，指定起始行号，从0开始
-                Row row = sh.createRow(i + 1);
-                for(int j = 0;j < pageList.get(i).size();j++){
-                    //获取当前内容
-                    DataStatisticsTodayDay dataStatisticsTodayDay = pageList.get(i).get(j);
-                    //创建单元格，指定起始列号，从0开始
-                    Cell cell = row.createCell(j);
-                    //设置单元格内容
-                    cell.setCellValue(dataStatisticsTodayDay.getActivation());
-                    //设置单元格类型
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                        if (!excel.getMergeSwitch()){
+                            //边框线
+                            cellStyle.setBorderTop(BorderStyle.THIN);
+                            cellStyle.setTopBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
+                            cellStyle.setBorderBottom(BorderStyle.THIN);
+                            cellStyle.setBottomBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
+                            cellStyle.setBorderLeft(BorderStyle.THIN);
+                            cellStyle.setLeftBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
+                            cellStyle.setBorderRight(BorderStyle.THIN);
+                            cellStyle.setRightBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
+                        }
 
-                    System.out.println(Cell.CELL_TYPE_NUMERIC + "============");
+                        //cellStyle.setFillForegroundColor(excel.getBgcolor());
+                        //cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                        //设置字体颜色
+                        XSSFFont font = wb.createFont();
+                        font.setColor(excel.getColor());
+                        font.setFontHeightInPoints(excel.getFontSize());
+                        font.setBold(excel.getBold());
+                        cellStyle.setFont(font);
+                        //将设置好的加入单元格中
+                        cell.setCellStyle(cellStyle);
+                    }
                 }
             }
+            //数据
+            //for(int i = 0; i < pageList.size();i++){
+            //    //创建行，指定起始行号，从0开始
+            //    Row shRow = sh.createRow(i + 5);
+            //    for(int j = 0;j < pageList.get(i).size();j++){
+            //        //获取当前内容
+            //        DataStatisticsTodayDay dataStatisticsTodayDay = pageList.get(i).get(j);
+            //        //创建单元格，指定起始列号，从0开始
+            //        Cell cell = shRow.createCell(j);
+            //        //设置单元格内容
+            //        cell.setCellValue(dataStatisticsTodayDay.getActivation());
+            //        //设置单元格类型
+            //        cell.setCellType(CellType.STRING);
+            //    }
+            //}
             out = new FileOutputStream(tmpFile);
-            System.out.println(tmpFile.getParentFile());
             wb.write(out);
         }catch (Exception e){
             e.printStackTrace();
@@ -166,11 +192,11 @@ public class ExcelExportUtil {
                 if(out!=null){
                     out.close();
                 }
+                if(wb!=null){
+                    wb.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            if(wb!=null){
-                wb.dispose();
             }
         }
     }
@@ -187,9 +213,807 @@ public class ExcelExportUtil {
         list.add(dataStatisticsTodayDay);
         list.add(dataStatisticsTodayDay);
         arrayList.add(list);
-        String[] strings = {"名称","成功","失败","等待","重申"};
-        File tmpFile = File.createTempFile("ceshi",".xlsx",new File(fileExtraAddPrefix));
-        writeExcelToTemp(arrayList,strings,tmpFile);
+        arrayList.add(list);
+
+        //File tmpFile = File.createTempFile("ceshi",".xlsx",new File(fileExtraAddPrefix));
+        //writeExcelToTemp(arrayList,init(),tmpFile);
+    }
+    //红色
+    public static XSSFColor colorRed(){
+        XSSFColor bgRed = new XSSFColor(new java.awt.Color(191, 1, 1));
+        return bgRed;
+    }
+    //白色
+    public static XSSFColor colorWhite(){
+        XSSFColor bgRed = new XSSFColor(new java.awt.Color(255, 255, 255));
+        return bgRed;
+    }
+    //黑色
+    public static XSSFColor colorBlack(){
+        XSSFColor bgRed = new XSSFColor(new java.awt.Color(0, 0, 0));
+        return bgRed;
+    }
+    //黄色
+    public static XSSFColor colorYellow(){
+        XSSFColor bgRed = new XSSFColor(new java.awt.Color(246, 193, 0));
+        return bgRed;
+    }
+    //抬头标题
+    public static List<GetExcel> title(Map<String,String> map,String type){
+        List<GetExcel> getExcels = new ArrayList<>();
+
+        String dayTime = DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
+
+        String thisStartTime = map.get("thisStartTime");
+        String thisEndTime = map.get("thisEndTime");
+        if (!ObjectUtils.isEmpty(thisStartTime) && !ObjectUtils.isEmpty(thisEndTime)){
+            dayTime = thisStartTime + '~' + thisEndTime;
+        }
+
+        getExcels.add(new GetExcel(
+                "场景项目业绩统计" + type + "报表",
+                null,
+                "text",
+                colorWhite(),
+                colorRed(),
+                0,
+                0,
+                1,
+                0,
+                8,
+                HorizontalAlignment.CENTER,
+                VerticalAlignment.CENTER,
+                (short) 18,
+                true,
+                true
+        ));
+        getExcels.add(new GetExcel(
+                dayTime,
+                null,
+                "text",
+                colorWhite(),
+                colorRed(),
+                0,
+                0,
+                1,
+                9,
+                11,
+                HorizontalAlignment.RIGHT,
+                VerticalAlignment.BOTTOM,
+                (short) 11,
+                true,
+                true
+        ));
+        return getExcels;
+    }
+    public static List<GetExcel> cardType(List<CardType> cardTypes,Map<String, String> map,Integer startRow,Integer endRow,String key,String type){
+        List<GetExcel> getExcels = new ArrayList<>();
+        Integer cell = 0;
+        for (int i = 0; i < cardTypes.size(); i++) {
+            CardType cardType = cardTypes.get(i);
+            getExcels.add(new GetExcel(
+                    cardType.getType(),
+                    null,
+                    "text",
+                    colorRed(),
+                    colorWhite(),
+                    0,
+                    startRow,
+                    endRow,
+                    cell,
+                    cell += 1,
+                    HorizontalAlignment.CENTER,
+                    VerticalAlignment.CENTER,
+                    (short) 12,
+                    true,
+                    true
+            ));
+            getExcels.add(new GetExcel(
+                    type + "有效",
+                    null,
+                    "text",
+                    colorWhite(),
+                    colorRed(),
+                    2,
+                    startRow,
+                    endRow,
+                    cell += 1,
+                    cell,
+                    HorizontalAlignment.CENTER,
+                    VerticalAlignment.CENTER,
+                    (short) 12,
+                    true,
+                    true
+            ));
+            getExcels.add(new GetExcel(
+                    (ObjectUtils.isEmpty(map.get(key + cardType.getId()))) ? "0" : map.get(key + cardType.getId()),
+                    null,
+                    "text",
+                    colorWhite(),
+                    colorRed(),
+                    3,
+                    startRow,
+                    endRow,
+                    cell += 1,
+                    cell,
+                    HorizontalAlignment.CENTER,
+                    VerticalAlignment.CENTER,
+                    (short) 12,
+                    true,
+                    true
+            ));
+            cell += 1;
+        }
+        return getExcels;
+    }
+    public static List<GetExcel> tableName(List<String> stringList,Integer startRow,Integer endRow){
+        List<GetExcel> getExcels = new ArrayList<>();
+        for (int i = 0; i < stringList.size(); i++) {
+            String s = stringList.get(i);
+            getExcels.add(new GetExcel(
+                    s,
+                    null,
+                    "text",
+                    colorRed(),
+                    colorWhite(),
+                    0,
+                    startRow,
+                    endRow,
+                    i,
+                    i,
+                    HorizontalAlignment.CENTER,
+                    VerticalAlignment.CENTER,
+                    (short) 11,
+                    true,
+                    false
+            ));
+        }
+        return getExcels;
+    }
+    public static List<GetExcel> init(Map<String,String> map,String path,List<CardType> cardTypes,String type){
+        List<GetExcel> getExcels = new ArrayList<>();
+        getExcels.add(new GetExcel(
+                0,
+                1,
+                title(map,type),
+                true
+        ));
+        getExcels.add(new GetExcel(
+                2,
+                3,
+                cardType(
+                        cardTypes,
+                        map,
+                        2,
+                        3,
+                        "dayCardType",
+                        type
+                ),
+                true
+        ));
+
+        getExcels.add(new GetExcel(
+                4,
+                5,
+                cardType(
+                        cardTypes,
+                        map,
+                        4,
+                        5,
+                        "monthCardType",
+                        "累计"
+                ),
+                true)
+        );
+        List<String> stringList = new ArrayList<>();
+        stringList.add("业务类型");
+        stringList.add("项目类别");
+        stringList.add("项目主管");
+        stringList.add("应出勤");
+        stringList.add("实出勤");
+        stringList.add("当日进件量");
+        stringList.add("当日批核量");
+        stringList.add("有效客户量");
+        stringList.add("权益");
+        stringList.add("现场开卡率");
+        stringList.add("人均单产");
+        stringList.add("备注");
+        //主要内容
+        getExcels.add(new GetExcel(
+                6,
+                7,
+                tableName(
+                        stringList,
+                        6,
+                        7),
+                false)
+        );
+    //
+    //    //主要内容
+    //    getExcels.add(new GetExcel(
+    //            7,
+    //            7,
+    //            new GetExcel[]{new GetExcel(
+    //                    "中信银行",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    9,
+    //                    0,
+    //                    0,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    true,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "深圳南航",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    1,
+    //                    1,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "方筠思",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    2,
+    //                    2,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "15",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    3,
+    //                    3,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "7",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    4,
+    //                    4,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "101",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    5,
+    //                    5,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "80",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    6,
+    //                    6,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "22",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    7,
+    //                    7,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "34",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    8,
+    //                    8,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "28%",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    9,
+    //                    9,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "11.4",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    10,
+    //                    10,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    7,
+    //                    7,
+    //                    11,
+    //                    11,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            )},
+    //            false)
+    //    );
+    //
+    //    //主要内容
+    //    getExcels.add(new GetExcel(
+    //            8,
+    //            8,
+    //            new GetExcel[]{new GetExcel(
+    //                    "深圳深航",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    1,
+    //                    1,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "邹霞",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    2,
+    //                    2,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "11",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    3,
+    //                    3,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "11",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    4,
+    //                    4,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "67",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    5,
+    //                    5,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "55",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    6,
+    //                    6,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "24",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    7,
+    //                    7,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "43",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    8,
+    //                    8,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "44%",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    9,
+    //                    9,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "5.0",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    10,
+    //                    10,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "",
+    //                    null,
+    //                    "text",
+    //                    colorWhite(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    8,
+    //                    8,
+    //                    11,
+    //                    11,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            )},
+    //            true)
+    //    );
+    //
+    //    //合计
+    //    getExcels.add(new GetExcel(
+    //            9,
+    //            9,
+    //            new GetExcel[]{new GetExcel(
+    //                    "中信银行合计",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    1,
+    //                    2,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    true,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "26",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    3,
+    //                    3,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "18",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    4,
+    //                    4,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "168",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    5,
+    //                    5,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "135",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    6,
+    //                    6,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "46",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    7,
+    //                    7,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "77",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    8,
+    //                    8,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "待计算",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    9,
+    //                    9,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "待计算",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    10,
+    //                    10,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            ),new GetExcel(
+    //                    "",
+    //                    null,
+    //                    "text",
+    //                    ExcelExportUtil.colorYellow(),
+    //                    ExcelExportUtil.colorBlack(),
+    //                    0,
+    //                    9,
+    //                    9,
+    //                    11,
+    //                    11,
+    //                    HorizontalAlignment.CENTER,
+    //                    VerticalAlignment.CENTER,
+    //                    (short) 11,
+    //                    false,
+    //                    false,
+    //                    data()
+    //            )},
+    //            true)
+    //    );
+        return getExcels;
     }
     public void writeExcelToTempFile(List<List<String>> pageList, String[] titles, String[] mappingArr, File tmpFile) {
         FileOutputStream out = null;
@@ -208,7 +1032,7 @@ public class ExcelExportUtil {
                 for(int j=0;j < pageList.get(i).size();j++){
                     Cell cell = row.createCell(j);
                     cell.setCellValue(pageList.get(i).get(j));
-                    cell.setCellType(Cell.CELL_TYPE_STRING);
+                    cell.setCellType(CellType.STRING);
                 }
             }
             out = new FileOutputStream(tmpFile);

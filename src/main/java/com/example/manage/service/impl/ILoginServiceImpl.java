@@ -47,8 +47,10 @@ public class ILoginServiceImpl implements ILoginService {
             if (!PanXiaoZhang.isAccount(jsonParam.getUsername()) || !PanXiaoZhang.isPassword(jsonParam.getPassword())){
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码不存在");
             }
+            jsonParam.setUsername(PanXiaoZhang.replaceBlank(jsonParam.getUsername()));
+            jsonParam.setPassword(PanXiaoZhang.replaceBlank(jsonParam.getPassword()));
             Map<String,Object> map = new HashMap<>();
-            map.put("username",jsonParam.getUsername().replaceAll(" ",""));
+            map.put("username",jsonParam.getUsername());
             map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
             //查询账号信息
             List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
@@ -90,6 +92,8 @@ public class ILoginServiceImpl implements ILoginService {
             if (returnEntity.getState()){
                 return returnEntity;
             }
+            jsonParam.setUsername(PanXiaoZhang.replaceBlank(jsonParam.getUsername()));
+            jsonParam.setPassword(PanXiaoZhang.replaceBlank(jsonParam.getPassword()));
             //判断账号和密码是否符合条件
             if (!PanXiaoZhang.isAccount(jsonParam.getUsername())){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"请输入大于5位小于17位的账号");

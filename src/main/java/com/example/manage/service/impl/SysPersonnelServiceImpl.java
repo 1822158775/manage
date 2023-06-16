@@ -41,7 +41,6 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
     @Value("${role.manage4}")
     private Integer roleId4;
 
-
     @Value("${role.manage3}")
     private Integer roleId3;
 
@@ -230,6 +229,7 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
         //    jsonParam.setEmploymentStatus(null);
         //}
         if (!ObjectUtils.isEmpty(jsonParam.getPassword())){
+            jsonParam.setPassword(PanXiaoZhang.replaceBlank(jsonParam.getPassword()));
             //密码进行加密
             jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));
         }
@@ -304,23 +304,26 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                     SysPersonnel sysPersonnel = sysPersonnels.get(0);
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属区域经理" + sysPersonnel.getName());
                 }
-            }else if (sysRole.getId().equals(roleId4)){//判断经理是否重复拥有项目
-                List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
-                if (sysPersonnels.size() > 0){
-                    SysPersonnel sysPersonnel = sysPersonnels.get(0);
-                    return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnel.getName());
-                }
             }
+            //else if (sysRole.getId().equals(roleId4)){//判断经理是否重复拥有项目
+            //    List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
+            //    if (sysPersonnels.size() > 0){
+            //        SysPersonnel sysPersonnel = sysPersonnels.get(0);
+            //        return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnel.getName());
+            //    }
+            //}
             iManagementPersonnelMapper.insert(new ManagementPersonnel(
                     integer,
                     jsonParam.getPersonnelCode()
             ));
         }
+        jsonParam.setUsername(PanXiaoZhang.replaceBlank(jsonParam.getUsername()));
+        jsonParam.setPassword(PanXiaoZhang.replaceBlank(jsonParam.getPassword()));
         jsonParam.setId(null);
         //密码进行加密
         jsonParam.setPassword(PanXiaoZhang.getPassword(jsonParam.getPassword()));
         //账号去除空格
-        jsonParam.setUsername(jsonParam.getUsername().replaceAll(" ",""));
+        jsonParam.setUsername(jsonParam.getUsername());
         //手机号去除空格
         jsonParam.setPhone(jsonParam.getPhone().replaceAll(" ",""));
         int insert = iSysPersonnelMapper.insert(jsonParam);

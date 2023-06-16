@@ -456,7 +456,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             }
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "",
+                    "打卡信息",
                     "",
                     personnel.getName() + ":上班打卡时间" + format + "，状态:" + workingClockInState +"",
                     "",
@@ -507,7 +507,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             }
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "",
+                    "打卡信息",
                     "",
                     personnel.getName() + ":下班打卡时间" + format + "，状态:" + workingClockInState +"",
                     "",

@@ -10,6 +10,7 @@ import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -76,6 +77,10 @@ public class PerformanceReport implements Serializable {
     public SysPersonnel approverSysPersonnel;//审核人信息
     @TableField(exist = false)
     public CardType cardType;//卡种信息
+    @TableField(exist = false)
+    public String riqiDay;//查询日期类型
+    @TableField(exist = false)
+    public List<PerformanceReportSales> salesList;//关联权益表单
 
     public PerformanceReport() {
     }

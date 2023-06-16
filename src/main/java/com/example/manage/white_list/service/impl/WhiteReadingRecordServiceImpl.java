@@ -241,7 +241,7 @@ public class WhiteReadingRecordServiceImpl implements IWhiteReadingRecordService
             }
             ReturnEntity entity = PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "",
+                    "业绩阅读提醒",
                     "",
                     management.getName()+ "提交了业绩,请前往阅读",
                     "",

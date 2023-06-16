@@ -6,6 +6,8 @@ import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.data_statistics.Personnel;
 import com.example.manage.util.entity.*;
 import com.example.manage.util.wechat.WechatMsg;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -35,6 +37,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import jxl.Cell;
 import jxl.Sheet;
@@ -164,7 +167,19 @@ public class PanXiaoZhang {
         // 直接将json信息打印出来
         return t;
     }
-
+    /**
+     * 获取request里的JSON数据
+     *
+     * @param request HttpServletRequest对象
+     * @return JsonNode对象
+     * @throws IOException
+     */
+    public static JsonNode getRequestJson(HttpServletRequest request) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String requestData = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(requestData);
+    }
     /**
      * 创建日期:2022年02月28日<br/>
      * 代码创建:黄聪and潘国豪<br/>
@@ -179,7 +194,7 @@ public class PanXiaoZhang {
             BufferedReader streamReader = new BufferedReader(new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8));
             // 写入数据到Stringbuilder
             StringBuilder sb = new StringBuilder();
-            String line = null;
+            Object line = null;
             while ((line = streamReader.readLine()) != null) {
                 sb.append(line);
             }
@@ -287,6 +302,37 @@ public class PanXiaoZhang {
             return password;
         }
     }
+    /**
+     * 计算x占y的百分比
+     * @param x
+     * @param y
+     * @return
+     */
+    public static int percent(int x, int y) {
+        if (x != 0 && y != 0){
+            Double d_x = x * 1.0;
+            Double d_y = y * 1.0;
+            double number = (d_x / d_y) * 100;
+            return (int) number;
+        }
+        return 0;
+    }
+    /**
+     * 计算x占y的百分比
+     * @param x
+     * @param y
+     * @return
+     */
+    public static double percent(int x, int y,Integer integer) {
+        if (x != 0 && y != 0){
+            Double d_x = x * 1.0;
+            Double d_y = y * 1.0;
+            double number = d_x / d_y;
+            return doubleD(number,integer);
+        }
+        return 0D;
+    }
+
     //判断是否为空
     public static Boolean isNull(Object object){
         return null == object;
@@ -304,6 +350,14 @@ public class PanXiaoZhang {
     public static Boolean isNANDl(String str){
         String reg="^[a-zA-Z0-9]{6,16}$";
         return str.matches(reg);
+    }
+    //去除特殊符号
+    public static String replaceBlank(String str) {
+        String dest = "";
+        if (str != null) {
+            dest = str.replaceAll("\\s*|\t|\r|\n|","");
+        }
+        return dest;
     }
     //判断是否符合账号
     public static boolean isAccount(String str){
@@ -405,7 +459,11 @@ public class PanXiaoZhang {
         return new BigDecimal(d).setScale(integer,BigDecimal.ROUND_HALF_UP).doubleValue();
     }
     public static Double doubleD(Double d,Integer integer){
-        return new BigDecimal(d).setScale(integer,BigDecimal.ROUND_HALF_UP).doubleValue();
+        if (d != 0){
+            return new BigDecimal(d).setScale(integer,BigDecimal.ROUND_HALF_UP).doubleValue();
+        }else {
+            return d;
+        }
     }
     public static String getSession(HttpServletRequest request,String name){
         return String.valueOf(request.getSession().getAttribute(name));
@@ -418,6 +476,9 @@ public class PanXiaoZhang {
     }
     public static String yMd(){
         return "yyyy-MM-dd";
+    }
+    public static String yMd(Integer integer){
+        return "yyyyMMdd";
     }
     public static Boolean timeVerify(String time){
         return isLegalDate(time.length(),time,yMdHms());
@@ -1394,7 +1455,37 @@ public class PanXiaoZhang {
         LocalTime localTime = zonedDateTime.toLocalTime();
         return localTime;
     }
-
+    /**
+     * 删除文件夹下的所有内容
+     * @param file
+     * @return
+     */
+    public static Boolean deleteFile(File file) {
+        //判断文件不为null或文件目录存在
+        if (file == null || !file.exists()) {
+            System.out.println("文件删除失败,请检查文件是否存在以及文件路径是否正确");
+            return false;
+        }
+        //获取目录下子文件
+        File[] files = file.listFiles();
+        //遍历该目录下的文件对象
+        for (File f : files) {
+            //判断子目录是否存在子目录,如果是文件则删除
+            if (f.isDirectory()) {
+                //递归删除目录下的文件
+                deleteFile(f);
+            } else {
+                //文件删除
+                f.delete();
+                //打印文件名
+                //System.out.println("文件名：" + f.getName());
+            }
+        }
+        //文件夹删除
+        file.delete();
+        //System.out.println("目录名：" + file.getName());
+        return true;
+    }
     /**
      * 计算工作时长
      * @param workStartTime 工作开始时间
@@ -1581,7 +1672,7 @@ public class PanXiaoZhang {
 //        Date yesterday = calendar.getTime();
 //        Boolean aBoolean = compareDate(yesterday);
 //        System.out.println(aBoolean);
-        System.out.println(DateFormatUtils.format(new Date().getTime() + 7200000,PanXiaoZhang.yMdHms()));
+        System.out.println(percent(0,1,1));
 
         //List<JqPoint> ps = new ArrayList<>();
         //JqPoint jqPoint1 = new JqPoint(34.272644,117.308166);

@@ -43,7 +43,6 @@ public class SysManagementServiceImpl implements ISysManagementService {
         try {
             if (name.equals("cat")){
                 ReturnEntity cat = cat(request);
-                System.out.println(cat + "=============");
                 return cat;
             }else if (name.equals("add")){
                 SysManagement jsonParam = PanXiaoZhang.getJSONParam(request, SysManagement.class);

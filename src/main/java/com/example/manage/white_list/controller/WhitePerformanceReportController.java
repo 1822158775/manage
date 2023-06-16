@@ -29,6 +29,12 @@ public class WhitePerformanceReportController {
         }
     }
 
+    //导出业绩数据
+    @PostMapping(value = "cat_xlsx")
+    private ReturnEntity cat_xlsx(HttpServletRequest request){
+        return iWhitePerformanceReportService.methodMaster(request,"cat_xlsx");
+    }
+
     //查询业绩数据
     @PostMapping(value = "cat")
     private ReturnEntity cat(HttpServletRequest request){

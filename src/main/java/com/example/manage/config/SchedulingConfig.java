@@ -3,12 +3,20 @@ package com.example.manage.config;
 import com.example.manage.job.SchedulingSysManagementService;
 import com.example.manage.job.SchedulingSysPersonnelService;
 import com.example.manage.mapper.IManageReimbursementCategoryMapper;
+import com.example.manage.util.PanXiaoZhang;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * @avthor 潘小章
@@ -18,6 +26,9 @@ import javax.annotation.Resource;
 @Configuration
 @EnableScheduling
 public class SchedulingConfig {
+    /*上传目录*/
+    @Value("${magicalcoder.file.upload.useDisk.mapping.ap:}")
+    private String ap;
 
     @Resource
     private SchedulingSysManagementService schedulingSysManagement;
@@ -60,7 +71,15 @@ public class SchedulingConfig {
 
     //@Scheduled(cron="0 0/1 * * * ?")
     //private void minute() {
-    //    iWhiteSysPersonnelService.birthdayInform();
+    //    // 获取当前时间
+    //    Calendar cal = Calendar.getInstance();
+    //    // 将当前时间减去一天
+    //    //cal.add(Calendar.DATE, -1);
+    //    // 获取昨天的日期
+    //    Date yesterday = cal.getTime();
+    //    System.out.println(ap + DateFormatUtils.format(yesterday, PanXiaoZhang.yMd(1)));
+    //    File dir = new File(ap + DateFormatUtils.format(yesterday, PanXiaoZhang.yMd(1)));
+    //    PanXiaoZhang.deleteFile(dir);
     //}
 
     //每天10点查询2天后的人员生日和周年纪念
@@ -73,6 +92,16 @@ public class SchedulingConfig {
     @Scheduled(cron="0 0 23 * * ?")
     public void DimissionOncePerSecond(){
         schedulingSysPersonnelService.dimissionInform();
+        //删除每天的日报文件
+        // 获取当前时间
+        Calendar cal = Calendar.getInstance();
+        // 将当前时间减去一天
+        cal.add(Calendar.DATE, -1);
+        // 获取昨天的日期
+        Date yesterday = cal.getTime();
+        System.out.println(ap + DateFormatUtils.format(yesterday, PanXiaoZhang.yMd(1)));
+        File dir = new File(ap + DateFormatUtils.format(yesterday, PanXiaoZhang.yMd(1)));
+        PanXiaoZhang.deleteFile(dir);
     }
 
     //每月1号凌晨1点执行定时任务

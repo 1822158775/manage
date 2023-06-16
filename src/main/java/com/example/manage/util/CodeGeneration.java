@@ -482,35 +482,35 @@ public class CodeGeneration {
     // 创建总管
     public static void methodMaster(String remark,String table_name,String class_name) throws SQLException, IOException, ClassNotFoundException {
         mysql_get(table_name);
-        ////实体类
-        //progressBar(0,100,"准备创建实体类");
-        //addJavaEntity(remark,table_name,class_name);
-        //progressBar(0,100,"准备创建非空实体类");
-        ////非空实体类
-        //addJavaNotNullEntity(
-        //        remark,
-        //        table_name,
-        //        class_name + "NotNull"
-        //);
-        //progressBar(0,100,"准备创建mapper层");
-        ////mapper层创建
-        //addJavaMapper(remark,table_name,class_name);
+        //实体类
+        progressBar(0,100,"准备创建实体类");
+        addJavaEntity(remark,table_name,class_name);
+        progressBar(0,100,"准备创建非空实体类");
+        //非空实体类
+        addJavaNotNullEntity(
+                remark,
+                table_name,
+                class_name + "NotNull"
+        );
+        progressBar(0,100,"准备创建mapper层");
+        //mapper层创建
+        addJavaMapper(remark,table_name,class_name);
         progressBar(0,100,"准备创建MyBatis xml文件");
          //创建MyBatis xml文件
         addMapperXml(remark,table_name,class_name);
-        //progressBar(0,100,"准备创建service层");
-        ////service层创建
-        //addService(remark,table_name,class_name);
-        //progressBar(0,100,"准备创建service实现层");
-        ////service实现层创建
-        //addServiceImpl(remark,table_name,class_name);
-        //progressBar(0,100,"准备创建controller层");
-        ////controller层创建
-        //addController(remark,table_name,class_name);
+        progressBar(0,100,"准备创建service层");
+        //service层创建
+        addService(remark,table_name,class_name);
+        progressBar(0,100,"准备创建service实现层");
+        //service实现层创建
+        addServiceImpl(remark,table_name,class_name);
+        progressBar(0,100,"准备创建controller层");
+        //controller层创建
+        addController(remark,table_name,class_name);
     }
     public static void main(String[] args) {
         try {
-            methodMaster("阅读记录","reading_record","ReadingRecord");
+            methodMaster("信用卡关联权益","card_type_sales","CardTypeSales");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

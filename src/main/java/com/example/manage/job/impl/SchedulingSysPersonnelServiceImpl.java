@@ -91,7 +91,7 @@ public class SchedulingSysPersonnelServiceImpl implements SchedulingSysPersonnel
                         if (management.getId().equals(1) || management.getId().equals(2)){
                             entity = PanXiaoZhang.postWechatFer(
                                     personnel.getOpenId(),
-                                    "",
+                                    "生日提醒",
                                     "",
                                     "生日提醒," + sysPersonnel.getName() + ageYTime + "岁的生日时间是" + DateFormatUtils.format(calculationDate, PanXiaoZhang.yMd()),
                                     "",
@@ -102,7 +102,7 @@ public class SchedulingSysPersonnelServiceImpl implements SchedulingSysPersonnel
                             wrapper.eq("username",birthdayPhone);
                             entity = PanXiaoZhang.postWechatFer(
                                     iSysPersonnelMapper.selectOne(wrapper).getOpenId(),
-                                    "",
+                                    "生日提醒",
                                     "",
                                     "生日提醒," + sysPersonnel.getName() + ageYTime + "岁的生日时间是" + DateFormatUtils.format(calculationDate, PanXiaoZhang.yMd()),
                                     "",
@@ -135,7 +135,7 @@ public class SchedulingSysPersonnelServiceImpl implements SchedulingSysPersonnel
                 wrapper.eq("username",birthdayPhone);
                 PanXiaoZhang.postWechatFer(
                         iSysPersonnelMapper.selectOne(wrapper).getOpenId(),
-                        "",
+                        "入职提醒",
                         "",
                         sysPersonnel.getName() + "入职第" +
                                 PanXiaoZhang.ageYTime(new Date().toInstant().atOffset(ZoneOffset.UTC).toLocalDate() ,sysPersonnel.getEntryTime().toInstant().atOffset(ZoneOffset.UTC).toLocalDate()) + "年，" + DateFormatUtils.format(calculationDate,PanXiaoZhang.yMd()),

@@ -51,6 +51,12 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
     @Value("${role.manage3}")
     private Integer manage3;
 
+    @Value("${url.employer_list}")
+    private String employerList;
+
+    @Value("${url.transfer}")
+    private String urlTransfer;
+
     @Resource
     private RedisUtil redisUtil;
 
@@ -183,7 +189,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         }
         PanXiaoZhang.postWechatFer(
                 sysPersonnel.getOpenId(),
-                "",
+                "设置密码提醒",
                 "",
                 "最新密码：" + jsonParam.getPassword(),
                 "",
@@ -219,6 +225,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"权限不足");
         }
         if (!ObjectUtils.isEmpty(jsonParam.getPassword())){
+            jsonParam.setPassword(PanXiaoZhang.replaceBlank(jsonParam.getPassword()));
             boolean password = PanXiaoZhang.isPassword(jsonParam.getPassword());
             if (!password){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"请输入大于5位小于17位的密码");
@@ -243,6 +250,10 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
                 jsonParam.getEmergencyContactPhone(),
                 jsonParam.getPermanentResidence()
         );
+        SysPersonnel byId = iSysPersonnelMapper.selectById(jsonParam.getId());
+        if (byId.getEmploymentStatus().equals(2)){
+            personnel.setEmploymentStatus(jsonParam.getEmploymentStatus());
+        }
         int updateById = iSysPersonnelMapper.updateById(personnel);
         if (updateById != 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"信息修改失败");
@@ -332,10 +343,12 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         if (!management.getManagementState().equals(1)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
         }
+        jsonParam.setUsername(PanXiaoZhang.replaceBlank(jsonParam.getPhone()));
+        jsonParam.setPassword(PanXiaoZhang.replaceBlank(jsonParam.getPassword()));
         //设置员工账号
-        jsonParam.setUsername(jsonParam.getPhone().replaceAll(" ",""));
+        jsonParam.setUsername(jsonParam.getPhone());
         //设置手机号
-        jsonParam.setPhone(jsonParam.getPhone().replaceAll(" ",""));
+        jsonParam.setPhone(jsonParam.getPhone());
         //设置员工职位
         jsonParam.setRoleId(manage5);
         //密码加密
@@ -360,11 +373,11 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         wrapper.eq("username",personnelPhone);
         PanXiaoZhang.postWechatFer(
                 iSysPersonnelMapper.selectOne(wrapper).getOpenId(),
+                "入职信息",
                 "",
+                management.getName() + ":" + jsonParam.getName() + "提交了入职申请",
                 "",
-                jsonParam.getName() + "提交了入职申请,请前往后台审核",
-                "",
-                ""
+                urlTransfer + "?from=zn&redirect_url=" + employerList + managementPersonnel.getManagementId()
         );
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"录入成功");
     }
@@ -381,6 +394,19 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
     @Override
     public List<SysPersonnel> queryAll(Map map) {
         return iSysPersonnelMapper.queryAll(map);
+    }
+
+    @Override
+    public void ceshi() {
+        SysPersonnel personnel = iSysPersonnelMapper.selectById(4);
+        PanXiaoZhang.postWechatFer(
+                personnel.getOpenId(),
+                "入职信息",
+                "",
+                "提交了入职申请",
+                "",
+                urlTransfer + "?from=zn&redirect_url=" + employerList + 1
+        );
     }
 
     //根据人员查询当下的卡种

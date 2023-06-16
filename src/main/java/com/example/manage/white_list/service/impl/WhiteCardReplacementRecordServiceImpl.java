@@ -277,7 +277,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                             //告知审核人前往审核
                             PanXiaoZhang.postWechatFer(
                                     selectById.getOpenId(),
-                                    "",
+                                    "补卡申请",
                                     "",
                                     sysPersonnel.getName() + "提交了" + DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()) + "的补卡申请",
                                     "",
@@ -370,7 +370,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
             }
             PanXiaoZhang.postWechatFer(
                     sysPersonnel.getOpenId(),
-                    "",
+                    "补卡申请",
                     "",
                     DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()) + "日的补卡申请通过了",
                     "",
@@ -400,7 +400,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
             }
             PanXiaoZhang.postWechatFer(
                     sysPersonnel.getOpenId(),
-                    "",
+                    "补卡申请",
                     "",
                     remark,
                     "",
@@ -610,7 +610,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     value.getOpenId(),
-                    "",
+                    "补卡申请",
                     "",
                     sysPersonnel.getName() + "提交了" + DateFormatUtils.format(jsonParam.getReissueTime(),PanXiaoZhang.yMd()) + "补卡信息",
                     "",

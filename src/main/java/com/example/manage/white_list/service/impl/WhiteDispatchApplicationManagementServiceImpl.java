@@ -5,6 +5,7 @@ import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.DispatchApplicationManagementNotNull;
 import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
+import com.example.manage.util.PhoneConfig;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
@@ -210,7 +211,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                             //告知审核人前往审核
                             PanXiaoZhang.postWechatFer(
                                     selectById.getOpenId(),
-                                    "",
+                                    "调派申请",
                                     "",
                                     personnel.getName() + "提交了调派申请",
                                     "",
@@ -263,12 +264,27 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             }
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "",
+                    "调派信息",
                     "",
                     "同意调派",
                     "",
                     ""
             );
+            String[] phone = PhoneConfig.phone();
+            queryWrapper = new QueryWrapper();
+            queryWrapper.in("username",phone);
+            List<SysPersonnel> selectList = iSysPersonnelMapper.selectList(queryWrapper);
+            for (int i = 0; i < selectList.size(); i++) {
+                SysPersonnel userPersonnel = selectList.get(i);
+                PanXiaoZhang.postWechatFer(
+                        userPersonnel.getOpenId(),
+                        "调派信息",
+                        "",
+                        personnel.getName() + "提交了调派申请信息",
+                        "",
+                        ""
+                );
+            }
         }else if (jsonParam.getVerifierState().equals("refuse")){//如果拒绝审核
             int updateById = iDispatchApplicationManagementMapper.updateById(new DispatchApplicationManagement(
                     dispatchApplicationManagement.getId(),
@@ -302,7 +318,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             }
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "",
+                    "调派信息",
                     "",
                     remark,
                     "",
@@ -423,11 +439,13 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         //从最大的开始审核
         jsonParam.setMaxNumber(0);
         //设置审核职位
-        Integer[] integers = {1,3};
+        Integer[] integers = {1,3,4};
         //存储map
         Map<Integer, SysRole> mapRole = new HashMap();
         //存储通知的人
         Map<Integer, SysPersonnel> mapPersonnel = new HashMap();
+        //是否有审核人
+        Integer appNumber = 0;
         //查询职位名
         if (integers.length > 0){
             QueryWrapper wrapper = new QueryWrapper();
@@ -442,10 +460,11 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 }
 
                 if (!ObjectUtils.isEmpty(jsonParam.getAgoManagementId())) {
+                    appNumber++;
                     List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(sysRole.getId(), jsonParam.getAgoManagementId());
-                    if (sysPersonnels.size() < 1) {
-                        return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
-                    }
+                    //if (sysPersonnels.size() < 1) {
+                    //    return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
+                    //}
                     SysPersonnel personnel = sysPersonnels.get(0);
                     if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))){
                         //添加当前项目主管
@@ -476,10 +495,11 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
 
                 //调派后项目数据编码
                 if (!ObjectUtils.isEmpty(jsonParam.getLaterManagementId())){
+                    appNumber++;
                     List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(sysRole.getId(), jsonParam.getLaterManagementId());
-                    if (sysPersonnels.size() < 1){
-                        return new ReturnEntity(CodeEntity.CODE_ERROR,"调派后项目没有" + sysRole.getName() + "无法提交");
-                    }
+                    //if (sysPersonnels.size() < 1){
+                    //    return new ReturnEntity(CodeEntity.CODE_ERROR,"调派后项目没有" + sysRole.getName() + "无法提交");
+                    //}
                     SysPersonnel personnel = sysPersonnels.get(0);
                     if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))) {
                         //添加调派后项目主管
@@ -509,6 +529,10 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 }
             }
         }
+        //判断是否有审核人
+        if (appNumber < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"暂无审核人");
+        }
         //添加申请时间
         jsonParam.setApplicantTime(new Date());
         //将数据唯一标识设置为空，由系统生成
@@ -527,7 +551,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     value.getOpenId(),
-                    "",
+                    "调派信息",
                     "",
                     sysPersonnel.getName() + "提交了调派申请",
                     "",

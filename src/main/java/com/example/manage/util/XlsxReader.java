@@ -20,6 +20,7 @@ import com.example.manage.util.entity.GetExcelEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -62,37 +63,37 @@ public class XlsxReader {
                 Cell cell = row.getCell(0);
                 log.info("添加:{}",cell);
                 if (cell != null && String.valueOf(cell).replaceAll(" ","").equals(managemenName)){
-                    cell.setCellType(Cell.CELL_TYPE_STRING);
+                    cell.setCellType(CellType.STRING);
 
                     Cell cell1 = row.getCell(1);
-                    cell1.setCellType(Cell.CELL_TYPE_STRING);
+                    cell1.setCellType(CellType.STRING);
 
 
                     Cell cell2 = row.getCell(2);
-                    cell2.setCellType(Cell.CELL_TYPE_STRING);
+                    cell2.setCellType(CellType.STRING);
 
 
                     Cell cell4 = row.getCell(4);
-                    cell4.setCellType(Cell.CELL_TYPE_STRING);
+                    cell4.setCellType(CellType.STRING);
 
 
                     Cell cell5 = row.getCell(5);
-                    cell5.setCellType(Cell.CELL_TYPE_STRING);
+                    cell5.setCellType(CellType.STRING);
 
 
                     Cell cell9 = row.getCell(9);
 
 
                     Cell cell17 = row.getCell(17);
-                    cell17.setCellType(Cell.CELL_TYPE_STRING);
+                    cell17.setCellType(CellType.STRING);
 
 
                     Cell cell18 = row.getCell(18);
-                    cell18.setCellType(Cell.CELL_TYPE_STRING);
+                    cell18.setCellType(CellType.STRING);
 
 
                     Cell cell19 = row.getCell(19);
-                    cell19.setCellType(Cell.CELL_TYPE_STRING);
+                    cell19.setCellType(CellType.STRING);
 
                     String value0 = String.valueOf(cell);
                     String value1 = String.valueOf(cell1);
