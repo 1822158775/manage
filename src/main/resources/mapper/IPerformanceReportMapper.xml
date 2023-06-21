@@ -40,6 +40,11 @@
             <result column="m_monthly_indicators" property="monthlyIndicators" />
             <result column="m_management_state" property="managementState" />
         </association>
+        <collection property="salesList" ofType="com.example.manage.entity.PerformanceReportSales">
+            <result column="p_r_s_id" property="id" />
+            <result column="p_r_s_sales" property="sales" />
+            <result column="p_r_s_type" property="type" />
+        </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
@@ -49,14 +54,28 @@
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
-            <include refid="returnSql"/>
+        *,
+        <include refid="tableSqlPerformanceReportSales" />.id as p_r_s_id,
+        <include refid="tableSqlPerformanceReportSales" />.sales as p_r_s_sales,
+        <include refid="tableSqlPerformanceReportSales" />.type as p_r_s_type
+        from
+        (<include refid="tableAs" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSqlSales" />
+        <include refid="safeOrderByAs" />
+    </select>
+    <!--  查询表单  -->
+    <sql id="tableAs">
+        select
+        <include refid="returnSql"/>
         from
         <include refid="tableSql"/>
         <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
-    </select>
+    </sql>
     <!--  返回  -->
     <sql id="returnSql">
         <include refid="tableSql"/>.*
@@ -75,12 +94,35 @@
     <sql id="tableSql">
         manage.performance_report
     </sql>
+    <sql id="tableSqlAs">
+        p_report
+    </sql>
+    <!--  业绩权益表  -->
+    <sql id="tableSqlPerformanceReportSales">
+        manage.performance_report_sales
+    </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
         LEFT JOIN sys_personnel on sys_personnel.personnel_code = <include refid="tableSql"/>.personnel_code
         LEFT JOIN sys_management on sys_management.id = <include refid="tableSql"/>.management_id
         LEFT JOIN sys_personnel as sys_personnel_1 on sys_personnel_1.id = <include refid="tableSql"/>.approver_personnel_id
         LEFT JOIN card_type on card_type.id = <include refid="tableSql"/>.card_type_id
+    </sql>
+    <!--  关联权益表单  -->
+    <sql id="relevanceSqlSales">
+        LEFT JOIN <include refid="tableSqlPerformanceReportSales" /> on <include refid="tableSqlPerformanceReportSales" />.report_coding = <include refid="tableSqlAs"/>.report_coding
+    </sql>
+    <!--  排序  -->
+    <sql id="safeOrderByAs">
+        <if test="orderByTime != 'yes'">
+            order by <include refid="tableSqlAs"/>.id desc
+        </if>
+        <if test="orderByTime == 'yes'">
+            order by
+            <include refid="tableSqlAs"/>.update_time desc
+            ,<include refid="tableSqlAs"/>.report_time desc
+            ,<include refid="tableSqlAs"/>.approver_time desc
+        </if>
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1

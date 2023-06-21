@@ -13,4 +13,9 @@ import java.util.Map;
 public interface IPerformanceReportSalesMapper extends BaseMapper<PerformanceReportSales> {
     List<PerformanceReportSales> queryAll(Map map);
     Integer queryCount(Map map);
+    List<PerformanceReportSales> queryList(Map map);
+    List<PerformanceReportSales> queryListTime(Map map);
+    List<PerformanceReportSales> queryListManagement(Map map);
+    List<PerformanceReportSales> queryListPersonnel(Map map);
+    List<PerformanceReportSales> queryListManagementCardType(Map map);
 }

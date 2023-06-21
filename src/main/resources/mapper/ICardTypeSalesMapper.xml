@@ -3,7 +3,7 @@
 <mapper namespace="com.example.manage.mapper.ICardTypeSalesMapper">
     <resultMap id="entity" type="com.example.manage.entity.CardTypeSales">
         <result column="id" property="id" />
-        <result column="name" property="name" />
+        <result column="type" property="type" />
         <result column="state" property="state" />
         <result column="card_type_id" property="cardTypeId" />
         <result column="comment" property="comment" />

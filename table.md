@@ -34,3 +34,6 @@
 # card_type_sales 信用卡关联权益
 # division_management 部门管理表
 # division_management_personnel 部门关联人员表
+# division_type 部门类型名称
+# division_type_management 部门类型关联部门管理表
+# division_personnel 总经理关联部门

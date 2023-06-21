@@ -14,8 +14,8 @@ import java.util.List;
 @Data
 @ToString
 public class DataStatistics implements Serializable {
-    public List<DataStatisticsTodayDay> dataStatisticsTodayDays;//本日
-    public List<DataStatisticsTodayWeek> dataStatisticsTodayWeeks;//本周
-    public List<DataStatisticsTodayMonth> dataStatisticsTodayMonths;//本月s
-    public List<DataStatisticsTodayCustom> dataStatisticsTodayCustoms;//自定义
+    public DataStatisticsTodayDay dataStatisticsTodayDays;//本日
+    public DataStatisticsTodayWeek dataStatisticsTodayWeeks;//本周
+    public DataStatisticsTodayMonth dataStatisticsTodayMonths;//本月s
+    public DataStatisticsTodayCustom dataStatisticsTodayCustoms;//自定义
 }

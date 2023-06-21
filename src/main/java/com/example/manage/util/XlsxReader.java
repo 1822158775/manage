@@ -144,7 +144,7 @@ public class XlsxReader {
                             entity.getRoleId(),
                             PanXiaoZhang.getPassword("123456"),
                             entity.getUserName(),
-                            1,
+                            entity.getPositionPost(),
                             null,
                             birthDate,
                             1,

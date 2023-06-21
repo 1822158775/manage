@@ -23,10 +23,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @avthor 潘小章
@@ -42,6 +39,21 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
 
     @Value("${url.transfer}")
     private String urlTransfer;
+
+    @Value("${role.manage}")
+    private Integer manage;
+
+    @Value("${role.manage3}")
+    private Integer manage3;
+
+    @Value("${role.manage4}")
+    private Integer manage4;
+
+    @Value("${role.manage5}")
+    private Integer manage5;
+
+    @Value("${role.dageid}")
+    private Integer dageid;
 
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
@@ -72,6 +84,12 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
 
     @Resource
     private IReimbursementImageMapper iReimbursementImageMapper;
+
+    @Resource
+    private IDivisionPersonnelMapper iDivisionPersonnelMapper;
+
+    @Resource
+    private IDivisionManagementPersonnelMapper iDivisionManagementPersonnelMapper;
 
     //方法总管
     @Override
@@ -177,27 +195,14 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
         if (estimateState.getState()){
             return estimateState;
         }
-        QueryWrapper wrapper = new QueryWrapper();
-        //查询绑定项目
-        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
-        List<ManagementPersonnel> list = iManagementPersonnelMapper.selectList(wrapper);
-        wrapper = new QueryWrapper();
-        if (list.size() < 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联项目");
-        }
-        jsonParam.setManagementId(list.get(0).getManagementId());
-        //查询项目
-        SysManagement management = iSysManagementMapper.selectById(jsonParam.getManagementId());
-        if (ObjectUtils.isEmpty(management)){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"项目不存在");
-        }
-        if (!management.getManagementState().equals(1)){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
-        }
+
         Integer integer = PanXiaoZhang.eqTime(jsonParam.getStartTime(), jsonParam.getEndTime());
         if (integer != -1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"请假开始时间要小于结束时间");
         }
+        //查询职位等级
+        SysRole role = iSysRoleMapper.selectById(sysPersonnel.getRoleId());
+        QueryWrapper wrapper = new QueryWrapper();
         //查询是否有请假的记录
         wrapper.apply("(start_time between '" + DateFormatUtils.format(jsonParam.getStartTime(),PanXiaoZhang.yMdHms()) + "' AND " +
                 "'" + DateFormatUtils.format(jsonParam.getEndTime(),PanXiaoZhang.yMdHms()) + "'\n" +
@@ -207,7 +212,6 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
                 "AND\n" +
                 "personnel_id = "+ sysPersonnel.getId());
         List<FurloughRecord> furloughRecords = iFurloughRecordMapper.selectList(wrapper);
-        wrapper = new QueryWrapper(); // 重新创建一个新的 QueryWrapper 对象
         if (furloughRecords.size() > 0){
             return new ReturnEntity(CodeEntity.CODE_ERROR,DateFormatUtils.format(jsonParam.getStartTime(), PanXiaoZhang.yMd()) + "~" + DateFormatUtils.format(jsonParam.getEndTime(), PanXiaoZhang.yMd()) + "已有请假记录");
         }
@@ -215,35 +219,49 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
         String code = System.currentTimeMillis() + PanXiaoZhang.ran(4);
         //添加申请人
         jsonParam.setPersonnelName(sysPersonnel.getName());
-        //添加项目名称
-        jsonParam.setManagementName(management.getName());
         //设置初始状态
         jsonParam.setReissueState("pending");
         //设置编码
         jsonParam.setReissueCode(code);
-        //从最大的开始审核
-        jsonParam.setMaxNumber(0);
-        //设置审核职位
-        Integer[] integers = {1,3};
         //存储map
         Map<Integer, SysRole> mapRole = new HashMap();
         //存储通知的人
         Map<Integer, SysPersonnel> mapPersonnel = new HashMap();
-        //查询职位名
-        if (integers.length > 0){
-            wrapper.in("id",integers);
-            List<SysRole> selectList = iSysRoleMapper.selectList(wrapper);
-            for (int i = 0; i < selectList.size(); i++) {
-                SysRole sysRole = selectList.get(i);
+        //从最大的开始审核
+        jsonParam.setMaxNumber(0);
+        //区域经理层请假
+        if (role.getId().equals(manage3) || role.getId().equals(manage4)){
+            wrapper = new QueryWrapper();
+            wrapper.eq("personnel_id",jsonParam.getPersonnelId());
+            List<DivisionManagementPersonnel> selectList = iDivisionManagementPersonnelMapper.selectList(wrapper);
+            List<DivisionPersonnel> list = new ArrayList<>();
+            if (selectList.size() > 0){
+                DivisionManagementPersonnel divisionManagementPersonnel = selectList.get(0);
+                wrapper = new QueryWrapper();
+                wrapper.eq("division_management_id",divisionManagementPersonnel.getDivisionManagementId());
+                list = iDivisionPersonnelMapper.selectList(wrapper);
+            }
+            list.add(new DivisionPersonnel(
+                null,
+                null,
+                dageid
+            ));
+            List<Integer> integers = new ArrayList<>();
+            for (int i = 0; i < list.size(); i++) {
+                integers.add(list.get(i).getPersonnelId());
+            }
+            //查询人员信息
+            wrapper = new QueryWrapper();
+            wrapper.in("id",integers.toArray(new Integer[integers.size()]));
+            List<SysPersonnel> personnels = iSysPersonnelMapper.selectList(wrapper);
+            for (int i = 0; i < personnels.size(); i++) {
+                SysPersonnel personnel = personnels.get(i);
+                SysRole sysRole = iSysRoleMapper.selectById(personnel.getRoleId());
                 mapRole.put(sysRole.getId(),sysRole);
                 if (sysRole.getLevelSorting() > jsonParam.getMaxNumber()){
                     jsonParam.setMaxNumber(sysRole.getLevelSorting());
                     mapPersonnel.clear();
-                }List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(sysRole.getId(), management.getId());
-                if (sysPersonnels.size() < 1) {
-                    return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
                 }
-                SysPersonnel personnel = sysPersonnels.get(0);
                 if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))){
                     //添加当前项目主管
                     Integer id = personnel.getId();
@@ -260,12 +278,76 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
                             pending,
                             sysRole.getLevelSorting()
                     ));
-                    //如果返回值不能鱼1则判断失败
+                    //如果返回值不能于1则判断失败
                     if (insert != 1){
                         return new ReturnEntity(
                                 CodeEntity.CODE_ERROR,
                                 "添加审核人" + personnel.getName() + "失败"
                         );
+                    }
+                }
+            }
+        }else if (role.getId().equals(manage) || role.getId().equals(manage5)){
+            //员工请假
+            wrapper = new QueryWrapper();
+            //查询绑定项目
+            wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+            List<ManagementPersonnel> list = iManagementPersonnelMapper.selectList(wrapper);
+            if (list.size() < 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联项目");
+            }
+            jsonParam.setManagementId(list.get(0).getManagementId());
+            //查询项目
+            SysManagement management = iSysManagementMapper.selectById(jsonParam.getManagementId());
+            if (ObjectUtils.isEmpty(management)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"项目不存在");
+            }
+            if (!management.getManagementState().equals(1)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
+            }
+            //添加项目名称
+            jsonParam.setManagementName(management.getName());
+            //设置审核职位
+            Integer[] integers = {1,3};
+            //查询职位名
+            if (integers.length > 0){
+                wrapper.in("id",integers);
+                List<SysRole> selectList = iSysRoleMapper.selectList(wrapper);
+                for (int i = 0; i < selectList.size(); i++) {
+                    SysRole sysRole = selectList.get(i);
+                    mapRole.put(sysRole.getId(),sysRole);
+                    if (sysRole.getLevelSorting() > jsonParam.getMaxNumber()){
+                        jsonParam.setMaxNumber(sysRole.getLevelSorting());
+                        mapPersonnel.clear();
+                    }
+                    List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(sysRole.getId(), management.getId());
+                    if (sysPersonnels.size() < 1) {
+                        return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
+                    }
+                    SysPersonnel personnel = sysPersonnels.get(0);
+                    if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))){
+                        //添加当前项目主管
+                        Integer id = personnel.getId();
+                        //添加默认审核状态
+                        String pending = "pending";
+                        //记录审核人审核人
+                        mapPersonnel.put(personnel.getId(),personnel);
+                        int insert = iFurloughReimbursementMapper.insert(new FurloughReimbursement(
+                                null,
+                                id,
+                                null,
+                                null,
+                                jsonParam.getReissueCode(),
+                                pending,
+                                sysRole.getLevelSorting()
+                        ));
+                        //如果返回值不能鱼1则判断失败
+                        if (insert != 1){
+                            return new ReturnEntity(
+                                    CodeEntity.CODE_ERROR,
+                                    "添加审核人" + personnel.getName() + "失败"
+                            );
+                        }
                     }
                 }
             }
@@ -310,7 +392,6 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
                     urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
             );
         });
-
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");
     }
 

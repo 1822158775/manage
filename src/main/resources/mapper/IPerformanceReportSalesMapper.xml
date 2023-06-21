@@ -6,6 +6,9 @@
         <result column="sales" property="sales" />
         <result column="type" property="type" />
         <result column="report_coding" property="reportCoding" />
+        <result column="day_time" property="dayTime" />
+        <result column="m_id" property="managementId" />
+        <result column="card_type_id" property="cardTypeId" />
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
@@ -20,12 +23,218 @@
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
     </select>
+    <!--  查询累计权益  -->
+    <select id="queryList" resultMap="entity" parameterType="hashmap">
+        select
+        SUM(<include refid="tableSql"/>.sales) as sales,
+        performance_report_sales.type
+        from
+        <include refid="tableSql"/>
+        <include refid="relevanceSqlPunchingCardRecord"/>
+        <include refid="relevanceSqlSManagement" />
+        <include refid="whereSqlModel" />
+        <include refid="inManagement" />
+        <include refid="sqlTimes" />
+        <include refid="safeGroupBy"/>
+    </select>
+    <!--  查询日期和权益  -->
+    <select id="queryListTime" resultMap="entity" parameterType="hashmap">
+        select
+        SUM(<include refid="tableSql"/>.sales) as sales,
+        performance_report_sales.type,
+        DATE_FORMAT(<include refid="tableSqlPerformanceReport" />.report_time, '%Y-%m-%d') as day_time
+        from
+        <include refid="tableSql"/>
+        <include refid="relevanceSqlPunchingCardRecord" />
+        <choose>
+            <when test="sysPersonnelId != null and sysPersonnelId != ''">
+                <include refid="relevanceSqlSPersonnel" />
+            </when>
+            <otherwise>
+                <include refid="relevanceSqlSManagement" />
+            </otherwise>
+        </choose>
+        <include refid="whereSqlModel" />
+        <include refid="sqlTimes" />
+        <choose>
+            <when test="sysPersonnelId != null and sysPersonnelId != ''">
+                <include refid="inPersonnel" />
+            </when>
+            <otherwise>
+                <include refid="inManagement" />
+            </otherwise>
+        </choose>
+        <include refid="safeGroupByTime"/>
+    </select>
+    <!--  查询项目和权益  -->
+    <select id="queryListManagement" resultMap="entity" parameterType="hashmap">
+        select
+        SUM(<include refid="tableSql"/>.sales) as sales,
+        <include refid="tableSql"/>.type,
+        <include refid="tableSqlSManagement"/>.id as m_id
+        from
+        <include refid="tableSql"/>
+        <include refid="relevanceSqlPunchingCardRecord" />
+        <include refid="relevanceSqlSManagement" />
+        <include refid="whereSqlModel" />
+        <include refid="sqlTimes" />
+        <include refid="inManagement" />
+        <include refid="safeGroupByManagement"/>
+    </select>
+    <!--  查询人员和权益  -->
+    <select id="queryListPersonnel" resultMap="entity" parameterType="hashmap">
+        select
+        SUM(<include refid="tableSql"/>.sales) as sales,
+        <include refid="tableSql"/>.type,
+        <include refid="tableSqlSPersonnel"/>.id as m_id
+        from
+        <include refid="tableSql"/>
+        <include refid="relevanceSqlPunchingCardRecord" />
+        <include refid="relevanceSqlSPersonnel" />
+        <include refid="whereSqlModel" />
+        <include refid="sqlTimes" />
+        <include refid="inPersonnel" />
+        <include refid="safeGroupByPersonnel"/>
+    </select>
+    <!--  查询项目,卡类型和权益  -->
+    <select id="queryListManagementCardType" resultMap="entity" parameterType="hashmap">
+        select
+        SUM(<include refid="tableSql"/>.sales) as sales,
+        <include refid="tableSql"/>.type,
+        <include refid="tableSqlSManagement"/>.id as m_id,
+        <include refid="tableSqlPerformanceReport"/>.card_type_id as card_type_id
+        from
+        <include refid="tableSql"/>
+        <include refid="relevanceSqlPunchingCardRecord" />
+        <include refid="relevanceSqlSManagement" />
+        <include refid="whereSqlModel" />
+        <include refid="sqlTimes" />
+        <include refid="inManagement" />
+        <include refid="safeGroupByManagement"/>
+    </select>
+    <!--  关联打卡表  -->
+    <sql id="relevanceSqlPunchingCardRecord">
+        LEFT JOIN <include refid="tableSqlPerformanceReport" /> ON <include refid="tableSqlPerformanceReport" />.report_coding = <include refid="tableSql" />.report_coding
+    </sql>
+    <!--  关联项目表  -->
+    <sql id="relevanceSqlSManagement">
+        LEFT JOIN
+        <include refid="tableSqlSManagement" />
+        ON
+        <include refid="tableSqlSManagement" />.id =
+        <include refid="tableSqlPerformanceReport" />.management_id
+    </sql>
+    <!--  关联人员表  -->
+    <sql id="relevanceSqlSPersonnel">
+        LEFT JOIN
+        <include refid="tableSqlSPersonnel" />
+        ON
+        <include refid="tableSqlSPersonnel" />.personnel_code =
+        <include refid="tableSqlPerformanceReport" />.personnel_code
+    </sql>
+    <!--  业绩表  -->
+    <sql id="tableSqlPerformanceReport">
+        manage.performance_report
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlSManagement">
+        manage.sys_management
+    </sql>
+    <!--  关联表  -->
+    <sql id="tableSqlSPersonnel">
+        manage.sys_personnel
+    </sql>
+    <!--  根据名称分组  -->
+    <sql id="safeGroupBy">
+        group by <include refid="tableSql"/>.type desc
+    </sql>
+    <!--  根据名称分组  -->
+    <sql id="safeGroupByTime">
+        group by <include refid="tableSql"/>.type desc,DATE_FORMAT(<include refid="tableSqlPerformanceReport" />.report_time, '%Y-%m-%d')
+        <choose>
+            <when test="sysPersonnelId != null and sysPersonnelId != ''">
+                ,<include refid="tableSqlPerformanceReport"/>.personnel_code
+            </when>
+            <when test="managementId != null and managementId != ''">
+                ,<include refid="tableSqlPerformanceReport"/>.management_id
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+    </sql>
+    <!--  根据名称和项目分组  -->
+    <sql id="safeGroupByManagement">
+        group by <include refid="tableSql"/>.type,<include refid="tableSqlSManagement" />.id
+    </sql>
+    <!--  根据名称和项目分组  -->
+    <sql id="safeGroupByPersonnel">
+        group by <include refid="tableSql"/>.type,<include refid="tableSqlSPersonnel" />.id
+    </sql>
+    <!--  根据名称,类型和项目分组  -->
+    <sql id="safeGroupByManagementCardType">
+        group by <include refid="tableSqlPerformanceReport"/>.card_type_id,<include refid="tableSqlSManagement" />.id
+    </sql>
+    <!--  本日  -->
+    <sql id="todayDay">
+        AND to_days(<include refid="tableSqlPerformanceReport" />.report_time) = to_days(NOW())
+    </sql>
+    <!--  本周  -->
+    <sql id="todayWeek">
+        AND YEARWEEK(date_format(<include refid="tableSqlPerformanceReport" />.report_time ,'%Y-%m-%d') - INTERVAL 1 DAY) = YEARWEEK(now() - INTERVAL 1 DAY)
+    </sql>
+    <!--  本月  -->
+    <sql id="todayMonth">
+        AND DATE_FORMAT( <include refid="tableSqlPerformanceReport" />.report_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+    </sql>
+    <!--  自定义时间  -->
+    <sql id="todayStartCustom">
+        <if test="thisStartTime != null and thisStartTime != '' and thisEndTime != null and thisEndTime != ''"> and <include refid="tableSqlPerformanceReport" />.`report_time` BETWEEN #{thisStartTime} AND #{thisEndTime}</if>
+    </sql>
+    <!--  时间集合  -->
+    <sql id="sqlTimes">
+        <if test="type == 'day'">
+            <include refid="todayDay" />
+        </if>
+        <if test="type == 'week'">
+            <include refid="todayWeek" />
+        </if>
+        <if test="type == 'month'">
+            <include refid="todayMonth" />
+        </if>
+        <if test="type == '自定义'">
+            <include refid="todayStartCustom" />
+        </if>
+    </sql>
+    <!--  项目  -->
+    <sql id="inManagement">
+        <if test="mId != null and mId != ''">
+            and <include refid="tableSqlSManagement" />.id in
+            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <!--  人员  -->
+    <sql id="inPersonnel">
+        <if test="mId != null and mId != ''">
+            and <include refid="tableSqlSPersonnel" />.id in
+            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
     <sql id="tableSql">
         manage.performance_report_sales
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
+        <if test="personnelCode != null and personnelCode != ''"> and <include refid="tableSqlPerformanceReport" />.`personnel_code` = #{personnelCode}</if>
+        <if test="approverState != null and approverState != ''"> and <include refid="tableSqlPerformanceReport" />.`approver_state` = #{approverState}</if>
+        <if test="managementId != null and managementId != ''"> and <include refid="tableSqlPerformanceReport" />.`management_id` = #{managementId}</if>
+        <if test="manageCardTypeId != null and manageCardTypeId != ''"> and <include refid="tableSqlPerformanceReport" />.`card_type_id` = #{manageCardTypeId}</if>
+        <if test="sysPersonnelId != null and sysPersonnelId != ''"> and <include refid="tableSqlSPersonnel" />.`id` = #{sysPersonnelId}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

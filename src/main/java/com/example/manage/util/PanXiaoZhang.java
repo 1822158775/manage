@@ -151,6 +151,8 @@ public class PanXiaoZhang {
      * @return
      */
     public static  <T> T getJSONParam(HttpServletRequest request, Class<T> eClass) throws IOException {
+        String requestURI = request.getRequestURI();
+        log.info("接口:{}",requestURI);
         // 获取输入流
         BufferedReader streamReader = new BufferedReader(new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8));
         // 写入数据到Stringbuilder
@@ -175,6 +177,8 @@ public class PanXiaoZhang {
      * @throws IOException
      */
     public static JsonNode getRequestJson(HttpServletRequest request) throws IOException {
+        String requestURI = request.getRequestURI();
+        log.info("接口:{}",requestURI);
         BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
         String requestData = reader.lines().collect(Collectors.joining(System.lineSeparator()));
         ObjectMapper mapper = new ObjectMapper();
@@ -188,6 +192,8 @@ public class PanXiaoZhang {
      * @return
      */
     public static Map getJsonMap(HttpServletRequest request){
+        String requestURI = request.getRequestURI();
+        log.info("接口:{}",requestURI);
         Map jsonToMap = new HashMap();
         try {
             // 获取输入流
@@ -212,6 +218,8 @@ public class PanXiaoZhang {
         return subjoinValue(jsonToMap,request);
     }
     public static Map subjoinValue(Map<String,Integer> map,HttpServletRequest request){
+        String requestURI = request.getRequestURI();
+        log.info("接口:{}",requestURI);
         Integer index = map.get("index");
         Integer pageNum = map.get("pageNum");
         if (ObjectUtils.isEmpty(pageNum)){
@@ -242,6 +250,8 @@ public class PanXiaoZhang {
      * @return
      */
     public static Map getMap(HttpServletRequest request){
+        String requestURI = request.getRequestURI();
+        log.info("接口:{}",requestURI);
         Map jsonToMap = new HashMap();
         try {
             // 获取输入流
@@ -270,6 +280,8 @@ public class PanXiaoZhang {
      * @return
      */
     public static String getJSONParamTwo(HttpServletRequest request){
+        String requestURI = request.getRequestURI();
+        log.info("接口:{}",requestURI);
         String str = null;
         try {
             // 获取输入流
@@ -328,6 +340,21 @@ public class PanXiaoZhang {
             Double d_x = x * 1.0;
             Double d_y = y * 1.0;
             double number = d_x / d_y;
+            return doubleD(number,integer);
+        }
+        return 0D;
+    }
+    /**
+     * 计算x占y的百分比
+     * @param x
+     * @param y
+     * @return
+     */
+    public static double percent(int x, int y,Integer integer,Integer numberBai) {
+        if (x != 0 && y != 0){
+            Double d_x = x * 1.0;
+            Double d_y = y * 1.0;
+            double number = (d_x / d_y) * numberBai;
             return doubleD(number,integer);
         }
         return 0D;

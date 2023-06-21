@@ -2,14 +2,13 @@ package com.example.manage.white_list.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.manage.entity.CardType;
-import com.example.manage.entity.ManagementPersonnel;
-import com.example.manage.entity.SysManagement;
-import com.example.manage.entity.SysPersonnel;
+import com.example.manage.entity.*;
+import com.example.manage.entity.data_statistics.DataStatisticsTodayCustom;
 import com.example.manage.entity.ranking_list.RankingList;
 import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.CodeEntity;
+import com.example.manage.util.entity.ListEntity;
 import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.white_list.service.IWhiteRankingListService;
@@ -49,6 +48,9 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
     @Resource
     private WhiteRankingListProgressBarMapper whiteRankingListProgressBarMapper;
 
+    @Resource
+    private IPerformanceReportSalesMapper iPerformanceReportSalesMapper;
+
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
         try {
@@ -65,7 +67,6 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
     }
 
     private ReturnEntity cat_progress_bar(HttpServletRequest request) {
-
         Map map = PanXiaoZhang.getJsonMap(request);
         if (ObjectUtils.isEmpty(map.get("personnelId"))){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"用户编码不可为空");
@@ -160,6 +161,30 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
             RankingList rankingList = rankingLists.get(i);
             rankingListMap.put(rankingList.getDayTime(),rankingList);
         }
+        //权益
+        map.put("approverState","agree");
+        //储存权益
+        Map<String,List<PerformanceReportSales>> stringListMap = new HashMap<>();
+        //存储名字
+        Map<String, String> stringMap = new HashMap<>();
+        //名字集合
+        List<String> stringList = new ArrayList<>();
+        List<PerformanceReportSales> salesList = iPerformanceReportSalesMapper.queryListTime(map);
+        for (int i = 0; i < salesList.size(); i++) {
+            PerformanceReportSales reportSales = salesList.get(i);
+            if (ObjectUtils.isEmpty(stringMap.get(reportSales.getType()))){
+                stringList.add(reportSales.getType());
+                stringMap.put(reportSales.getType(),reportSales.getType());
+            }
+            List<PerformanceReportSales> sales = stringListMap.get(reportSales.getDayTime());
+            if (ObjectUtils.isEmpty(sales)){
+                sales = new ArrayList<>();
+                sales.add(reportSales);
+            }else {
+                sales.add(reportSales);
+            }
+            stringListMap.put(reportSales.getDayTime(),sales);
+        }
 
         List<RankingList> arrayList = new ArrayList<>();
         for (int i = 0; i < days.size(); i++) {
@@ -181,11 +206,12 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
                     0
                 ));
             }else {
+                rankingList.setPerformanceReportSales(stringListMap.get(s));
                 arrayList.add(rankingList);
             }
         }
 
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,arrayList,"");
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,new ListEntity(stringList,arrayList),"");
     }
 
     private ReturnEntity cat(HttpServletRequest request) {
@@ -208,12 +234,11 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
             integerArrayList.add(selectList.get(i).getManagementId());
         }
 
-        Integer[] toArray = integerArrayList.toArray(new Integer[integerArrayList.size()]);
-
         if (selectList.size() < 1){
             map.put("inManagementId",null);
         }else {
-            map.put("inManagementId",toArray);
+            map.put("mId","1");
+            map.put("inManagementId",integerArrayList.toArray(new Integer[integerArrayList.size()]));
         }
 
         Object thisStartTime = map.get("startTime");
@@ -238,6 +263,47 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
 
         map.put("thisStartTime",thisStartTime + " 00:00:00");
         map.put("thisEndTime",thisEndTime + " 23:59:59");
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,whiteRankingListMapper.queryAll(map),"");
+        integerArrayList.clear();
+        List<RankingList> rankingLists = whiteRankingListMapper.queryAll(map);
+        for (int i = 0; i < rankingLists.size(); i++) {
+            RankingList rankingList = rankingLists.get(i);
+            integerArrayList.add(rankingList.getId());
+        }
+        if (integerArrayList.size() > 1){
+            map.put("mId","1");
+        }else {
+            map.remove("mId");
+        }
+        map.put("inManagementId",integerArrayList.toArray(new Integer[integerArrayList.size()]));
+
+        //权益
+        map.put("approverState","agree");
+        //储存权益
+        Map<Integer,List<PerformanceReportSales>> integerListMap = new HashMap<>();
+        List<PerformanceReportSales> salesList;
+        if (ObjectUtils.isEmpty(map.get("managementId"))){
+            salesList = iPerformanceReportSalesMapper.queryListManagement(map);
+        }else {
+            salesList = iPerformanceReportSalesMapper.queryListPersonnel(map);
+        }
+
+        for (int i = 0; i < salesList.size(); i++) {
+            PerformanceReportSales reportSales = salesList.get(i);
+
+            List<PerformanceReportSales> sales = integerListMap.get(reportSales.getManagementId());
+            if (ObjectUtils.isEmpty(sales)){
+                sales = new ArrayList<>();
+                sales.add(reportSales);
+            }else {
+                sales.add(reportSales);
+            }
+            integerListMap.put(reportSales.getManagementId(),sales);
+        }
+        //进行项目权益赋值
+        for (int i = 0; i < rankingLists.size(); i++) {
+            RankingList rankingList = rankingLists.get(i);
+            rankingList.setPerformanceReportSales(integerListMap.get(rankingList.getId()));
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,rankingLists,"");
     }
 }

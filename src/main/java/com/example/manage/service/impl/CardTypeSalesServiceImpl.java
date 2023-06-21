@@ -67,7 +67,8 @@ public class CardTypeSalesServiceImpl implements ICardTypeSalesService {
         }
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.ne("id",jsonParam.getId());
-        wrapper.eq("name",jsonParam.getName());
+        wrapper.ne("card_type_id",jsonParam.getCardTypeId());
+        wrapper.eq("type",jsonParam.getType());
         CardTypeSales cardTypeSales = iCardTypeSalesMapper.selectOne(wrapper);
         if (!ObjectUtils.isEmpty(cardTypeSales)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"名称不可重复");
@@ -97,13 +98,14 @@ public class CardTypeSalesServiceImpl implements ICardTypeSalesService {
             return returnEntity;
         }
         QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("name",jsonParam.getName());
+        wrapper.eq("type",jsonParam.getType());
+        wrapper.eq("card_type_id",jsonParam.getCardTypeId());
         CardTypeSales cardTypeSales = iCardTypeSalesMapper.selectOne(wrapper);
         if (!ObjectUtils.isEmpty(cardTypeSales)){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,jsonParam.getName() + "名称已存在");
+            return new ReturnEntity(CodeEntity.CODE_ERROR,jsonParam.getType() + "名称已存在");
         }
         //设置状态
-        jsonParam.setState("使用中");
+        jsonParam.setState("使用");
         //将数据唯一标识设置为空，由系统生成
         jsonParam.setId(null);
         //没有任何问题将数据录入进数据库

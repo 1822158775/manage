@@ -1,9 +1,11 @@
 package com.example.manage.entity.data_statistics;
 
+import com.example.manage.entity.PerformanceReportSales;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -32,6 +34,7 @@ public class DataStatisticsTodayDay implements Serializable {
     public String validGrowthRate;//本日有效的率
     public String ratioGrowthRate;//本日对比率
 
+    public List<PerformanceReportSales> salesList;//权益
     public DataStatisticsTodayDay() {
     }
 

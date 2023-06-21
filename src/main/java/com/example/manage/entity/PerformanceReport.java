@@ -81,6 +81,8 @@ public class PerformanceReport implements Serializable {
     public String riqiDay;//查询日期类型
     @TableField(exist = false)
     public List<PerformanceReportSales> salesList;//关联权益表单
+    @TableField(exist = false)
+    public Boolean timeType;//日期类型
 
     public PerformanceReport() {
     }

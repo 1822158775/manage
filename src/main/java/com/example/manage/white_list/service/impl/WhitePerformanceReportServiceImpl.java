@@ -10,14 +10,12 @@ import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.*;
 import com.example.manage.util.excel.ExcelExportUtil;
+import com.example.manage.util.excel.ExportTool;
 import com.example.manage.util.excel.XlsxLayoutReader;
 import com.example.manage.util.file.config.UploadFilePathConfig;
 import com.example.manage.white_list.service.IWhitePerformanceReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +24,11 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -44,6 +43,9 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
 
     @Value("${role.manage}")
     private Integer roleId;
+
+    @Value("${role.manage3}")
+    private Integer manage3;
 
     @Value("${role.manage5}")
     private Integer manage5;
@@ -91,6 +93,21 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
     @Resource
     private IPerformanceReportSalesMapper iPerformanceReportSalesMapper;
 
+    @Resource
+    private IDivisionTypeMapper divisionTypeMapper;
+
+    @Resource
+    private IDivisionTypeManagementMapper iDivisionTypeManagementMapper;
+
+    @Resource
+    private IDivisionManagementMapper iDivisionManagementMapper;
+
+    @Resource
+    private IDivisionManagementPersonnelMapper iDivisionManagementPersonnelMapper;
+
+    @Resource
+    private ExportTool exportTool;
+
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
         try {
@@ -104,6 +121,8 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 return cat_audit(request);
             }else if (name.equals("cat_xlsx")){
                 return cat_xlsx(request);
+            }else if (name.equals("cat_month_xlsx")){
+                return cat_month_xlsx(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
@@ -112,7 +131,196 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
     }
 
-    //导出数据
+    //导出月数据
+    private ReturnEntity cat_month_xlsx(HttpServletRequest request) throws IOException {
+        PerformanceReport jsonParam = PanXiaoZhang.getJSONParam(request, PerformanceReport.class);
+        //字符串Map
+        Map<String, String> stringMap = new HashMap<>();
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
+        //初始化抬头
+        List<GetExcel> getExcels = ExcelExportUtil.initMonth(stringMap, "月");
+        //通用in集合
+        ArrayList<Integer> arrayList = new ArrayList<>();
+        //查询部门类型
+        List<DivisionType> divisionTypes = divisionTypeMapper.selectList(null);
+        //行数
+        int countRow = 3;
+        //下标
+        int index = 0;
+        int row = countRow;
+        for (int i = 0; i < divisionTypes.size(); i++) {
+            List<GetExcel> typeExcels = new ArrayList<>();
+            DivisionType divisionType = divisionTypes.get(i);
+            //查询部门类型关联的部门
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.eq("division_type_id",divisionType.getId());
+            List<DivisionTypeManagement> divisionTypeManagements = iDivisionTypeManagementMapper.selectList(wrapper);
+            arrayList.clear();
+            for (int j = 0; j < divisionTypeManagements.size(); j++) {
+                DivisionTypeManagement divisionTypeManagement = divisionTypeManagements.get(j);
+                arrayList.add(divisionTypeManagement.getDivisionManagementId());
+            }
+            //查询相关部门
+            wrapper = new QueryWrapper();
+            wrapper.in("id",arrayList.toArray(new Integer[arrayList.size()]));
+            List<DivisionManagement> divisionManagements = iDivisionManagementMapper.selectList(wrapper);
+            //进件
+            Integer divisionTypeSumCountNumber = 0;
+            //批核
+            Integer divisionTypeSumApproved = 0;
+            //激活
+            Integer divisionTypeSumActivation = 0;
+            //项目指标
+            Integer divisionTypeSumMonthlyIndicators = 0;
+            //部门关联人员人数
+            Integer personnelNumber = 0;
+            for (int j = 0; j < divisionManagements.size(); j++) {
+                List<GetExcel> excels = new ArrayList<>();
+                //部门
+                int divisionRow = countRow;
+                DivisionManagement divisionManagement = divisionManagements.get(j);
+                wrapper = new QueryWrapper();
+                wrapper.eq("division_management_id",divisionManagement.getId());
+                List<DivisionManagementPersonnel> personnelList = iDivisionManagementPersonnelMapper.selectList(wrapper);
+                personnelNumber = personnelList.size();
+                //进件
+                Integer divisionSumCountNumber = 0;
+                //批核
+                Integer divisionSumApproved = 0;
+                //激活
+                Integer divisionSumActivation = 0;
+                //项目指标
+                Integer divisionSumMonthlyIndicators = 0;
+                //查询部门关联经理
+                for (int k = 0; k < personnelList.size(); k++) {
+                    DivisionManagementPersonnel managementPersonnel = personnelList.get(k);
+                    //查询该项目区域经理
+                    Map map = new HashMap();
+                    map.put("roleId",manage3);
+                    map.put("personnelId",managementPersonnel.getPersonnelId());
+                    List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
+                    map.clear();
+
+                    for (int l = 0; l < sysPersonnels.size(); l++) {
+                        SysPersonnel personnel = sysPersonnels.get(l);
+                        List<SysManagement> sysManagement = personnel.getSysManagement();
+                        arrayList.clear();
+                        for (int m = 0; m < sysManagement.size(); m++) {
+                            SysManagement management = sysManagement.get(m);
+                            arrayList.add(management.getId());
+                        }
+                        map.put("inManagementId",arrayList.toArray(new Integer[arrayList.size()]));
+                        List<RankingList> queryAllCount = whiteRankingListMapper.queryAllCount(map);
+                        //进件
+                        Integer sumCountNumber = 0;
+                        //批核
+                        Integer sumApproved = 0;
+                        //激活
+                        Integer sumActivation = 0;
+                        //项目指标
+                        Integer sumMonthlyIndicators = 0;
+                        for (int m = 0; m < queryAllCount.size(); m++) {
+                            int col = 2;
+                            RankingList rankingList = queryAllCount.get(m);
+                            //进件divisionS
+                            Integer countNumber = rankingList.getCountNumber();
+                            countNumber = ObjectUtils.isEmpty(countNumber) ? 0 : countNumber;
+                            sumCountNumber += countNumber;
+                            divisionSumCountNumber += countNumber;
+                            divisionTypeSumCountNumber += countNumber;
+                            //批核
+                            Integer approved = rankingList.getApproved();
+                            approved = ObjectUtils.isEmpty(approved) ? 0 : approved;
+                            sumApproved += approved;
+                            divisionSumApproved += approved;
+                            divisionTypeSumApproved += approved;
+                            //激活
+                            Integer activation = rankingList.getActivation();
+                            activation = ObjectUtils.isEmpty(activation) ? 0 : activation;
+                            sumActivation += activation;
+                            divisionSumActivation += activation;
+                            divisionTypeSumActivation += activation;
+                            //项目指标
+                            Integer monthlyIndicators = rankingList.getMonthlyIndicators();
+                            monthlyIndicators = ObjectUtils.isEmpty(monthlyIndicators) ? 0 : monthlyIndicators;
+                            sumMonthlyIndicators += monthlyIndicators;
+                            divisionSumMonthlyIndicators += monthlyIndicators;
+                            divisionTypeSumMonthlyIndicators += monthlyIndicators;
+
+                            excels.add(XlsxLayoutReader.text(rankingList.getName(), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(rankingList.getCardTypeName(), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(String.valueOf(countNumber), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(String.valueOf(approved), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(String.valueOf(activation), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(String.valueOf(monthlyIndicators), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(activation,monthlyIndicators,1,100)+"%", countRow, countRow, col, col));
+                            countRow++;
+                        }
+
+                        excels.add(XlsxLayoutReader.text(personnel.getName() + "合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(sumActivation,sumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
+
+                        excels.add(index,XlsxLayoutReader.text(personnel.getName(), row, countRow, 1, 1));
+                        countRow++;
+                        row = countRow;
+                    }
+                }
+                //部门
+                excels.add(index, XlsxLayoutReader.text(divisionManagement.getName(), divisionRow, countRow, 0, 0));
+
+                if (personnelNumber > 1){
+                    excels.add(XlsxLayoutReader.text(divisionManagement.getName() + "总合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(divisionSumActivation,divisionSumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
+                    countRow++;
+                }
+                getExcels.add(new GetExcel(
+                        divisionRow,
+                        countRow,
+                        excels,
+                        false
+                ));
+            }
+            if (divisionTypeManagements.size() > 1){
+                typeExcels.add(XlsxLayoutReader.text(divisionType.getName() + "总合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(divisionTypeSumActivation,divisionTypeSumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
+                countRow++;
+                getExcels.add(new GetExcel(
+                        countRow,
+                        countRow,
+                        typeExcels,
+                        false
+                ));
+            }
+        }
+        String xlsx = exportTool.xlsx(getExcels);
+        System.out.println(xlsx + "=================");
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,MsgEntity.CODE_SUCCEED);
+    }
+
+    //导出日数据
     private ReturnEntity cat_xlsx(HttpServletRequest request) throws IOException {
         PerformanceReport jsonParam = PanXiaoZhang.getJSONParam(request, PerformanceReport.class);
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
@@ -121,10 +329,12 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         if (estimateState.getState()){
             return estimateState;
         }
-        //查询所有卡种
-        List<CardType> cardTypes = iCardTypeMapper.selectList(null);
-        //查询当前人员关联项目组
         QueryWrapper wrapper = new QueryWrapper();
+        //查询所有卡种
+        wrapper.ne("name","测试信用卡");
+        List<CardType> cardTypes = iCardTypeMapper.selectList(wrapper);
+        //查询当前人员关联项目组
+        wrapper = new QueryWrapper();
         wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
         List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(wrapper);
         if (managementPersonnels.size() < 1){
@@ -202,6 +412,15 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             stringMap.put("thisStartTime",thisStartTime + " 00:00:00");
             stringMap.put("thisEndTime",thisEndTime + " 23:59:59");
         }
+
+        //List<PerformanceReportSales> salesList = iPerformanceReportSalesMapper.queryListManagementCardType(map);
+        //for (int i = 0; i < salesList.size(); i++) {
+        //    PerformanceReportSales reportSales = salesList.get(i);
+        //    System.out.println(reportSales + "=========================");
+        //}
+        //
+        //return null;
+
         //查询签到人数
         List<RankingList> queryPunchingCount = whiteRankingListMapper.queryPunchingCount(map);
         for (int i = 0; i < queryPunchingCount.size(); i++) {
@@ -293,15 +512,9 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             );
             row++;
         }
-        String format = DateFormatUtils.format(new Date(), PanXiaoZhang.yMd(1));
-        String path = ap + format;
-        File file = new File(path);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        File tmpFile = File.createTempFile(format,".xlsx",new File(path));
-        ExcelExportUtil.writeExcelToTemp(new ArrayList<>(),getExcels,tmpFile);
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,uploadFilePathConfig.getFileExtraAddPrefix() + format + "/" + tmpFile.getName(),MsgEntity.CODE_SUCCEED);
+
+        String xlsx = exportTool.xlsx(getExcels);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,xlsx,MsgEntity.CODE_SUCCEED);
     }
 
 
@@ -445,21 +658,22 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         if (ObjectUtils.isEmpty(performanceReport.getId())){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该业绩信息不存在");
         }
-        if (performanceReport.getApproverState().equals("pending")){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"该业绩信息处于审核状态中，不可修改");
-        }
+        //if (performanceReport.getApproverState().equals("pending")){
+        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"该业绩信息处于审核状态中，不可修改");
+        //}
         //查询当前是否有提交的数据
         QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("personnel_code",performanceReport.getPersonnelCode());
-        wrapper.apply(true, "report_time = '" + performanceReport.getReportTime() + "'");
-        wrapper.eq("card_type_id",jsonParam.getCardTypeId());
-        wrapper.ne("approver_state","refuse");
-        List<PerformanceReport> selectList = iPerformanceReportMapper.selectList(wrapper);
-        if (selectList.size() > 0){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"数据不可重复");
-        }
+        //wrapper.ne("id",jsonParam.getId());
+        //wrapper.eq("personnel_code",performanceReport.getPersonnelCode());
+        //wrapper.apply(true, "report_time = '" + performanceReport.getReportTime() + "'");
+        //wrapper.eq("card_type_id",jsonParam.getCardTypeId());
+        //wrapper.ne("approver_state","refuse");
+        //List<PerformanceReport> selectList = iPerformanceReportMapper.selectList(wrapper);
+        //if (selectList.size() > 0){
+        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"数据不可重复");
+        //}
         //将当前所属项目加入
-        wrapper = new QueryWrapper();
+        //wrapper = new QueryWrapper();
         if (ObjectUtils.isEmpty(jsonParam.getManagementId())){
             wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
             List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(wrapper);
@@ -489,6 +703,23 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         jsonParam.setReportTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMdHms()));
 
         jsonParam.setApproverState("pending");
+
+        //修改
+        if (!ObjectUtils.isEmpty(jsonParam.getSalesList())){
+            for (int i = 0; i < jsonParam.getSalesList().size(); i++) {
+                PerformanceReportSales performanceReportSales = jsonParam.getSalesList().get(i);
+                int updateById = iPerformanceReportSalesMapper.updateById(performanceReportSales);
+                //当返回值不为1的时候判断修改失败
+                if (updateById != 1){
+                    return new ReturnEntity(
+                            CodeEntity.CODE_ERROR,
+                            jsonParam,
+                            "修改失败"
+                    );
+                }
+            }
+        }
+
         //没有任何问题将数据录入进数据库
         int updateById = iPerformanceReportMapper.updateById(new PerformanceReport(
             performanceReport.getId(),
@@ -528,7 +759,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"修改成功,请等待审核");
     }
 
-    //查询审核数据数字
+    //查询审核列表
     private ReturnEntity cat_audit(HttpServletRequest request) {
         Map map = PanXiaoZhang.getJsonMap(request);
         if (ObjectUtils.isEmpty(map.get("personnelId"))){
@@ -603,7 +834,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             return new ReturnEntity(
                     CodeEntity.CODE_ERROR,
                     jsonParam,
-                    "审核失败"
+                    "修改失败"
             );
         }
         QueryWrapper wrapper = new QueryWrapper();
@@ -626,6 +857,9 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         if (ObjectUtils.isEmpty(map.get("personnelId"))){
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
+
+        SysPersonnel personnel = iSysPersonnelMapper.selectById(String.valueOf(map.get("personnelId")));
+
         List<List<MapEntity>> listList = new ArrayList<>();
         List<MapEntity> entityList = new ArrayList<>();
 
@@ -663,6 +897,19 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 "拒绝",
                 performanceReportNumber.getRefuse()
         ));
+        map.put("personnelCode",personnel.getPersonnelCode());
+        map.put("tyoe","自定义");
+        //权益
+        List<PerformanceReportSales> performanceReportSales = iPerformanceReportSalesMapper.queryList(map);
+        for (int i = 0; i < performanceReportSales.size(); i++) {
+            PerformanceReportSales reportSales = performanceReportSales.get(i);
+            //权益
+            entityList.add(new MapEntity(
+                    reportSales.getType(),
+                    reportSales.getType(),
+                    reportSales.getSales()
+            ));
+        }
         //转人工
         entityList.add(new MapEntity(
                 "转人工",
@@ -738,13 +985,20 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         //查询当前是否有提交的数据
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
-        wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(report_time) = 0");
+        //返回提示语
+        String msg = "当天";
+        if (!ObjectUtils.isEmpty(jsonParam.getTimeType()) && jsonParam.getTimeType()){
+            msg = "昨天";
+            wrapper.apply(true, "DATE(report_time) = DATE(NOW() - INTERVAL 1 DAY)");
+        }else {
+            wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(report_time) = 0");
+        }
         wrapper.eq("card_type_id",jsonParam.getCardTypeId());
-        wrapper.ne("approver_state","refuse");
+        //wrapper.ne("approver_state","refuse");
         List<PerformanceReport> selectList = iPerformanceReportMapper.selectList(wrapper);
         if (selectList.size() > 0){
             PerformanceReport performanceReport = selectList.get(0);
-            return new ReturnEntity(CodeEntity.CODE_ERROR,performanceReport,"当天已提交过" + cardType.getName() + "数据");
+            return new ReturnEntity(CodeEntity.CODE_ERROR,performanceReport,msg + "已提交过" + cardType.getName() + "数据");
         }
         //查询当前个人的信息
         if (!returnEntity.getState()){
@@ -786,8 +1040,18 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             jsonParam.setReportCoding("coding" + System.currentTimeMillis() + PanXiaoZhang.ran(2));
         }
         String format = DateFormatUtils.format(new Date(), PanXiaoZhang.yMdHms());
-        //添加当前报告时间
-        jsonParam.setReportTime(format);
+        if (!ObjectUtils.isEmpty(jsonParam.getTimeType()) && jsonParam.getTimeType()){
+            LocalDateTime yesterday = LocalDateTime.now().minusDays(1); // 获取昨天的日期时间
+            LocalTime time = LocalTime.of(15, 0); // 设置下午3点时间
+            LocalDateTime yesterday3pm = LocalDateTime.of(yesterday.toLocalDate(), time); // 将昨天的日期和下午3点时间合并为一个 LocalDateTime 对象
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 定义日期时间格式
+            String formattedDateTime = yesterday3pm.format(formatter); // 格式化日期时间为字符串类型
+            //添加当前报告时间
+            jsonParam.setReportTime(formattedDateTime);
+        }else {
+            //添加当前报告时间
+            jsonParam.setReportTime(format);
+        }
         //添加修改时间
         jsonParam.setUpdateTime(format);
         //添加默认状态
@@ -800,7 +1064,14 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"权益名称不可为空");
                 }
                 performanceReportSales.setReportCoding(jsonParam.getReportCoding());
-                int insert = iPerformanceReportSalesMapper.insert(performanceReportSales);
+                int insert = iPerformanceReportSalesMapper.insert(
+                        new PerformanceReportSales(
+                                performanceReportSales.getSales(),
+                                performanceReportSales.getType(),
+                                performanceReportSales.getReportCoding(),
+                                performanceReportSales.getComment()
+                        )
+                );
                 //如果返回值不能鱼1则判断失败
                 if (insert != 1){
                     return new ReturnEntity(

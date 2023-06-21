@@ -15,6 +15,7 @@
         <result column="card_type_id" property="cardTypeId" />
         <result column="attendance" property="attendance" />
         <result column="number_of_people" property="numberOfPeople" />
+        <result column="monthly_indicators" property="monthlyIndicators" />
     </resultMap>
     <!--  查询签到次数  -->
     <select id="queryPunchingCount" resultMap="entity" resultType="hashmap">
@@ -52,6 +53,7 @@
         SELECT
         <include refid="tableSqlSManagement" />.id as id,
         <include refid="tableSqlSManagement" />.`name`,
+        <include refid="tableSqlSManagement" />.`monthly_indicators`,
         <include refid="returnSql" />,
         <include refid="tableSqlCardType" />.`id` as card_type_id
         FROM

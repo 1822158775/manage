@@ -7,13 +7,13 @@ spring:
     password: znrlsp123
     database: 4
   datasource:
-#    url: jdbc:mysql://106.15.56.132:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
-#    username: manage
-#    password: manage
+    url: jdbc:mysql://106.15.56.132:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
+    username: manage
+    password: manage
 
-    url: jdbc:mysql://127.0.0.1:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
-    username: root
-    password: znrlsp123
+#    url: jdbc:mysql://127.0.0.1:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false
+#    username: root
+#    password: znrlsp123
 magicalcoder:
   file:
     upload:
@@ -43,9 +43,9 @@ magicalcoder:
     autoStartExplorer: true
     explorerPath: C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe
 #mybatis-plus配置控制台打印完整带参数SQL语句
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 wechat:
   xin:
@@ -68,6 +68,7 @@ role:
   manage4: 4
   manage3: 3
   manage5: 5
+  dageid: 446
 phone:
   personnel: 18637871061
   birthday: 18629938991

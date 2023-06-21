@@ -20,8 +20,8 @@ import java.io.Serializable;
 public class CardTypeSales implements Serializable {
     @TableId(value = "id",type = IdType.AUTO)
     public Integer id;//数据编码
-    @TableField(value = "name")
-    public String name;//权益名称
+    @TableField(value = "type")
+    public String type;//权益名称
     @TableField(value = "state")
     public String state;//状态
     @TableField(value = "card_type_id")

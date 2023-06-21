@@ -2,9 +2,11 @@ package com.example.manage.white_list.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.ManagementPersonnel;
+import com.example.manage.entity.PerformanceReportSales;
 import com.example.manage.entity.SysPersonnel;
-import com.example.manage.entity.data_statistics.DataStatistics;
+import com.example.manage.entity.data_statistics.*;
 import com.example.manage.mapper.IManagementPersonnelMapper;
+import com.example.manage.mapper.IPerformanceReportSalesMapper;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.mapper.WhiteDataStatisticsMapper;
 import com.example.manage.util.PanXiaoZhang;
@@ -42,6 +44,9 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
 
     @Resource
     private IManagementPersonnelMapper iManagementPersonnelMapper;
+
+    @Resource
+    private IPerformanceReportSalesMapper iPerformanceReportSalesMapper;
 
     //方法总管
     @Override
@@ -86,6 +91,7 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
             map.put("inManagementId",null);
         }else {
             map.put("inManagementId",toArray);
+            map.put("mId","1");
         }
 
         Object thisStartTime = map.get("startTime");
@@ -127,11 +133,30 @@ public class WhiteDataStatisticsServiceImpl implements IWhiteDataStatisticsServi
         map.put("endTime",thisEndTime);
 
         DataStatistics dataStatistics = whiteDataStatisticsMapper.queryAll(map);
+
+        //权益
+        map.put("approverState","agree");
+        //自定义
+        map.put("type","自定义");
+        DataStatisticsTodayCustom customs = dataStatistics.getDataStatisticsTodayCustoms();
+        customs.setSalesList(iPerformanceReportSalesMapper.queryList(map));
+        //今日
+        map.put("type","day");
+        DataStatisticsTodayDay days = dataStatistics.getDataStatisticsTodayDays();
+        days.setSalesList(iPerformanceReportSalesMapper.queryList(map));
+        //本周
+        map.put("type","week");
+        DataStatisticsTodayWeek weeks = dataStatistics.getDataStatisticsTodayWeeks();
+        weeks.setSalesList(iPerformanceReportSalesMapper.queryList(map));
+        //本月
+        map.put("type","month");
+        DataStatisticsTodayMonth months = dataStatistics.getDataStatisticsTodayMonths();
+        months.setSalesList(iPerformanceReportSalesMapper.queryList(map));
         ArrayList<Object> arrayList = new ArrayList<>();
-        arrayList.addAll(dataStatistics.getDataStatisticsTodayCustoms());
-        arrayList.addAll(dataStatistics.getDataStatisticsTodayDays());
-        arrayList.addAll(dataStatistics.getDataStatisticsTodayWeeks());
-        arrayList.addAll(dataStatistics.getDataStatisticsTodayMonths());
+        arrayList.add(customs);
+        arrayList.add(days);
+        arrayList.add(weeks);
+        arrayList.add(months);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,arrayList,"");
     }
 }

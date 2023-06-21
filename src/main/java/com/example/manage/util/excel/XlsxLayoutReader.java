@@ -8,6 +8,7 @@ import com.example.manage.entity.ranking_list.RankingList;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.GetExcel;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileOutputStream;
@@ -383,6 +384,168 @@ public class XlsxLayoutReader {
                 false
         ));
         return arrayList;
+    }
+
+    /**
+     * 一个单元格
+     * @param name
+     * @param startRow
+     * @param endRow
+     * @param startCol
+     * @param endCol
+     * @return
+     */
+    public static GetExcel text(String name,int startRow,int endRow,int startCol,int endCol){
+        Boolean mergerSwitch = false;
+        if (startRow != endRow || startCol != endCol){
+            mergerSwitch = true;
+        }
+        return new GetExcel(
+                name,
+                null,
+                "text",
+                ExcelExportUtil.colorWhite(),
+                ExcelExportUtil.colorBlack(),
+                0,
+                startRow,
+                endRow,
+                startCol,
+                endCol,
+                HorizontalAlignment.CENTER,
+                VerticalAlignment.CENTER,
+                (short) 11,
+                false,
+                mergerSwitch
+        );
+    }
+
+    /**
+     * 
+     * @param name
+     * @param startRow
+     * @param endRow
+     * @param startCol
+     * @param endCol
+     * @param xssfColor 背景颜色
+     * @return
+     */
+    public static GetExcel text(String name,int startRow,int endRow,int startCol,int endCol,XSSFColor xssfColor){
+        Boolean mergerSwitch = false;
+        if (startRow != endRow || startCol != endCol){
+            mergerSwitch = true;
+        }
+        return new GetExcel(
+                name,
+                null,
+                "text",
+                xssfColor,
+                ExcelExportUtil.colorBlack(),
+                0,
+                startRow,
+                endRow,
+                startCol,
+                endCol,
+                HorizontalAlignment.CENTER,
+                VerticalAlignment.CENTER,
+                (short) 11,
+                false,
+                mergerSwitch
+        );
+    }
+
+    /**
+     *
+     * @param name
+     * @param startRow
+     * @param endRow
+     * @param startCol
+     * @param endCol
+     * @param xssfColor 背景颜色
+     * @param color 字体颜色
+     * @return
+     */
+    public static GetExcel text(String name,int startRow,int endRow,int startCol,int endCol,XSSFColor xssfColor,XSSFColor color){
+        Boolean mergerSwitch = false;
+        if (startRow != endRow || startCol != endCol){
+            mergerSwitch = true;
+        }
+        return new GetExcel(
+                name,
+                null,
+                "text",
+                xssfColor,
+                color,
+                0,
+                startRow,
+                endRow,
+                startCol,
+                endCol,
+                HorizontalAlignment.CENTER,
+                VerticalAlignment.CENTER,
+                (short) 11,
+                false,
+                mergerSwitch
+        );
+    }
+    /**
+     * 合并单元格
+     * @param name
+     * @param startRow
+     * @param endRow
+     * @param startCol
+     * @param endCol
+     * @return
+     */
+    public static GetExcel textColorYellow(String name,int startRow,int endRow,int startCol,int endCol){
+        Boolean mergerSwitch = false;
+        if (startRow != endRow || startCol != endCol){
+            mergerSwitch = true;
+        }
+        return new GetExcel(
+                name,
+                null,
+                "text",
+                ExcelExportUtil.colorYellow(),
+                ExcelExportUtil.colorBlack(),
+                0,
+                startRow,
+                endRow,
+                startCol,
+                endCol,
+                HorizontalAlignment.CENTER,
+                VerticalAlignment.CENTER,
+                (short) 11,
+                true,
+                mergerSwitch
+        );
+    }
+    /**
+     * 合并单元格
+     * @param name
+     * @param startRow
+     * @param endRow
+     * @param startCol
+     * @param endCol
+     * @return
+     */
+    public static GetExcel textSwitch(String name,int startRow,int endRow,int startCol,int endCol){
+        return new GetExcel(
+                name,
+                null,
+                "text",
+                ExcelExportUtil.colorWhite(),
+                ExcelExportUtil.colorBlack(),
+                0,
+                startRow,
+                endRow,
+                startCol,
+                endCol,
+                HorizontalAlignment.CENTER,
+                VerticalAlignment.CENTER,
+                (short) 11,
+                false,
+                true
+        );
     }
     public static void main(String[] args) {
 

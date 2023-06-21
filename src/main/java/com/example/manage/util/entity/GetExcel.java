@@ -35,6 +35,7 @@ public class GetExcel implements Serializable {
     public Boolean mergeSwitch;//合并开关
     public Boolean rowBorderSwitch;//合并开关
     public List<GetExcel> getExcelList;//内容
+    public Boolean widthSwitch;//宽度变动开关
 
     public GetExcel() {
     }
@@ -80,6 +81,25 @@ public class GetExcel implements Serializable {
         this.fontSize = fontSize;
         this.bold = bold;
         this.mergeSwitch = mergeSwitch;
+    }
+
+    public GetExcel(String name, List<String> value, String type, XSSFColor bgcolor, XSSFColor color, int startCell, int firstRow, int lastRow, int firstCol, int lastCol, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment, short fontSize, Boolean bold, Boolean mergeSwitch, Boolean widthSwitch) {
+        this.name = name;
+        this.value = value;
+        this.type = type;
+        this.bgcolor = bgcolor;
+        this.color = color;
+        this.startCell = startCell;
+        this.firstRow = firstRow;
+        this.lastRow = lastRow;
+        this.firstCol = firstCol;
+        this.lastCol = lastCol;
+        this.horizontalAlignment = horizontalAlignment;
+        this.verticalAlignment = verticalAlignment;
+        this.fontSize = fontSize;
+        this.bold = bold;
+        this.mergeSwitch = mergeSwitch;
+        this.widthSwitch = widthSwitch;
     }
 
     public GetExcel(String name, List<String> value, String type, XSSFColor bgcolor, XSSFColor color, int startCell, int firstRow, int lastRow, int firstCol, int lastCol, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment, short fontSize, Boolean bold, Boolean mergeSwitch,List<GetExcel> getExcelList) {

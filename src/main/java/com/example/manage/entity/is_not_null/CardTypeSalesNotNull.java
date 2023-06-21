@@ -18,7 +18,7 @@ import java.io.Serializable;
 @ToString
 public class CardTypeSalesNotNull implements Serializable {
     public String id;//数据编码
-    public String name;//权益名称
+    public String type;//权益名称
     public String state;//状态
     public String cardTypeId;//卡类型
     public String comment;//备注
@@ -27,14 +27,14 @@ public class CardTypeSalesNotNull implements Serializable {
     public CardTypeSalesNotNull() {
     }
 
-    public CardTypeSalesNotNull(String name, String cardTypeId) {
-        this.name = name;
+    public CardTypeSalesNotNull(String type, String cardTypeId) {
+        this.type = type;
         this.cardTypeId = cardTypeId;
     }
 
-    public CardTypeSalesNotNull(String id, String name, String state, String cardTypeId, String comment, String alias) {
+    public CardTypeSalesNotNull(String id, String type, String state, String cardTypeId, String comment, String alias) {
         this.id = id;
-        this.name = name;
+        this.type = type;
         this.state = state;
         this.cardTypeId = cardTypeId;
         this.comment = comment;

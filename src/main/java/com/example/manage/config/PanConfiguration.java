@@ -63,7 +63,7 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
-            iWhiteSysPersonnelService.ceshi();
+            //iWhiteSysPersonnelService.ceshi();
             MythicalCreatures.mythical_creatures_1();
             //schedulingSysManagementService.windUpAnAccount();
             //Map<String,Object> map = new HashMap();

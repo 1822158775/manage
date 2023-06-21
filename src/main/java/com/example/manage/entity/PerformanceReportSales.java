@@ -28,4 +28,20 @@ public class PerformanceReportSales implements Serializable {
     public String reportCoding;//业绩代码
     @TableField(value = "comment")
     public String comment;//备注
+    @TableField(exist = false)
+    public String dayTime;//备注
+    @TableField(exist = false)
+    public Integer managementId;//项目Id
+    @TableField(exist = false)
+    public Integer cardTypeId;//卡种Id
+
+    public PerformanceReportSales() {
+    }
+
+    public PerformanceReportSales(Integer sales, String type, String reportCoding, String comment) {
+        this.sales = sales;
+        this.type = type;
+        this.reportCoding = reportCoding;
+        this.comment = comment;
+    }
 }

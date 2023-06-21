@@ -17,7 +17,6 @@
 
     <!--  查询数量  -->
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-
         <choose>
             <when test="mId != null and mId != '' or managementId != null and managementId != ''">
                 SELECT
@@ -35,7 +34,6 @@
                 <include refid="tableSqlSManagement" />
                 <include refid="relevanceSql" />
                 <include refid="whereSqlModel" />
-                <include refid="managementState"/>
                 <include refid="managementId"/>
                 <include refid="safeGroupBy" />
                 <include refid="safeOrderBy" />

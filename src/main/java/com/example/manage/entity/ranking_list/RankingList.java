@@ -1,9 +1,11 @@
 package com.example.manage.entity.ranking_list;
 
+import com.example.manage.entity.PerformanceReportSales;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -28,7 +30,8 @@ public class RankingList implements Serializable {
     public Integer cardTypeId;//卡类型id
     public Integer attendance;//实际签到次数
     public Integer numberOfPeople;//应该签到人数
-
+    public Integer monthlyIndicators;//指标完成率
+    public List<PerformanceReportSales> performanceReportSales;//业绩权益
 
     public RankingList() {
     }

@@ -19,6 +19,8 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
@@ -79,6 +81,43 @@ public class ExcelExportUtil {
     //}
 
     /**
+     * 带边框的样式+
+     */
+    public static XSSFCellStyle setDefaultStyle(XSSFWorkbook workbook) {
+        XSSFCellStyle cellStyle = workbook.createCellStyle();
+        // 边框
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setTopBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBottomBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setLeftBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setRightBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
+        return cellStyle;
+    }
+    /**
+     * 为合并的单元格设置样式（可根据需要自行调整）
+     */
+    public static List<XSSFCellStyle> setRegionStyle(XSSFSheet sheet, CellRangeAddress region, XSSFCellStyle cs) {
+        List<XSSFCellStyle> cellStyles = new ArrayList<>();
+        for (int i = region.getFirstRow(); i <= region.getLastRow(); i++) {
+            Row row = sheet.getRow(i);
+            if (null == row) {
+                row = sheet.createRow(i);
+            }
+            for (int j = region.getFirstColumn(); j <= region.getLastColumn(); j++) {
+                Cell cell = row.getCell(j);
+                if (null == cell) {
+                    cell = row.createCell(j);
+                }
+                //cell.setCellStyle(cs);
+                cellStyles.add(cs);
+            }
+        }
+        return cellStyles;
+    }
+    /**
      * 潘Sir
      * @param pageList 主干内容
      * @param getExcels 抬头内容
@@ -88,15 +127,23 @@ public class ExcelExportUtil {
         FileOutputStream out = null;
         XSSFWorkbook wb = new XSSFWorkbook();; // keep 100 rows in memory, exceeding rows will be flushed to disk
         XSSFSheet sh = wb.createSheet("Sheet1");
+        //记录最长的行数
+        int rowCount = 0;
+        //记录最长的列数
+        int colCount = 0;
         try {
             for (int i = 0; i < getExcels.size(); i++) {
                 GetExcel getExcel = getExcels.get(i);
-                Row headRow = sh.createRow(getExcel.getFirstRow());
                 List<GetExcel> excels = getExcel.getGetExcels();
+                //边框线设置
                 for (int j = 0; j < excels.size(); j++) {
                     GetExcel excel = excels.get(j);
-                    //设置样式
-                    XSSFCellStyle cellStyle = wb.createCellStyle();
+                    if (rowCount < excel.getLastRow()){
+                        rowCount = excel.getLastRow();
+                    }
+                    if (colCount < excel.getLastCol()){
+                        colCount = excel.getLastCol();
+                    }
                     //指定合并开始行、合并结束行 合并开始列、合并结束列
                     CellRangeAddress rangeAddress = new CellRangeAddress(
                             excel.getFirstRow()
@@ -108,8 +155,40 @@ public class ExcelExportUtil {
                         //添加要合并地址到表格
                         sh.addMergedRegion(rangeAddress);
                     }
+
+                    Row headRow = sh.getRow(excel.getFirstRow());
+                    if (ObjectUtils.isEmpty(headRow)){
+                        headRow = sh.createRow(excel.getFirstRow());
+                    }
+
+                    //设置样式
+                    XSSFCellStyle cellStyle = wb.createCellStyle();
                     if (getExcel.getRowBorderSwitch()){
                         RegionUtil.setBorderBottom(BorderStyle.THICK,rangeAddress,sh);
+                    }
+                    // 创建工作表
+                    sh.setDefaultRowHeight((short) 500);
+                    int fontSize = 0;
+                    if (!ObjectUtils.isEmpty(excel.getName()) && ObjectUtils.isEmpty(excel.getWidthSwitch())){
+                        fontSize = (excel.getName().length() - 5) * 500;
+                        if (fontSize > 0){
+                            fontSize = fontSize + 3000;
+                        }
+                    }
+                    if (fontSize == 0){
+                        fontSize = 3000;
+                    }
+                    sh.setColumnWidth(excel.getFirstCol(), fontSize);
+                    //创建单元格，指定起始列号，从0开始
+                    Cell cell = headRow.createCell(excel.getFirstCol());
+                    //设置单元格内容
+                    cell.setCellValue(excel.getName());
+                    //设置单元格类型
+                    cell.setCellType(CellType.STRING);
+
+                    if (!excel.getMergeSwitch()){
+                        //边框线
+                        cellStyle = setDefaultStyle(wb);
                     }
                     //居中
                     cellStyle.setAlignment(excel.getHorizontalAlignment());
@@ -130,33 +209,9 @@ public class ExcelExportUtil {
                         // 设置 Picture 的大小
                         picture.resize(1.5,1.5);
                     }else if (excel.getType().equals("text")){
-                        // 创建工作表
-                        sh.setDefaultRowHeight((short) 500);
-                        sh.setColumnWidth(excel.getFirstCol(), 3000);
-                        //创建单元格，指定起始列号，从0开始
-                        Cell cell = headRow.createCell(excel.getFirstCol());
-                        //设置单元格内容
-                        cell.setCellValue(excel.getName());
-                        //设置单元格类型
-                        cell.setCellType(CellType.STRING);
                         //设置背景颜色
                         cellStyle.setFillForegroundColor(excel.getBgcolor());
                         cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-                        if (!excel.getMergeSwitch()){
-                            //边框线
-                            cellStyle.setBorderTop(BorderStyle.THIN);
-                            cellStyle.setTopBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
-                            cellStyle.setBorderBottom(BorderStyle.THIN);
-                            cellStyle.setBottomBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
-                            cellStyle.setBorderLeft(BorderStyle.THIN);
-                            cellStyle.setLeftBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
-                            cellStyle.setBorderRight(BorderStyle.THIN);
-                            cellStyle.setRightBorderColor(new XSSFColor(new java.awt.Color(191, 1, 1)));
-                        }
-
-                        //cellStyle.setFillForegroundColor(excel.getBgcolor());
-                        //cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
                         //设置字体颜色
                         XSSFFont font = wb.createFont();
                         font.setColor(excel.getColor());
@@ -169,8 +224,29 @@ public class ExcelExportUtil {
                 }
             }
             //数据
-            //for(int i = 0; i < pageList.size();i++){
-            //    //创建行，指定起始行号，从0开始
+            //for(int i = 0; i < rowCount;i++){
+            //
+            //    Row headRow = sh.getRow(i);
+            //    if (ObjectUtils.isEmpty(headRow)){
+            //        headRow = sh.createRow(i);
+            //    }
+                //创建行，指定起始行号，从0开始
+                //for (int j = 0; j < colCount; j++) {
+                //    Cell cell = sh.getRow(i).getCell(j);
+                //    if (ObjectUtils.isEmpty(cell)){
+                //        //创建单元格，指定起始列号，从0开始
+                //        cell = headRow.createCell(j);
+                //    }
+                //    // 获取单元格样式
+                //    CellStyle cellStyle = cell.getCellStyle();
+                //    // 更改边框线
+                //    cellStyle.setBorderTop(BorderStyle.THIN);
+                //    cellStyle.setBorderBottom(BorderStyle.THIN);
+                //    cellStyle.setBorderLeft(BorderStyle.THIN);
+                //    cellStyle.setBorderRight(BorderStyle.THIN);
+                //    //将设置好的加入单元格中
+                //    cell.setCellStyle(cellStyle);
+                //}
             //    Row shRow = sh.createRow(i + 5);
             //    for(int j = 0;j < pageList.get(i).size();j++){
             //        //获取当前内容
@@ -238,6 +314,21 @@ public class ExcelExportUtil {
         XSSFColor bgRed = new XSSFColor(new java.awt.Color(246, 193, 0));
         return bgRed;
     }
+    //黄色
+    public static XSSFColor color249(){
+        XSSFColor bgRed = new XSSFColor(new java.awt.Color(249,202,172));
+        return bgRed;
+    }
+    //蓝色
+    public static XSSFColor color117(){
+        XSSFColor bgRed = new XSSFColor(new java.awt.Color(117, 141, 253));
+        return bgRed;
+    }
+    //蓝色
+    public static XSSFColor color93(){
+        XSSFColor bgRed = new XSSFColor(new java.awt.Color(93, 121, 253));
+        return bgRed;
+    }
     //抬头标题
     public static List<GetExcel> title(Map<String,String> map,String type){
         List<GetExcel> getExcels = new ArrayList<>();
@@ -249,7 +340,16 @@ public class ExcelExportUtil {
         if (!ObjectUtils.isEmpty(thisStartTime) && !ObjectUtils.isEmpty(thisEndTime)){
             dayTime = thisStartTime + '~' + thisEndTime;
         }
+        if (type.equals("月")){
+            LocalDate today = LocalDate.now();
+            LocalDate firstDayOfMonth = today.withDayOfMonth(1);
+            LocalDate lastDayOfMonth = today.withDayOfMonth(today.lengthOfMonth());
 
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String firstDay = firstDayOfMonth.format(formatter);
+            String lastDay = lastDayOfMonth.format(formatter);
+            dayTime = firstDay + '~' + lastDay;
+        }
         getExcels.add(new GetExcel(
                 "场景项目业绩统计" + type + "报表",
                 null,
@@ -282,7 +382,8 @@ public class ExcelExportUtil {
                 VerticalAlignment.BOTTOM,
                 (short) 11,
                 true,
-                true
+                true,
+                false
         ));
         return getExcels;
     }
@@ -370,6 +471,38 @@ public class ExcelExportUtil {
         }
         return getExcels;
     }
+    //月报表
+    public static List<GetExcel> initMonth(Map<String, String> map,String type){
+        List<GetExcel> getExcels = new ArrayList<>();
+        getExcels.add(new GetExcel(
+                0,
+                1,
+                title(map,type),
+                true
+        ));
+        List<String> stringList = new ArrayList<>();
+        stringList.add("部门");
+        stringList.add("区域");
+        stringList.add("项目类型");
+        stringList.add("场景");
+        stringList.add("本月进件");
+        stringList.add("本月批核");
+        stringList.add("本月有效");
+        stringList.add("指标");
+        stringList.add("指标完成率");
+        //主要内容
+        getExcels.add(new GetExcel(
+                2,
+                2,
+                tableName(
+                        stringList,
+                        2,
+                        2),
+                false)
+        );
+        return getExcels;
+    }
+    //日报表
     public static List<GetExcel> init(Map<String,String> map,String path,List<CardType> cardTypes,String type){
         List<GetExcel> getExcels = new ArrayList<>();
         getExcels.add(new GetExcel(
@@ -421,11 +554,11 @@ public class ExcelExportUtil {
         //主要内容
         getExcels.add(new GetExcel(
                 6,
-                7,
+                6,
                 tableName(
                         stringList,
                         6,
-                        7),
+                        6),
                 false)
         );
     //
