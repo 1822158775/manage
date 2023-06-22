@@ -982,24 +982,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         if (ObjectUtils.isEmpty(cardType)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该卡种不存在");
         }
-        //查询当前是否有提交的数据
         QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
-        //返回提示语
-        String msg = "当天";
-        if (!ObjectUtils.isEmpty(jsonParam.getTimeType()) && jsonParam.getTimeType()){
-            msg = "昨天";
-            wrapper.apply(true, "DATE(report_time) = DATE(NOW() - INTERVAL 1 DAY)");
-        }else {
-            wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(report_time) = 0");
-        }
-        wrapper.eq("card_type_id",jsonParam.getCardTypeId());
-        //wrapper.ne("approver_state","refuse");
-        List<PerformanceReport> selectList = iPerformanceReportMapper.selectList(wrapper);
-        if (selectList.size() > 0){
-            PerformanceReport performanceReport = selectList.get(0);
-            return new ReturnEntity(CodeEntity.CODE_ERROR,performanceReport,msg + "已提交过" + cardType.getName() + "数据");
-        }
         //查询当前个人的信息
         if (!returnEntity.getState()){
             //如果查不到人员信息
@@ -1010,7 +993,6 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             jsonParam.setPersonnelCode(sysPersonnel.getPersonnelCode());
             //将当前所属项目加入
             if (ObjectUtils.isEmpty(jsonParam.getManagementId())){
-                wrapper = new QueryWrapper();
                 wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
                 List<ManagementPersonnel> list = iManagementPersonnelMapper.selectList(wrapper);
                 if (list.size() < 1){
@@ -1038,6 +1020,25 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             jsonParam.setSysPersonnel(personnel);
             //设置该条数据唯一编码
             jsonParam.setReportCoding("coding" + System.currentTimeMillis() + PanXiaoZhang.ran(2));
+        }
+        //查询当前是否有提交的数据
+        wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+        //返回提示语
+        String msg = "当天";
+        if (!ObjectUtils.isEmpty(jsonParam.getTimeType()) && jsonParam.getTimeType()){
+            msg = "昨天";
+            wrapper.apply(true, "DATE(report_time) = DATE(NOW() - INTERVAL 1 DAY)");
+        }else {
+            wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(report_time) = 0");
+        }
+        wrapper.eq("card_type_id",jsonParam.getCardTypeId());
+        wrapper.eq("management_id",jsonParam.getManagementId());
+        //wrapper.ne("approver_state","refuse");
+        List<PerformanceReport> selectList = iPerformanceReportMapper.selectList(wrapper);
+        if (selectList.size() > 0){
+            PerformanceReport performanceReport = selectList.get(0);
+            return new ReturnEntity(CodeEntity.CODE_ERROR,performanceReport,msg + "已提交过" + cardType.getName() + "数据");
         }
         String format = DateFormatUtils.format(new Date(), PanXiaoZhang.yMdHms());
         if (!ObjectUtils.isEmpty(jsonParam.getTimeType()) && jsonParam.getTimeType()){
