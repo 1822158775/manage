@@ -113,21 +113,23 @@ public class CheckInTimeServiceImpl implements ICheckInTimeService {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该规则" + selectOne.getName() + "已存在");
         }
 
-        CheckInTime checkInTime = iCheckInTimeMapper.selectById(jsonParam.getId());
+        //CheckInTime checkInTime = iCheckInTimeMapper.selectById(jsonParam.getId());
 
         //获取当前时分秒
-        LocalTime localTime = LocalTime.now();
+        //LocalTime localTime = LocalTime.now();
 
         //不让他打卡
-        int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(checkInTime.getStartPunchIn()), localTime);
-        if (time < 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法修改该数据");
-        }
-        //不让他打卡
-        time = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(checkInTime.getEndClockOut()));
-        if (time < 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法修改该数据");
-        }
+        //int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(checkInTime.getStartPunchIn()), localTime);
+        //if (time < 1){
+        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法修改该数据");
+        //}
+        //
+        ////不让他打卡
+        //time = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(checkInTime.getEndClockOut()));
+        //if (time < 1){
+        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法修改该数据");
+        //}
+
         int updateById = iCheckInTimeMapper.updateById(jsonParam);
         //当返回值不为1的时候判断修改失败
         if (updateById != 1){

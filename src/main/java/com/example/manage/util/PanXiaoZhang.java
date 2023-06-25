@@ -1556,7 +1556,7 @@ public class PanXiaoZhang {
 
         Duration workingHours = Duration.between(startTime, endTime); // 计算工时
         //System.out.println(workingHours.toMinutes());
-        return workingHours.toHours() + " 小时 " + workingHours.toMinutes() % 60 + " 分钟";
+        return workingHours.toHours() + " 小时 " + workingHours.toMinutes() % 60 + " 分钟" + workingHours.getSeconds() % 60 + " 秒";
     }
 
     /**
@@ -1699,7 +1699,7 @@ public class PanXiaoZhang {
 //        Date yesterday = calendar.getTime();
 //        Boolean aBoolean = compareDate(yesterday);
 //        System.out.println(aBoolean);
-        System.out.println(percent(0,1,1));
+//        System.out.println(percent(0,1,1));
 
         //List<JqPoint> ps = new ArrayList<>();
         //JqPoint jqPoint1 = new JqPoint(34.272644,117.308166);
@@ -1741,5 +1741,11 @@ public class PanXiaoZhang {
         //);
         //System.out.println(entity);
 
+
+        LocalTime startTime = LocalTime.of(9, 0,3); // 上班时间为 9:00
+        LocalTime endTime = LocalTime.of(17, 30,28); // 下班时间为 17:30
+
+        String dayTime = getDayTime(startTime, endTime);
+        System.out.println(dayTime);
     }
 }

@@ -187,8 +187,8 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                                 String format = punchingCardRecord.getWorkingAttendanceTime();
                                 String[] endSplit = format.split(":");
                                 dayTime = PanXiaoZhang.getDayTime(
-                                        LocalTime.of(Integer.valueOf(startSplit[0]), Integer.valueOf(startSplit[1])),
-                                        LocalTime.of(Integer.valueOf(endSplit[0]), Integer.valueOf(endSplit[1]))
+                                        LocalTime.of(Integer.valueOf(startSplit[0]), Integer.valueOf(startSplit[1]), Integer.valueOf(startSplit[2])),
+                                        LocalTime.of(Integer.valueOf(endSplit[0]), Integer.valueOf(endSplit[1]), Integer.valueOf(endSplit[2]))
                                 );
                             }
                             lateArrivals++;

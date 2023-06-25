@@ -41,7 +41,7 @@ public class UserInterceptor implements HandlerInterceptor {
         String requestURI = request.getRequestURI();
         log.info("账号编码:{}会话请求地址:{},token:{}",userId,requestURI,request.getHeader("token"));
         String url = "/api/error/getBack";
-        if (reglister != null && !StringUtils.isEmpty(request.getHeader("token"))) {
+        if (!ObjectUtils.isEmpty(reglister) && !reglister.equals("null") && !StringUtils.isEmpty(request.getHeader("token"))) {
             String token = request.getHeader("token");
             TokenEntity tokenEntity = TokenUtil.tokenToOut(token,session);
             if (ObjectUtils.isEmpty(tokenEntity)){

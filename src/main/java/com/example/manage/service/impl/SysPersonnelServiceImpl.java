@@ -162,17 +162,19 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                     if (sysPersonnels.size() > 0){
                         return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属区域经理" + sysPersonnels.get(0).getName());
                     }
-                }else if (roleId.equals(roleId4)){//判断经理是否重复拥有项目
-                    List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
-                    if (sysPersonnels.size() > 0){
-                        return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnels.get(0).getName());
-                    }
                 }else if (roleId.equals(manage)){//判断主管是否重复拥有项目
                     List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
                     if (sysPersonnels.size() > 0){
                         return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属主管" + sysPersonnels.get(0).getName());
                     }
                 }
+                //else if (roleId.equals(roleId4)){//判断经理是否重复拥有项目
+                //    List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
+                //    if (sysPersonnels.size() > 0){
+                //        return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnels.get(0).getName());
+                //    }
+                //}
+
                 map.put(integer * -1,new ManagementPersonnel(
                         integer,
                         jsonParam.getPersonnelCode()
@@ -205,12 +207,13 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                         if (sysPersonnels.size() > 0){
                             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属区域经理" + sysPersonnels.get(0).getName());
                         }
-                    }else if (roleId.equals(roleId4)){//判断经理是否重复拥有项目
-                        List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
-                        if (sysPersonnels.size() > 0){
-                            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnels.get(0).getName());
-                        }
                     }
+                    //else if (roleId.equals(roleId4)){//判断经理是否重复拥有项目
+                    //    List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(hashMap);
+                    //    if (sysPersonnels.size() > 0){
+                    //        return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目所属经理" + sysPersonnels.get(0).getName());
+                    //    }
+                    //}
                     //不存在进行添加
                     iManagementPersonnelMapper.insert(personnel);
                 }else if (!ObjectUtils.isEmpty(managementPersonnel) && ObjectUtils.isEmpty(personnel)){

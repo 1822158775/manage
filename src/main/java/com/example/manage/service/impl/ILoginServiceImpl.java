@@ -167,5 +167,8 @@ public class ILoginServiceImpl implements ILoginService {
         //Token token = JSONObject.parseObject(send, Token.class);
         //System.out.println(token);
         System.out.println(PanXiaoZhang.getPassword("null"));
+
+        Token parseObject = JSONObject.parseObject(PanXiaoZhang.postOpenId("o_QtX5koly4ZwFla0_cBznevoEZY"), Token.class);
+        System.out.println(parseObject);
     }
 }

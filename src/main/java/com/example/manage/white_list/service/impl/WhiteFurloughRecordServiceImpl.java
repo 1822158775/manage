@@ -311,6 +311,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
             Integer[] integers = {1,3};
             //查询职位名
             if (integers.length > 0){
+                wrapper = new QueryWrapper();
                 wrapper.in("id",integers);
                 List<SysRole> selectList = iSysRoleMapper.selectList(wrapper);
                 for (int i = 0; i < selectList.size(); i++) {
