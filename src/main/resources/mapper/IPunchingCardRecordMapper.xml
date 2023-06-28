@@ -37,12 +37,26 @@
         select
             <include refid="returnSql"/>
         from
-            <include refid="tableSql"/>
-            <include refid="relevanceSql" />
-            <include refid="whereSqlModel" />
-            <include refid="safeOrderBy"/>
-            <include refid="safeLIMIT"/>
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderByAs"/>
     </select>
+    <sql id="tableSqlAs">
+        sys_p
+    </sql>
+    <!--  子表  -->
+    <sql id="tableReturn">
+        select
+        <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </sql>
     <sql id="tableSql">
         manage.punching_card_record
     </sql>
@@ -58,7 +72,7 @@
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
-        LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSql" />.personnel_code
+        LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSqlAs" />.personnel_code
         LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
     </sql>
     <sql id="whereSqlModel">
@@ -76,5 +90,8 @@
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc
+    </sql>
+    <sql id="safeOrderByAs">
+        order by <include refid="tableSqlAs"/>.id desc
     </sql>
 </mapper>

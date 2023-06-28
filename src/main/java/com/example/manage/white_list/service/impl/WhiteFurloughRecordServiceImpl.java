@@ -559,6 +559,6 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
         }else {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"审核状态不正确");
         }
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
     }
 }

@@ -52,7 +52,7 @@
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         <choose>
-            <when test="managementId != null and managementId != '' or keyWord != null and keyWord != '' or login != null and login != ''">
+            <when test="managementId != null and managementId != '' or login != null and login != ''">
                 select
                 <include refid="returnSql"/>
                 from
@@ -73,6 +73,7 @@
                 <include refid="tableSqlAs" />
                 <include refid="relevanceSql" />
                 <include refid="whereSqlModel" />
+                <include refid="safeOrderByAs"/>
             </otherwise>
         </choose>
     </select>

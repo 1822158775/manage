@@ -167,9 +167,12 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
                     MsgEntity.CODE_ERROR
             );
         }
+        wrapper = new QueryWrapper();
+        wrapper.eq("username",phone);
+        SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
         // 发送人事
         ReturnEntity entity = PanXiaoZhang.postWechat(
-                phone,
+                personnel.getOpenId(),
                 "",
                 "",
                 sysPersonnel.getName() + "提交了离职申请",

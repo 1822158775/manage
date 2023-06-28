@@ -169,7 +169,9 @@ public class WhiteRankingListServiceImpl implements IWhiteRankingListService {
         Map<String, String> stringMap = new HashMap<>();
         //名字集合
         List<String> stringList = new ArrayList<>();
+
         List<PerformanceReportSales> salesList = iPerformanceReportSalesMapper.queryListTime(map);
+
         for (int i = 0; i < salesList.size(); i++) {
             PerformanceReportSales reportSales = salesList.get(i);
             if (ObjectUtils.isEmpty(stringMap.get(reportSales.getType()))){

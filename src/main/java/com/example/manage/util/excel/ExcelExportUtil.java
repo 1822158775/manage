@@ -472,7 +472,7 @@ public class ExcelExportUtil {
         return getExcels;
     }
     //月报表
-    public static List<GetExcel> initMonth(Map<String, String> map,String type){
+    public static List<GetExcel> initMonth(Map<String, String> map,String type,List<String> list){
         List<GetExcel> getExcels = new ArrayList<>();
         getExcels.add(new GetExcel(
                 0,
@@ -490,6 +490,10 @@ public class ExcelExportUtil {
         stringList.add("本月有效");
         stringList.add("指标");
         stringList.add("指标完成率");
+        for (int i = 0; i < list.size(); i++) {
+            String s = list.get(i);
+            stringList.add(s);
+        }
         //主要内容
         getExcels.add(new GetExcel(
                 2,

@@ -95,6 +95,8 @@ public class SysPersonnel implements Serializable {
     @TableField(exist = false)
     public Integer[] managementId;//项目组数组
     @TableField(exist = false)
+    public Integer mId;//项目组编码
+    @TableField(exist = false)
     public Integer personnelId;//人员信息
     @TableField(exist = false)
     public List<PunchingCardRecord> punchingCardRecords;//打卡信息

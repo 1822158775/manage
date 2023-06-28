@@ -54,4 +54,12 @@ public class WhiteSysPersonnelController {
             return iWhiteSysPersonnelService.methodMasterT(request, "edit");
         }
     }
+
+    // 更改个人密码
+    @PostMapping(value = "edit_password")
+    public ReturnEntity edit_password(HttpServletRequest request){
+        synchronized (this.getClass()) {
+            return iWhiteSysPersonnelService.methodMasterT(request, "edit_password");
+        }
+    }
 }

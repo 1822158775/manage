@@ -338,8 +338,11 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         if (!ObjectUtils.isEmpty(iSysPersonnelMapper.selectOne(wrapper))){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该账号已存在");
         }
-        ManagementPersonnel managementPersonnel = selectList.get(0);
-        SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+        if (ObjectUtils.isEmpty(jsonParam.getMId())){
+            ManagementPersonnel managementPersonnel = selectList.get(0);
+            jsonParam.setMId(managementPersonnel.getManagementId());
+        }
+        SysManagement management = iSysManagementMapper.selectById(jsonParam.getMId());
         if (!management.getManagementState().equals(1)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
         }
@@ -359,7 +362,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         jsonParam.setPersonnelCode(PanXiaoZhang.getID());
         //设置员工所属项目
         int insert = iManagementPersonnelMapper.insert(new ManagementPersonnel(
-                managementPersonnel.getManagementId(),
+                jsonParam.getMId(),
                 jsonParam.getPersonnelCode()
         ));
         if (insert != 1){
@@ -371,13 +374,18 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         }
         wrapper = new QueryWrapper();
         wrapper.eq("username",personnelPhone);
+        SysPersonnel selectOne = iSysPersonnelMapper.selectOne(wrapper);
+        String openId = "o_QtX5g0Eem4D41v6pR-LRXleSO4";
+        if (!ObjectUtils.isEmpty(selectOne)){
+             openId = selectOne.getOpenId();
+        }
         PanXiaoZhang.postWechatFer(
-                iSysPersonnelMapper.selectOne(wrapper).getOpenId(),
+                openId,
                 "入职信息",
                 "",
                 management.getName() + ":" + jsonParam.getName() + "提交了入职申请",
                 "",
-                urlTransfer + "?from=zn&redirect_url=" + employerList + managementPersonnel.getManagementId()
+                urlTransfer + "?from=zn&redirect_url=" + employerList + jsonParam.getMId()
         );
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"录入成功");
     }

@@ -8,10 +8,7 @@ import com.example.manage.mapper.*;
 import com.example.manage.util.JqPoint;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
-import com.example.manage.util.entity.CodeEntity;
-import com.example.manage.util.entity.MsgEntity;
-import com.example.manage.util.entity.ReturnEntity;
-import com.example.manage.util.entity.Token;
+import com.example.manage.util.entity.*;
 import com.example.manage.white_list.service.IWhitePunchingCardRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -181,9 +178,10 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该人员未关联项目组");
         }
         boolean locationInRange = false;
+        SysManagement management = new SysManagement();
         for (int i = 0; i < selectList.size(); i++) {
             ManagementPersonnel managementPersonnel = selectList.get(i);
-            SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+            management =  iSysManagementMapper.selectById(managementPersonnel.getManagementId());
             if (management.getManagementState().equals(1)) {
                 //获取项目打卡坐标
                 String[] splitSouthLatitude = management.getSouthLatitude().replaceAll("，", ",").split(",");
@@ -215,15 +213,19 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                 }
             }
         }
+        UtilEntity utilEntity = new UtilEntity();
         //返回提示语
         String msg;
         if (locationInRange){
             msg = "您已进入打卡范围";
+            utilEntity.setLocationInRange(locationInRange);
+            utilEntity.setSysManagement(management);
         }else {
             msg = "未进入打卡范围";
+            utilEntity.setLocationInRange(locationInRange);
         }
         log.info("打卡范围返回结果:{},打卡数据：{}",msg,jsonParam);
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,locationInRange,msg);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,utilEntity,msg);
     }
 
     //查询当天打卡记录
@@ -279,8 +281,14 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             punchingCardRecord.setAcCheckInTime(checkInTime);
         }
         punchingCardRecord.setSysPersonnel(personnel);
-        ManagementPersonnel managementPersonnel = selectList.get(0);
-        SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+        if (ObjectUtils.isEmpty(jsonParam.getManagementId())){
+            ManagementPersonnel managementPersonnel = selectList.get(0);
+            jsonParam.setManagementId(managementPersonnel.getManagementId());
+        }
+        SysManagement management = iSysManagementMapper.selectById(jsonParam.getManagementId());
+        if (ObjectUtils.isEmpty(management)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"项目不存在");
+        }
         punchingCardRecord.setManagement(management);
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("management_id",management.getId());
@@ -332,12 +340,12 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             return entity;
         }
 
-        String s = personnel.getId() + "check_in";
-        Object o = redisUtil.get(s);
-        if (!ObjectUtils.isEmpty(o)){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"请在" + redisUtil.getTime(s) + "秒后操作");
-        }
-        redisUtil.set(s,personnel.getPersonnelCode(),3);
+        //String s = personnel.getId() + "check_in";
+        //Object o = redisUtil.get(s);
+        //if (!ObjectUtils.isEmpty(o)){
+        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"请在" + redisUtil.getTime(s) + "秒后操作");
+        //}
+        //redisUtil.set(s,personnel.getPersonnelCode(),3);
 
         boolean locationInRange = false;
         //查询人员所在项目组
@@ -383,6 +391,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                 }
             }
         }
+
         if (!locationInRange){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"不在服务范围内，打卡失败");
         }
@@ -403,7 +412,10 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         String endClockOut = "";//下班打卡时间结束时间
         String checkInTimeName = "";//打卡项目
         //查询打卡时间
-        CheckInTime checkInTime = iCheckInTimeMapper.selectById(jsonParam.getCheckInId());
+        wrapper = new QueryWrapper();
+        wrapper.eq("id",jsonParam.getCheckInId());
+        wrapper.eq("management_id",jsonParam.getManagement().getId());
+        CheckInTime checkInTime = iCheckInTimeMapper.selectOne(wrapper);
         if (ObjectUtils.isEmpty(checkInTime)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"未设置该类型的打卡时间");
         }
