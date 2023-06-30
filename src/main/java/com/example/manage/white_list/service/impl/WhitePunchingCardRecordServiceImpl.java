@@ -326,7 +326,10 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         //获取用户openID
         String token = request.getHeader("Http-X-User-Access-Token");
         Token parseObject = JSONObject.parseObject(PanXiaoZhang.postOpenId(token), Token.class);
-        String openid = parseObject.getResponse().getOpenid();
+        String openid = "未获取到用户的openId";
+        if (!ObjectUtils.isEmpty(parseObject.getResponse())){
+            openid = parseObject.getResponse().getOpenid();
+        }
         jsonParam.setOpenId(openid);
 
         SysPersonnel personnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
@@ -340,12 +343,12 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             return entity;
         }
 
-        //String s = personnel.getId() + "check_in";
-        //Object o = redisUtil.get(s);
-        //if (!ObjectUtils.isEmpty(o)){
-        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"请在" + redisUtil.getTime(s) + "秒后操作");
-        //}
-        //redisUtil.set(s,personnel.getPersonnelCode(),3);
+        String s = personnel.getId() + "check_in";
+        Object o = redisUtil.get(s);
+        if (!ObjectUtils.isEmpty(o)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"请在" + redisUtil.getTime(s) + "秒后操作");
+        }
+        redisUtil.set(s,personnel.getPersonnelCode(),3);
 
         boolean locationInRange = false;
         //查询人员所在项目组

@@ -168,17 +168,17 @@ public class ExcelExportUtil {
                     }
                     // 创建工作表
                     sh.setDefaultRowHeight((short) 500);
-                    int fontSize = 0;
-                    if (!ObjectUtils.isEmpty(excel.getName()) && ObjectUtils.isEmpty(excel.getWidthSwitch())){
-                        fontSize = (excel.getName().length() - 5) * 500;
-                        if (fontSize > 0){
-                            fontSize = fontSize + 3000;
-                        }
-                    }
-                    if (fontSize == 0){
-                        fontSize = 3000;
-                    }
-                    sh.setColumnWidth(excel.getFirstCol(), fontSize);
+                    //int fontSize = 0;
+                    //if (!ObjectUtils.isEmpty(excel.getName()) && ObjectUtils.isEmpty(excel.getWidthSwitch())){
+                    //    fontSize = (excel.getName().length() - 5) * 500;
+                    //    if (fontSize > 0){
+                    //        fontSize = fontSize + 3000;
+                    //    }
+                    //}
+                    //if (fontSize == 0){
+                    //    fontSize = 3000;
+                    //}
+                    //sh.setColumnWidth(excel.getFirstCol(), fontSize);
                     //创建单元格，指定起始列号，从0开始
                     Cell cell = headRow.createCell(excel.getFirstCol());
                     //设置单元格内容

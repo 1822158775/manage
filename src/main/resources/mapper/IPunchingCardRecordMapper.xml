@@ -35,17 +35,17 @@
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
-            <include refid="returnSql"/>
+        <include refid="returnSql"/>
         from
         (<include refid="tableReturn" />)
         as
         <include refid="tableSqlAs" />
-        <include refid="relevanceSql" />
+        <include refid="relevanceSqlAs" />
         <include refid="whereSqlModel" />
         <include refid="safeOrderByAs"/>
     </select>
     <sql id="tableSqlAs">
-        sys_p
+        sys_p_c_r
     </sql>
     <!--  子表  -->
     <sql id="tableReturn">
@@ -62,7 +62,7 @@
     </sql>
     <!--  返回  -->
     <sql id="returnSql">
-        <include refid="tableSql"/>.*
+        <include refid="tableSqlAs"/>.*
         ,sys_management.id as m_id
         ,sys_management.name as m_name
         ,sys_management.project_address as m_project_address
@@ -71,8 +71,13 @@
         ,sys_management.management_state as m_management_state
     </sql>
     <!--  进行关联表  -->
-    <sql id="relevanceSql">
+    <sql id="relevanceSqlAs">
         LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSqlAs" />.personnel_code
+        LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSql" />.personnel_code
         LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
     </sql>
     <sql id="whereSqlModel">

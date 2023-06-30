@@ -34,14 +34,14 @@ public class UserInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HttpSession session = request.getSession();
-        session.setMaxInactiveInterval(240 * 60);
         Object reglister = session.getAttribute("user");
-        String roleId = String.valueOf(session.getAttribute("roleId"));
-        String userId = String.valueOf(reglister);
-        String requestURI = request.getRequestURI();
-        log.info("账号编码:{}会话请求地址:{},token:{}",userId,requestURI,request.getHeader("token"));
         String url = "/api/error/getBack";
         if (!ObjectUtils.isEmpty(reglister) && !reglister.equals("null") && !StringUtils.isEmpty(request.getHeader("token"))) {
+            String roleId = String.valueOf(session.getAttribute("roleId"));
+            String userId = String.valueOf(reglister);
+            String requestURI = request.getRequestURI();
+            log.info("账号编码:{}会话请求地址:{},token:{}",userId,requestURI,request.getHeader("token"));
+            session.setMaxInactiveInterval(240 * 60);
             String token = request.getHeader("token");
             TokenEntity tokenEntity = TokenUtil.tokenToOut(token,session);
             if (ObjectUtils.isEmpty(tokenEntity)){
