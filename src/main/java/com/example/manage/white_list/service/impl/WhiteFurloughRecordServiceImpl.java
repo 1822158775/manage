@@ -211,6 +211,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
                 "'" + DateFormatUtils.format(jsonParam.getEndTime(),PanXiaoZhang.yMdHms()) + "')" +
                 "AND\n" +
                 "personnel_id = "+ sysPersonnel.getId());
+        wrapper.ne("reissue_state","refuse");
         List<FurloughRecord> furloughRecords = iFurloughRecordMapper.selectList(wrapper);
         if (furloughRecords.size() > 0){
             return new ReturnEntity(CodeEntity.CODE_ERROR,DateFormatUtils.format(jsonParam.getStartTime(), PanXiaoZhang.yMd()) + "~" + DateFormatUtils.format(jsonParam.getEndTime(), PanXiaoZhang.yMd()) + "已有请假记录");
