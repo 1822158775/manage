@@ -53,4 +53,16 @@ public class WhitePunchingCardRecordController {
     public ReturnEntity area(HttpServletRequest request){
         return iWhitePunchingCardRecordService.methodMaster(request,"area");
     }
+
+    // 查询该部门打卡情况
+    @PostMapping(value = "clocking_situation")
+    public ReturnEntity clocking_situation(HttpServletRequest request){
+        return iWhitePunchingCardRecordService.methodMaster(request,"clocking_situation");
+    }
+
+    // 查询该部门人员打卡情况
+    @PostMapping(value = "clocking_situation_particulars")
+    public ReturnEntity clocking_situation_particulars(HttpServletRequest request){
+        return iWhitePunchingCardRecordService.methodMaster(request,"clocking_situation_particulars");
+    }
 }

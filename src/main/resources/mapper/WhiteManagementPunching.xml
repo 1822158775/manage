@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.WhiteManagementPunching">
+    <resultMap id="entity" type="com.example.manage.entity.number.ManagementPunching">
+        <result column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="personnel_id" property="personnelId" />
+        <result column="personnel_name" property="personnelName" />
+        <result column="punch_in_count" property="punchInCount" />
+        <result column="punch_in_state" property="punchInState" />
+        <result column="clock_in_state" property="clockInState" />
+        <result column="employment_status" property="employmentStatus"/>
+        <result column="number_of_leave" property="numberOfLeave"/>
+    </resultMap>
+    <!--  查询数量  -->
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        SELECT
+        <include refid="tableSql" />.id as id,
+        <include refid="tableSql" />.`name` as `name`,
+        <include refid="tableSqlSysPersonnel" />.id as personnel_id,
+        <include refid="tableSqlSysPersonnel" />.`name` as personnel_name,
+        <include refid="tableSqlSysPersonnel" />.`employment_status` as employment_status,
+        COUNT(DISTINCT <include refid="tableSqlPunchingCardRecord" />.id) as punch_in_count,
+        IFNULL(<include refid="tableSqlPunchingCardRecord" />.working_clock_in_state, '缺勤') as punch_in_state,
+        IFNULL(<include refid="tableSqlPunchingCardRecord" />.closed_clock_in_state, '下班未打卡') as clock_in_state,
+        COUNT(DISTINCT <include refid="tableSqlFurloughRecord" />.id) as number_of_leave
+        FROM
+        <include refid="tableSql" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+        <include refid="safeGroupBy" />
+    </select>
+    <!--  主表  -->
+    <sql id="tableSql">
+        manage.sys_management
+    </sql>
+    <!--  人员关联项目表  -->
+    <sql id="tableSqlManagementPersonnel">
+        manage.management_personnel
+    </sql>
+    <!--  人员表  -->
+    <sql id="tableSqlSysPersonnel">
+        manage.sys_personnel
+    </sql>
+    <!--  打卡表  -->
+    <sql id="tableSqlPunchingCardRecord">
+        manage.punching_card_record
+    </sql>
+    <!--  请假表  -->
+    <sql id="tableSqlFurloughRecord">
+        manage.furlough_record
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN <include refid="tableSqlManagementPersonnel" /> ON <include refid="tableSql" />.id = <include refid="tableSqlManagementPersonnel" />.management_id
+        LEFT JOIN <include refid="tableSqlSysPersonnel" /> ON <include refid="tableSqlManagementPersonnel" />.personnel_code = <include refid="tableSqlSysPersonnel" />.personnel_code
+        LEFT JOIN <include refid="tableSqlPunchingCardRecord" /> ON <include refid="tableSqlPunchingCardRecord" />.personnel_code = <include refid="tableSqlSysPersonnel" />.personnel_code
+        <include refid="todayStartCustom" />
+        LEFT JOIN <include refid="tableSqlFurloughRecord" /> ON <include refid="tableSqlFurloughRecord" />.personnel_id = <include refid="tableSqlSysPersonnel" />.id
+        <include refid="furloughRecordStartCustom" />
+        <include refid="furloughRecordState" />
+    </sql>
+    <!--  查询条件  -->
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="inManagementId != null and inManagementId != ''">
+            and <include refid="tableSql" />.id in
+            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test="inRoleId != null and inRoleId != ''">
+            and <include refid="tableSqlSysPersonnel" />.role_id in
+            <foreach collection="inRoleId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <include refid="managementState" />
+    </sql>
+    <!--  进行分组  -->
+    <sql id="safeGroupBy">
+        GROUP BY <include refid="tableSql" />.id,
+        <include refid="tableSqlPunchingCardRecord" />.working_clock_in_state,
+        <include refid="tableSqlPunchingCardRecord" />.closed_clock_in_state,
+        <include refid="tableSqlSysPersonnel" />.id
+    </sql>
+    <!--  固定条件  -->
+    <sql id="PunchingCardRecordIsNotNull">
+        AND <include refid="tableSqlPunchingCardRecord" />.id IS NOT NULL
+    </sql>
+    <!--  自定义日期  -->
+    <sql id="todayStartCustom">
+        AND <include refid="tableSqlPunchingCardRecord" />.clocking_day_time BETWEEN #{startTime} AND #{endTime}
+    </sql>
+    <!--  自定义日期  -->
+    <sql id="furloughRecordStartCustom">
+        AND (<include refid="tableSqlFurloughRecord" />.start_time
+        BETWEEN #{startTime} AND #{endTime}
+        OR
+        <include refid="tableSqlFurloughRecord" />.end_time
+        BETWEEN #{startTime} AND #{endTime})
+    </sql>
+    <!--  项目状态  -->
+    <sql id="managementState">
+        AND <include refid="tableSql" />.management_state = 1
+    </sql>
+    <!--  请假状态  -->
+    <sql id="furloughRecordState">
+        AND <include refid="tableSqlFurloughRecord" />.reissue_state = 'agree'
+    </sql>
+</mapper>

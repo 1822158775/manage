@@ -281,7 +281,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                                     "",
                                     sysPersonnel.getName() + "提交了" + DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()) + "的补卡申请",
                                     "",
-                                    urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromDispatchVerify=true"
+                                    urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromRepairCheckverify=true"
                             );
                         }
                     }
@@ -545,7 +545,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
         //从最大的开始审核
         jsonParam.setMaxNumber(0);
         //设置审核职位
-        Integer[] integers = {1,3};
+        Integer[] integers = {1,3,4};
         //存储map
         Map<Integer, SysRole> mapRole = new HashMap();
         //存储通知的人
@@ -562,32 +562,34 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                     mapPersonnel.clear();
                 }
                 List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(sysRole.getId(), management.getId());
-                if (sysPersonnels.size() < 1) {
-                    return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
-                }
-                SysPersonnel personnel = sysPersonnels.get(0);
-                if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))){
-                    //添加当前项目主管
-                    Integer id = personnel.getId();
-                    //添加默认审核状态
-                    String pending = "pending";
-                    //记录审核人审核人
-                    mapPersonnel.put(personnel.getId(),personnel);
-                    int insert = iCardReplacementReimbursementMapper.insert(new CardReplacementReimbursement(
-                            null,
-                            id,
-                            null,
-                            null,
-                            jsonParam.getReissueCode(),
-                            pending,
-                            sysRole.getLevelSorting()
-                    ));
-                    //如果返回值不能鱼1则判断失败
-                    if (insert != 1){
-                        return new ReturnEntity(
-                                CodeEntity.CODE_ERROR,
-                                "添加审核人" + personnel.getName() + "失败"
-                        );
+                //if (sysPersonnels.size() < 1) {
+                //    return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
+                //}
+                for (int j = 0; j < sysPersonnels.size(); j++) {
+                    SysPersonnel personnel = sysPersonnels.get(j);
+                    if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))){
+                        //添加当前项目主管
+                        Integer id = personnel.getId();
+                        //添加默认审核状态
+                        String pending = "pending";
+                        //记录审核人审核人
+                        mapPersonnel.put(personnel.getId(),personnel);
+                        int insert = iCardReplacementReimbursementMapper.insert(new CardReplacementReimbursement(
+                                null,
+                                id,
+                                null,
+                                null,
+                                jsonParam.getReissueCode(),
+                                pending,
+                                sysRole.getLevelSorting()
+                        ));
+                        //如果返回值不能鱼1则判断失败
+                        if (insert != 1){
+                            return new ReturnEntity(
+                                    CodeEntity.CODE_ERROR,
+                                    "添加审核人" + personnel.getName() + "失败"
+                            );
+                        }
                     }
                 }
             }
@@ -614,7 +616,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                     "",
                     sysPersonnel.getName() + "提交了" + DateFormatUtils.format(jsonParam.getReissueTime(),PanXiaoZhang.yMd()) + "补卡信息",
                     "",
-                    urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromDispatchVerify=true"
+                    urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromRepairCheckverify=true"
             );
         });
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,MsgEntity.CODE_SUCCEED);

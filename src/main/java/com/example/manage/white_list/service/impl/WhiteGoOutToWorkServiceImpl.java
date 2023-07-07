@@ -246,7 +246,7 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
                                     "",
                                     sysPersonnel.getName() + "提交了的出差信息",
                                     "",
-                                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
+                                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromWorkOutVerify=true"
                             );
                         }
                     }
@@ -470,7 +470,7 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
                         "",
                         sysPersonnel.getName() + "提交了出差信息",
                         "",
-                        urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
+                        urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromWorkOutVerify=true"
                 );
             });
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");

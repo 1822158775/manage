@@ -1731,21 +1731,21 @@ public class PanXiaoZhang {
         //System.out.println(send);
 
         //Map<String,Integer> map = new HashMap<String,Integer>();
-        //ReturnEntity entity = PanXiaoZhang.postWechatFer(
-        //        "o_QtX5m2Zb6wAt_xqtr1gen-Jghk1234567",
-        //        "",
-        //        "",
-        //        "补卡",
-        //        "",
-        //        "/pages/guide/guide?from=zn&redirect_url=/packageZn/pages/repair_check_list/repair_check_list?fromDispatchVerify=true"
-        //);
-        //System.out.println(entity);
+        ReturnEntity entity = PanXiaoZhang.postWechatFer(
+                "o_QtX5qJzKGc3YmCG2eUb-v5ZEm8",
+                "",
+                "",
+                "补卡",
+                "",
+                "/pages/guide/guide?from=zn&redirect_url=/packageZn/pages/repair_check_list/repair_check_list?fromDispatchVerify=true"
+        );
+        System.out.println(entity);
 
 
-        LocalTime startTime = LocalTime.of(9, 0,3); // 上班时间为 9:00
-        LocalTime endTime = LocalTime.of(17, 30,28); // 下班时间为 17:30
-
-        String dayTime = getDayTime(startTime, endTime);
-        System.out.println(dayTime);
+        //LocalTime startTime = LocalTime.of(9, 0,3); // 上班时间为 9:00
+        //LocalTime endTime = LocalTime.of(17, 30,28); // 下班时间为 17:30
+        //
+        //String dayTime = getDayTime(startTime, endTime);
+        //System.out.println(dayTime);
     }
 }

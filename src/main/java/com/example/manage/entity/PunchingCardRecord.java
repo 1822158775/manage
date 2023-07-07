@@ -86,6 +86,8 @@ public class PunchingCardRecord implements Serializable {
     @TableField(exist = false)
     public Integer personnelId;//用户编码
     @TableField(exist = false)
+    public Integer sysPersonnelId;//用户编码
+    @TableField(exist = false)
     public String openId;//当前打卡的openid
     @TableField(exist = false)
     public Double x;//x
@@ -109,6 +111,15 @@ public class PunchingCardRecord implements Serializable {
 
     @TableField(exist = false)
     public CheckInTime acCheckInTime;//选中打卡类型
+
+    @TableField(exist = false)
+    public String startTime;//开始时间
+
+    @TableField(exist = false)
+    public String endTime;//结束时间
+
+    @TableField(exist = false)
+    public List<FurloughRecord> furloughRecords;//请假
 
     public PunchingCardRecord() {
     }

@@ -24,8 +24,8 @@ magicalcoder:
           uploadDiskFolder:
           requestPrefix: upload
           fileExtraAddPrefix: upload/
-#          ap: D:\home\equity\manage\target\classes\upload\
-          ap: /www/springboot/manage/upload/
+          ap: D:\home\equity\manage\target\classes\upload\
+#          ap: /www/springboot/manage/upload/
       useAliyunOss:
         open: false
         returnUrl: true

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.WhitePersonnelDetails">
+    <resultMap id="entity" type="com.example.manage.entity.PunchingCardRecord">
+        <result column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="personnel_code" property="personnelCode" />
+        <result column="clock_in_time" property="clockInTime" />
+        <result column="management_id" property="managementId" />
+        <result column="working_ago_open_id" property="workingAgoOpenId" />
+        <result column="working_later_open_id" property="workingLaterOpenId" />
+        <result column="working_clock_in_state" property="workingClockInState" />
+        <result column="working_attendance_time" property="workingAttendanceTime" />
+        <result column="closed_ago_open_id" property="closedAgoOpenId" />
+        <result column="closed_later_open_id" property="closedLaterOpenId" />
+        <result column="closed_clock_in_state" property="closedClockInState" />
+        <result column="closed_attendance_time" property="closedAttendanceTime" />
+        <result column="clocking_day_time" property="clockingDayTime" />
+        <result column="management_start_time" property="managementStartTime" />
+        <result column="management_end_time" property="managementEndTime" />
+        <result column="check_in_time_name" property="checkInTimeName" />
+        <collection property="furloughRecords" ofType="com.example.manage.entity.FurloughRecord">
+            <result column="f_start_time" property="startTime" />
+            <result column="f_end_time" property="endTime" />
+        </collection>
+    </resultMap>
+
+    <!--  查询数量  -->
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        SELECT
+            <include refid="tableSqlSysPersonnel" />.`id`,
+            <include refid="tableSqlSysPersonnel" />.`name`,
+            <include refid="tableSqlPunchingCardRecord" />.working_clock_in_state,
+            <include refid="tableSqlPunchingCardRecord" />.working_attendance_time,
+            <include refid="tableSqlPunchingCardRecord" />.closed_clock_in_state,
+            <include refid="tableSqlPunchingCardRecord" />.closed_attendance_time,
+            <include refid="tableSqlPunchingCardRecord" />.check_in_time_name,
+            <include refid="tableSqlPunchingCardRecord" />.management_start_time,
+            <include refid="tableSqlPunchingCardRecord" />.management_end_time,
+            <include refid="tableSqlPunchingCardRecord" />.clocking_day_time,
+            <include refid="tableSqlFurloughRecord" />.start_time as f_start_time,
+            <include refid="tableSqlFurloughRecord" />.end_time as f_end_time
+        FROM
+        <include refid="tableSqlSysPersonnel" />
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy" />
+    </select>
+
+    <!--  主表  -->
+    <sql id="tableSql">
+        manage.sys_management
+    </sql>
+    <!--  人员关联项目表  -->
+    <sql id="tableSqlManagementPersonnel">
+        manage.management_personnel
+    </sql>
+    <!--  人员表  -->
+    <sql id="tableSqlSysPersonnel">
+        manage.sys_personnel
+    </sql>
+    <!--  打卡表  -->
+    <sql id="tableSqlPunchingCardRecord">
+        manage.punching_card_record
+    </sql>
+    <!--  请假表  -->
+    <sql id="tableSqlFurloughRecord">
+        manage.furlough_record
+    </sql>
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN <include refid="tableSqlManagementPersonnel" /> ON <include refid="tableSqlManagementPersonnel" />.personnel_code = <include refid="tableSqlSysPersonnel" />.personnel_code
+        LEFT JOIN <include refid="tableSql" /> ON <include refid="tableSqlManagementPersonnel" />.management_id = <include refid="tableSql" />.id
+        LEFT JOIN <include refid="tableSqlPunchingCardRecord" /> ON <include refid="tableSqlPunchingCardRecord" />.personnel_code = <include refid="tableSqlSysPersonnel" />.personnel_code
+        <include refid="todayStartCustom" />
+        LEFT JOIN <include refid="tableSqlFurloughRecord" /> ON <include refid="tableSqlFurloughRecord" />.personnel_id = <include refid="tableSqlSysPersonnel" />.id
+        <include refid="furloughRecordStartCustom" />
+        <include refid="furloughRecordState" />
+    </sql>
+    <!--  自定义日期  -->
+    <sql id="todayStartCustom">
+        AND <include refid="tableSqlPunchingCardRecord" />.clocking_day_time BETWEEN #{startTime} AND #{endTime}
+    </sql>
+    <!--  查询条件  -->
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="managementId != null and managementId != ''">
+            and <include refid="tableSql" />.id = #{managementId}
+        </if>
+
+        <if test="sysPersonnelId != null and sysPersonnelId != ''">
+            and <include refid="tableSqlSysPersonnel" />.id = #{sysPersonnelId}
+        </if>
+
+        <if test="inRoleId != null and inRoleId != ''">
+            and <include refid="tableSqlSysPersonnel" />.role_id in
+            <foreach collection="inRoleId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <!--  自定义日期  -->
+    <sql id="furloughRecordStartCustom">
+        AND (<include refid="tableSqlFurloughRecord" />.start_time
+        BETWEEN #{startTime} AND #{endTime}
+        OR
+        <include refid="tableSqlFurloughRecord" />.end_time
+        BETWEEN #{startTime} AND #{endTime})
+    </sql>
+    <!--  请假状态  -->
+    <sql id="furloughRecordState">
+        AND <include refid="tableSqlFurloughRecord" />.reissue_state = 'agree'
+    </sql>
+    <!--  排序  -->
+    <sql id="safeOrderBy">
+        order by
+        <include refid="tableSqlPunchingCardRecord"/>.clocking_day_time desc
+        ,<include refid="tableSqlFurloughRecord"/>.start_time desc
+        ,<include refid="tableSqlFurloughRecord"/>.end_time desc
+        ,<include refid="tableSqlPunchingCardRecord"/>.working_attendance_time desc
+    </sql>
+
+</mapper>

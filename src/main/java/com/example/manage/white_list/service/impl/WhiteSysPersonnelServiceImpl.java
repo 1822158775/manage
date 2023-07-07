@@ -373,20 +373,24 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"员工录入失败");
         }
         wrapper = new QueryWrapper();
-        wrapper.eq("username",personnelPhone);
-        SysPersonnel selectOne = iSysPersonnelMapper.selectOne(wrapper);
-        String openId = "o_QtX5g0Eem4D41v6pR-LRXleSO4";
-        if (!ObjectUtils.isEmpty(selectOne)){
-             openId = selectOne.getOpenId();
+        String[] strings = {personnelPhone, "zgceshi"};
+        wrapper.in("username",strings);
+        List<SysPersonnel> list = iSysPersonnelMapper.selectList(wrapper);
+        for (int i = 0; i < list.size(); i++) {
+            SysPersonnel selectOne = list.get(i);
+            String openId = "o_QtX5g0Eem4D41v6pR-LRXleSO4";
+            if (!ObjectUtils.isEmpty(selectOne)){
+                openId = selectOne.getOpenId();
+            }
+            PanXiaoZhang.postWechatFer(
+                    openId,
+                    "入职信息",
+                    "",
+                    management.getName() + ":" + jsonParam.getName() + "提交了入职申请",
+                    "",
+                    urlTransfer + "?from=zn&redirect_url=" + employerList + jsonParam.getMId()
+            );
         }
-        PanXiaoZhang.postWechatFer(
-                openId,
-                "入职信息",
-                "",
-                management.getName() + ":" + jsonParam.getName() + "提交了入职申请",
-                "",
-                urlTransfer + "?from=zn&redirect_url=" + employerList + jsonParam.getMId()
-        );
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"录入成功");
     }
 

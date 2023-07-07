@@ -309,7 +309,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
             //添加项目名称
             jsonParam.setManagementName(management.getName());
             //设置审核职位
-            Integer[] integers = {1,3};
+            Integer[] integers = {1,3,4};
             //查询职位名
             if (integers.length > 0){
                 wrapper = new QueryWrapper();
@@ -323,32 +323,34 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
                         mapPersonnel.clear();
                     }
                     List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(sysRole.getId(), management.getId());
-                    if (sysPersonnels.size() < 1) {
-                        return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
-                    }
-                    SysPersonnel personnel = sysPersonnels.get(0);
-                    if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))){
-                        //添加当前项目主管
-                        Integer id = personnel.getId();
-                        //添加默认审核状态
-                        String pending = "pending";
-                        //记录审核人审核人
-                        mapPersonnel.put(personnel.getId(),personnel);
-                        int insert = iFurloughReimbursementMapper.insert(new FurloughReimbursement(
-                                null,
-                                id,
-                                null,
-                                null,
-                                jsonParam.getReissueCode(),
-                                pending,
-                                sysRole.getLevelSorting()
-                        ));
-                        //如果返回值不能鱼1则判断失败
-                        if (insert != 1){
-                            return new ReturnEntity(
-                                    CodeEntity.CODE_ERROR,
-                                    "添加审核人" + personnel.getName() + "失败"
-                            );
+                    //if (sysPersonnels.size() < 1) {
+                    //    return new ReturnEntity(CodeEntity.CODE_ERROR, "当前项目现没有" + sysRole.getName() + "无法提交");
+                    //}
+                    for (int j = 0; j < sysPersonnels.size(); j++) {
+                        SysPersonnel personnel = sysPersonnels.get(j);
+                        if (ObjectUtils.isEmpty(mapPersonnel.get(personnel.getId()))){
+                            //添加当前项目主管
+                            Integer id = personnel.getId();
+                            //添加默认审核状态
+                            String pending = "pending";
+                            //记录审核人审核人
+                            mapPersonnel.put(personnel.getId(),personnel);
+                            int insert = iFurloughReimbursementMapper.insert(new FurloughReimbursement(
+                                    null,
+                                    id,
+                                    null,
+                                    null,
+                                    jsonParam.getReissueCode(),
+                                    pending,
+                                    sysRole.getLevelSorting()
+                            ));
+                            //如果返回值不能鱼1则判断失败
+                            if (insert != 1){
+                                return new ReturnEntity(
+                                        CodeEntity.CODE_ERROR,
+                                        "添加审核人" + personnel.getName() + "失败"
+                                );
+                            }
                         }
                     }
                 }
@@ -391,7 +393,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
                     "",
                     sysPersonnel.getName() + "提交了请假信息",
                     "",
-                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
+                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromRestVerify=true"
             );
         });
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");
@@ -493,7 +495,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
                                     "",
                                     sysPersonnel.getName() + "提交了的请假信息",
                                     "",
-                                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
+                                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromRestVerify=true"
                             );
                         }
                     }

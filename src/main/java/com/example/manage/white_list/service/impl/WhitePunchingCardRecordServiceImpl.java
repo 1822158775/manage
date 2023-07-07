@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.PunchingCardRecordNotNull;
+import com.example.manage.entity.number.ManagementPunching;
+import com.example.manage.entity.number.ManagementPunchingNumber;
 import com.example.manage.mapper.*;
 import com.example.manage.util.JqPoint;
 import com.example.manage.util.PanXiaoZhang;
@@ -25,10 +27,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @avthor 潘小章
@@ -65,6 +64,15 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
 
     @Resource
     private RedisUtil redisUtil;
+
+    @Resource
+    private WhiteManagementPunching whiteManagementPunching;
+
+    @Resource
+    private ISysRoleMapper iSysRoleMapper;
+
+    @Resource
+    private WhitePersonnelDetails whitePersonnelDetails;
 
     //方法总管外加事务
     @Transactional(rollbackFor = Exception.class)
@@ -105,12 +113,293 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                 return cat_list(request);
             }else if (name.equals("cat_day")){
                 return cat_day(request);
+            }else if (name.equals("clocking_situation")){
+                return clocking_situation(request);
+            }else if (name.equals("clocking_situation_particulars")){
+                return clocking_situation_particulars(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
+    }
+    
+    //关联项目组打卡情况
+    private ReturnEntity clocking_situation_particulars(HttpServletRequest request) throws IOException {
+        PunchingCardRecord jsonParam = PanXiaoZhang.getJSONParam(request, PunchingCardRecord.class);
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(
+                jsonParam,
+                new PunchingCardRecordNotNull(
+                        "",
+                        "",
+                        "",
+                        "",
+                        "isNotNullAndIsLengthNot0",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "isNotNullAndIsLengthNot0",
+                        "",
+                        "",
+                        ""
+                ));
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+        if (ObjectUtils.isEmpty(jsonParam.getPersonnelId())){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        if (ObjectUtils.isEmpty(sysPersonnel)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该人员不存在");
+        }
+        SysRole sysRole = iSysRoleMapper.selectById(sysPersonnel.getRoleId());
+        if (sysRole.getLevelSorting() > 3){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"权限不足");
+        }
+
+        String thisStartTime = jsonParam.getStartTime();
+        if (ObjectUtils.isEmpty(thisStartTime)){
+            thisStartTime = DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
+        }
+
+        String thisEndTime = jsonParam.getEndTime();
+        if (ObjectUtils.isEmpty(thisEndTime)){
+            thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 0);
+        }
+
+        Long dayTime = PanXiaoZhang.getDayTime(String.valueOf(thisStartTime), String.valueOf(thisEndTime));
+
+        if (dayTime > 31){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"查询天数最多一个月");
+        }
+
+        if (dayTime < 0){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"开始时间不可以大于结束时间");
+        }
+
+        Map map = new HashMap();
+        map.put("startTime",thisStartTime + " 00:00:00");
+        map.put("endTime",thisEndTime + " 23:59:59");
+        map.put("managementId",jsonParam.getManagementId());
+        map.put("inRoleId",new Integer[]{1,5});
+        map.put("sysPersonnelId",jsonParam.getSysPersonnelId());
+        List<PunchingCardRecord> recordList = whitePersonnelDetails.queryAll(map);
+        if (!ObjectUtils.isEmpty(jsonParam.getSysPersonnelId())){
+            List<String> days = PanXiaoZhang.getDays(thisStartTime, thisEndTime);
+            //存储数据内容
+            Map<String, PunchingCardRecord> recordMap = new HashMap<>();
+            for (int i = 0; i < recordList.size(); i++) {
+                PunchingCardRecord punchingCardRecord = recordList.get(i);
+                recordMap.put(punchingCardRecord.getClockingDayTime(),punchingCardRecord);
+            }
+            recordList.clear();
+            for (int i = 0; i < days.size(); i++) {
+                String s = days.get(i);
+                PunchingCardRecord punchingCardRecord = recordMap.get(s);
+                if (ObjectUtils.isEmpty(punchingCardRecord)){
+                    PunchingCardRecord cardRecord = new PunchingCardRecord();
+                    cardRecord.setClockingDayTime(s);
+                    recordList.add(cardRecord);
+                }else {
+                    recordList.add(punchingCardRecord);
+                }
+            }
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED, recordList,"");
+    }
+
+    //关联项目组打卡情况
+    private ReturnEntity clocking_situation(HttpServletRequest request) throws IOException {
+        PunchingCardRecord jsonParam = PanXiaoZhang.getJSONParam(request, PunchingCardRecord.class);
+        if (ObjectUtils.isEmpty(jsonParam.getPersonnelId())){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        if (ObjectUtils.isEmpty(sysPersonnel)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该人员不存在");
+        }
+        SysRole sysRole = iSysRoleMapper.selectById(sysPersonnel.getRoleId());
+        if (sysRole.getLevelSorting() > 3){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"权限不足");
+        }
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+        List<ManagementPersonnel> selectList = iManagementPersonnelMapper.selectList(wrapper);
+
+        ArrayList<Integer> integerArrayList = new ArrayList<>();
+
+        for (int i = 0; i < selectList.size(); i++) {
+            integerArrayList.add(selectList.get(i).getManagementId());
+        }
+
+        if (selectList.size() < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联项目组");
+        }
+
+        String thisStartTime = jsonParam.getStartTime();
+        if (ObjectUtils.isEmpty(thisStartTime)){
+            thisStartTime = DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
+        }
+
+        String thisEndTime = jsonParam.getEndTime();
+        if (ObjectUtils.isEmpty(thisEndTime)){
+            thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 0);
+        }
+
+        Long dayTime = PanXiaoZhang.getDayTime(String.valueOf(thisStartTime), String.valueOf(thisEndTime));
+
+        if (dayTime > 31){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"查询天数最多一个月");
+        }
+
+        if (dayTime < 0){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"开始时间不可以大于结束时间");
+        }
+        Map map = new HashMap();
+        map.put("startTime",thisStartTime + " 00:00:00");
+        map.put("endTime",thisEndTime + " 23:59:59");
+        map.put("inManagementId",integerArrayList.toArray(new Integer[integerArrayList.size()]));
+        map.put("inRoleId",new Integer[]{1,5});
+        List<ManagementPunching> managementPunchings = whiteManagementPunching.queryAll(map);
+        //存储打卡状态
+        String[] stringList = {"迟到", "早退"};
+        //存储相关数量
+        Map<String, Integer> integerMap = new HashMap<>();
+        //存储名称相关数据
+        Map<String, String> stringMap = new HashMap<>();
+        //设置采集的数据
+        for (int i = 0; i < stringList.length; i++) {
+            stringMap.put(stringList[i],stringList[i]);
+        }
+        //存储数据
+        Map<String, ManagementPunchingNumber> punchingNumberMap = new HashMap<>();
+        for (int i = 0; i < managementPunchings.size(); i++) {
+            ManagementPunching managementPunching = managementPunchings.get(i);
+            //名称key
+            String nameKey = managementPunching.getId() + "-name";
+            //存储项目名称
+            String managementName = stringMap.get(nameKey);
+            //判断是否存在
+            if (ObjectUtils.isEmpty(managementName)){
+                stringMap.put(nameKey,managementPunching.getName());
+            }
+            if (!managementPunching.getPunchInState().equals("上班未打卡") && managementPunching.getPunchInCount() > 0){
+                //用户key
+                String userId = managementPunching.getId() + "-" + managementPunching.getPersonnelId() + "-punchIn";
+                //项目实际签到人数
+                String punchInKey = managementPunching.getId() + "-punchIn";
+                //存储出勤人数
+                Integer integer = integerMap.get(userId);
+                if (ObjectUtils.isEmpty(integer)){
+                    integerMap.put(userId,1);
+                    integerMap.put(punchInKey,ObjectUtils.isEmpty(integerMap.get(punchInKey)) ? managementPunching.getPunchInCount() : (integerMap.get(punchInKey) + managementPunching.getPunchInCount()));
+                }
+            }
+            //项目组人数
+            if (managementPunching.getEmploymentStatus().equals(1)){
+                //用户key
+                String userId = managementPunching.getId() + "-" + managementPunching.getPersonnelId() + "-employment";
+                //项目实际签到人数
+                String punchInKey = managementPunching.getId() + "-employment";
+                //存储出勤人数
+                Integer integer = integerMap.get(userId);
+                if (ObjectUtils.isEmpty(integer)){
+                    integerMap.put(userId,1);
+                    integerMap.put(punchInKey,ObjectUtils.isEmpty(integerMap.get(punchInKey)) ? 1 : (integerMap.get(punchInKey) + 1));
+                }
+            }
+            //请假数量
+            if (managementPunching.getNumberOfLeave() > 0){
+                //用户key
+                String userId = managementPunching.getId() + "-" + managementPunching.getPersonnelId() + "-numberOfLeave";
+                //项目请假人数
+                String punchInKey = managementPunching.getId() + "-numberOfLeave";
+                //存储出勤人数
+                Integer integer = integerMap.get(userId);
+                if (ObjectUtils.isEmpty(integer)){
+                    integerMap.put(userId,1);
+                    integerMap.put(punchInKey,ObjectUtils.isEmpty(integerMap.get(punchInKey)) ? managementPunching.getNumberOfLeave() : (integerMap.get(punchInKey) + managementPunching.getNumberOfLeave()));
+                }
+            }
+            //存储上下班打卡状态
+            String[] strings = {managementPunching.getPunchInState(), managementPunching.getClockInState()};
+            for (int j = 0; j < strings.length; j++) {
+                String string = strings[j];
+                if (!ObjectUtils.isEmpty(stringMap.get(string))){
+                    //生成key
+                    String id = managementPunching.getId() + "-" + string;
+                    //通过key获取值
+                    ManagementPunchingNumber punchingNumber = punchingNumberMap.get(id);
+                    //如果值不存在
+                    if (ObjectUtils.isEmpty(punchingNumber)){
+                        //存入数据Map中
+                        punchingNumberMap.put(id,new ManagementPunchingNumber(
+                                managementPunching.getId(),//存入项目id
+                                string,//存入打卡状态
+                                managementPunching.getPunchInCount()//存入打卡数量
+                        ));
+                    }else {//如果已存在
+                        punchingNumber.setNumber(punchingNumber.getNumber() + managementPunching.getPunchInCount());
+                        //存入数据Map中
+                        punchingNumberMap.put(id,punchingNumber);
+                    }
+                }
+            }
+        }
+        //查询项目
+        wrapper = new QueryWrapper();
+        wrapper.in("id",integerArrayList);
+        wrapper.eq("management_state","1");
+        List<SysManagement> sysManagementList = iSysManagementMapper.selectList(wrapper);
+        //返回值
+        List<ManagementPunching> managementPunchingList = new ArrayList<>();
+        //进行循环遍历已关联项目
+        for (int i = 0; i < sysManagementList.size(); i++) {
+            Integer integer = sysManagementList.get(i).getId();
+            List<ManagementPunchingNumber> punchingNumberList = new ArrayList<>();
+            for (int j = 0; j < stringList.length; j++) {
+                String str = stringList[j];
+                ManagementPunchingNumber punchingNumber = punchingNumberMap.get(integer + "-" + str);
+                if (!ObjectUtils.isEmpty(punchingNumber)){
+                    punchingNumberList.add(punchingNumber);
+                }else {
+                    //存入数据Map中
+                    punchingNumberList.add(new ManagementPunchingNumber(
+                            integer,//存入项目id
+                            str,//存入打卡状态
+                            0//存入打卡数量
+                    ));
+                }
+            }
+            //名称key
+            String nameKey = integer + "-name";
+            //存储项目名称
+            String managementName = stringMap.get(nameKey);
+            //项目实际签到人数
+            String punchInKey = integer + "-punchIn";
+            //项目实际签到人数
+            String employmentInKey = integer + "-employment";
+            //项目请假人数
+            String numberOfLeave = integer + "-numberOfLeave";
+
+            managementPunchingList.add(new ManagementPunching(
+                integer,
+                managementName,
+                ObjectUtils.isEmpty(integerMap.get(punchInKey)) ? 0 : integerMap.get(punchInKey),//存储出勤人数
+                ObjectUtils.isEmpty(integerMap.get(employmentInKey)) ? 0 : integerMap.get(employmentInKey),//存储出勤人数
+                ObjectUtils.isEmpty(integerMap.get(numberOfLeave)) ? 0 : integerMap.get(numberOfLeave),//请假人数
+                punchingNumberList
+            ));
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED, managementPunchingList,"");
     }
 
 
@@ -218,12 +507,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         String msg;
         if (locationInRange){
             msg = "您已进入打卡范围";
-            utilEntity.setLocationInRange(locationInRange);
-            utilEntity.setSysManagement(management);
         }else {
             msg = "未进入打卡范围";
-            utilEntity.setLocationInRange(locationInRange);
         }
+        utilEntity.setLocationInRange(locationInRange);
+        utilEntity.setSysManagement(management);
         log.info("打卡范围返回结果:{},打卡数据：{}",msg,jsonParam);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,utilEntity,msg);
     }
@@ -293,6 +581,17 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("management_id",management.getId());
         punchingCardRecord.setCheckInTimes(iCheckInTimeMapper.selectList(queryWrapper));
+
+        //上班打卡时间
+        if (!ObjectUtils.isEmpty(punchingCardRecord.getWorkingAttendanceTime())){
+            punchingCardRecord.setWorkingAttendanceTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMd()) + " " + punchingCardRecord.getWorkingAttendanceTime());
+        }
+
+        //下班
+        if (!ObjectUtils.isEmpty(punchingCardRecord.getClosedAttendanceTime())){
+            punchingCardRecord.setClosedAttendanceTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMd()) + " " + punchingCardRecord.getClosedAttendanceTime());
+        }
+
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,punchingCardRecord,"");
     }
 
@@ -305,7 +604,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         "",
                         "",
                         "",
-                        "",
+                        "isNotNullAndIsLengthNot0",
                         "",
                         "",
                         "",
@@ -349,8 +648,6 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             return new ReturnEntity(CodeEntity.CODE_ERROR,"请在" + redisUtil.getTime(s) + "秒后操作");
         }
         redisUtil.set(s,personnel.getPersonnelCode(),3);
-
-        boolean locationInRange = false;
         //查询人员所在项目组
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("personnel_code",personnel.getPersonnelCode());
@@ -358,46 +655,43 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (selectList.size() < 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该人员未关联项目组");
         }
-        for (int i = 0; i < selectList.size(); i++) {
-            ManagementPersonnel managementPersonnel = selectList.get(i);
-            SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
-            if (management.getManagementState().equals(1)){
-                //获取项目打卡坐标
-                String[] splitSouthLatitude = management.getSouthLatitude().replaceAll("，",",").split(",");
-                String[] splitNorthernLatitude = management.getNorthernLatitude().replaceAll("，",",").split(",");
-                String[] splitEastLongitude = management.getEastLongitude().replaceAll("，",",").split(",");
-                String[] splitWestLongitude = management.getWestLongitude().replaceAll("，",",").split(",");
-                //判断项目的坐标是否有误
-                if (
-                        splitEastLongitude.length < 2 ||
-                        splitNorthernLatitude.length < 2 ||
-                        splitSouthLatitude.length < 2 ||
-                        splitWestLongitude.length < 2
-                ){
-                    return new ReturnEntity(CodeEntity.CODE_ERROR,"项目坐标有误");
-                }
-                //获取当前用户的地址
-                List<JqPoint> ps = new ArrayList<>();
-                JqPoint jqPoint1 = new JqPoint(PanXiaoZhang.stringDouble(splitEastLongitude[0]),PanXiaoZhang.stringDouble(splitEastLongitude[1]));
-                JqPoint jqPoint2 = new JqPoint(PanXiaoZhang.stringDouble(splitSouthLatitude[0]),PanXiaoZhang.stringDouble(splitSouthLatitude[1]));
-                JqPoint jqPoint3 = new JqPoint(PanXiaoZhang.stringDouble(splitNorthernLatitude[0]),PanXiaoZhang.stringDouble(splitNorthernLatitude[1]));
-                JqPoint jqPoint4 = new JqPoint(PanXiaoZhang.stringDouble(splitWestLongitude[0]),PanXiaoZhang.stringDouble(splitWestLongitude[1]));
-                ps.add(jqPoint1);
-                ps.add(jqPoint2);
-                ps.add(jqPoint3);
-                ps.add(jqPoint4);
-                //判断是否在范围内
-                locationInRange = PanXiaoZhang.isPtInPoly(jsonParam.getX(), jsonParam.getY(), ps);
-                if (locationInRange){
-                    jsonParam.setManagement(management);
-                    break;
-                }
-            }
+        SysManagement management = iSysManagementMapper.selectById(jsonParam.getManagementId());
+        //判断项目是否停止运营
+        if (!management.getManagementState().equals(1)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
         }
+        //获取项目打卡坐标
+        String[] splitSouthLatitude = management.getSouthLatitude().replaceAll("，",",").split(",");
+        String[] splitNorthernLatitude = management.getNorthernLatitude().replaceAll("，",",").split(",");
+        String[] splitEastLongitude = management.getEastLongitude().replaceAll("，",",").split(",");
+        String[] splitWestLongitude = management.getWestLongitude().replaceAll("，",",").split(",");
+        //判断项目的坐标是否有误
+        if (
+                splitEastLongitude.length < 2 ||
+                splitNorthernLatitude.length < 2 ||
+                splitSouthLatitude.length < 2 ||
+                splitWestLongitude.length < 2
+        ){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"项目坐标有误");
+        }
+        //获取当前用户的地址
+        List<JqPoint> ps = new ArrayList<>();
+        JqPoint jqPoint1 = new JqPoint(PanXiaoZhang.stringDouble(splitEastLongitude[0]),PanXiaoZhang.stringDouble(splitEastLongitude[1]));
+        JqPoint jqPoint2 = new JqPoint(PanXiaoZhang.stringDouble(splitSouthLatitude[0]),PanXiaoZhang.stringDouble(splitSouthLatitude[1]));
+        JqPoint jqPoint3 = new JqPoint(PanXiaoZhang.stringDouble(splitNorthernLatitude[0]),PanXiaoZhang.stringDouble(splitNorthernLatitude[1]));
+        JqPoint jqPoint4 = new JqPoint(PanXiaoZhang.stringDouble(splitWestLongitude[0]),PanXiaoZhang.stringDouble(splitWestLongitude[1]));
+        ps.add(jqPoint1);
+        ps.add(jqPoint2);
+        ps.add(jqPoint3);
+        ps.add(jqPoint4);
+        //判断是否在范围内
+        boolean locationInRange = PanXiaoZhang.isPtInPoly(jsonParam.getX(), jsonParam.getY(), ps);
 
         if (!locationInRange){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"不在服务范围内，打卡失败");
         }
+        //存储项目信息
+        jsonParam.setManagement(management);
         //判断当前是上班打卡还是下班打卡
         wrapper = new QueryWrapper();
         wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(clocking_day_time) = 0");
@@ -415,10 +709,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         String endClockOut = "";//下班打卡时间结束时间
         String checkInTimeName = "";//打卡项目
         //查询打卡时间
-        wrapper = new QueryWrapper();
-        wrapper.eq("id",jsonParam.getCheckInId());
-        wrapper.eq("management_id",jsonParam.getManagement().getId());
-        CheckInTime checkInTime = iCheckInTimeMapper.selectOne(wrapper);
+        CheckInTime checkInTime = iCheckInTimeMapper.selectById(jsonParam.getCheckInId());
         if (ObjectUtils.isEmpty(checkInTime)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"未设置该类型的打卡时间");
         }
