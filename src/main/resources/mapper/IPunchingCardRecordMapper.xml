@@ -41,7 +41,7 @@
         as
         <include refid="tableSqlAs" />
         <include refid="relevanceSqlAs" />
-        <include refid="whereSqlModel" />
+        <include refid="whereSqlModelAs" />
         <include refid="safeOrderByAs"/>
     </select>
     <sql id="tableSqlAs">
@@ -85,6 +85,12 @@
         <if test="id != null "> and `id` = #{id}</if>
         <if test="dateFormat == 'start' "> and DATE_FORMAT(<include refid="tableSql" />.clocking_day_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
+    </sql>
+    <sql id="whereSqlModelAs">
+        where 1 = 1
+        <if test="id != null "> and `id` = #{id}</if>
+        <if test="dateFormat == 'start' "> and DATE_FORMAT(<include refid="tableSqlAs" />.clocking_day_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime}</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

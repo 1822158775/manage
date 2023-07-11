@@ -142,14 +142,13 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
             map.put("roleId",manage3);
             map.put("employmentStatus","1");
             List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
-            if (sysPersonnels.size() < 1){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"当前项目无人审核，无法提交");
+            if (sysPersonnels.size() > 0){
+                SysPersonnel personnel = sysPersonnels.get(0);
+                //添加审核人编码
+                jsonParam.setApproverPersonnelId(personnel.getId());
+                //审核人数据
+                jsonParam.setSysPersonnel(personnel);
             }
-            SysPersonnel personnel = sysPersonnels.get(0);
-            //添加审核人编码
-            jsonParam.setApproverPersonnelId(personnel.getId());
-            //审核人数据
-            jsonParam.setSysPersonnel(personnel);
             //设置该条数据唯一编码
             jsonParam.setReportCoding("coding" + System.currentTimeMillis() + PanXiaoZhang.ran(2));
         }
@@ -180,7 +179,7 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
                 ""
         );
         // 如果有上一级
-        if (!ObjectUtils.isEmpty(jsonParam.getSysPersonnel().getPhone())){
+        if (!ObjectUtils.isEmpty(jsonParam.getSysPersonnel()) && !ObjectUtils.isEmpty(jsonParam.getSysPersonnel().getPhone())){
             // 发送上级领导
             PanXiaoZhang.postWechatFer(
                     jsonParam.getSysPersonnel().getOpenId(),

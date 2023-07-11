@@ -41,7 +41,7 @@ public class UserInterceptor implements HandlerInterceptor {
             String userId = String.valueOf(reglister);
             String requestURI = request.getRequestURI();
             log.info("账号编码:{}会话请求地址:{},token:{}",userId,requestURI,request.getHeader("token"));
-            session.setMaxInactiveInterval(240 * 60);
+            session.setMaxInactiveInterval((7 * 60) * 60);
             String token = request.getHeader("token");
             TokenEntity tokenEntity = TokenUtil.tokenToOut(token,session);
             if (ObjectUtils.isEmpty(tokenEntity)){
