@@ -120,9 +120,18 @@
         </if>
     </sql>
     <sql id="safeOrderByFR">
-        order by <include refid="tableSqlFR"/>.id desc
+        order by
+        <include refid="tableSqlFR"/>.id desc
     </sql>
     <sql id="safeOrderBy">
-        order by <include refid="tableSql"/>.id desc, <include refid="tableSqlReimbursement" />.`number` desc
+        order by
+        <if test="type == 'gt'">
+            FIELD(<include refid="tableSqlReimbursement"/>.`reissue_state`,
+            'pending',
+            'agree',
+            'refuse'),
+        </if>
+        <include refid="tableSql"/>.id desc,
+        <include refid="tableSqlReimbursement" />.`number` desc
     </sql>
 </mapper>

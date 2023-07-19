@@ -74,6 +74,12 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
     @Resource
     private WhitePersonnelDetails whitePersonnelDetails;
 
+    @Resource
+    private ILoginRecordMapper loginRecordMapper;
+
+    @Resource
+    private IReimbursementImageMapper iReimbursementImageMapper;
+
     //方法总管外加事务
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -91,6 +97,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 }
                 return returnEntity;
+            }else if (name.equals("video_check_in")){
+                return video_check_in(request);
             }
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
@@ -98,6 +106,274 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
+        }
+    }
+    // 视频签到
+    private ReturnEntity video_check_in(HttpServletRequest request) throws IOException, ParseException {
+        PunchingCardRecord jsonParam = PanXiaoZhang.getJSONParam(request, PunchingCardRecord.class);
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(jsonParam,
+                new PunchingCardRecordNotNull(
+                        "",
+                        "",
+                        "",
+                        "",
+                        "isNotNullAndIsLengthNot0",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "isNotNullAndIsLengthNot0",
+                        "",
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0"
+                ));
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+        //获取用户openID
+        String token = request.getHeader("Http-X-User-Access-Token");
+        Token parseObject = JSONObject.parseObject(PanXiaoZhang.postOpenId(token), Token.class);
+        String openid = "未获取到用户的openId";
+        if (!ObjectUtils.isEmpty(parseObject.getResponse())){
+            openid = parseObject.getResponse().getOpenid();
+        }
+        jsonParam.setOpenId(openid);
+
+        SysPersonnel personnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断员工是否符合打卡条件
+        //if (!personnel.getRoleId().equals(manage5) && !personnel.getRoleId().equals(manage)){
+        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"该功能只针对员工或主管开放");
+        //}
+        //判断账户是否正常
+        ReturnEntity entity = PanXiaoZhang.estimateState(personnel);
+        if (entity.getState()){
+            return entity;
+        }
+
+        String s = personnel.getId() + "check_in";
+        Object o = redisUtil.get(s);
+        if (!ObjectUtils.isEmpty(o)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"请在" + redisUtil.getTime(s) + "秒后操作");
+        }
+        redisUtil.set(s,personnel.getPersonnelCode(),3);
+        //查询人员所在项目组
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",personnel.getPersonnelCode());
+        List<ManagementPersonnel> selectList = iManagementPersonnelMapper.selectList(wrapper);
+        if (selectList.size() < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该人员未关联项目组");
+        }
+        SysManagement management = iSysManagementMapper.selectById(jsonParam.getManagementId());
+        //判断项目是否停止运营
+        if (!management.getManagementState().equals(1)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
+        }
+        //获取项目打卡坐标
+        String[] splitSouthLatitude = management.getSouthLatitude().replaceAll("，",",").split(",");
+        String[] splitNorthernLatitude = management.getNorthernLatitude().replaceAll("，",",").split(",");
+        String[] splitEastLongitude = management.getEastLongitude().replaceAll("，",",").split(",");
+        String[] splitWestLongitude = management.getWestLongitude().replaceAll("，",",").split(",");
+        //判断项目的坐标是否有误
+        if (
+                splitEastLongitude.length < 2 ||
+                        splitNorthernLatitude.length < 2 ||
+                        splitSouthLatitude.length < 2 ||
+                        splitWestLongitude.length < 2
+        ){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"项目坐标有误");
+        }
+        //获取当前用户的地址
+        List<JqPoint> ps = new ArrayList<>();
+        JqPoint jqPoint1 = new JqPoint(PanXiaoZhang.stringDouble(splitEastLongitude[0]),PanXiaoZhang.stringDouble(splitEastLongitude[1]));
+        JqPoint jqPoint2 = new JqPoint(PanXiaoZhang.stringDouble(splitSouthLatitude[0]),PanXiaoZhang.stringDouble(splitSouthLatitude[1]));
+        JqPoint jqPoint3 = new JqPoint(PanXiaoZhang.stringDouble(splitNorthernLatitude[0]),PanXiaoZhang.stringDouble(splitNorthernLatitude[1]));
+        JqPoint jqPoint4 = new JqPoint(PanXiaoZhang.stringDouble(splitWestLongitude[0]),PanXiaoZhang.stringDouble(splitWestLongitude[1]));
+        ps.add(jqPoint1);
+        ps.add(jqPoint2);
+        ps.add(jqPoint3);
+        ps.add(jqPoint4);
+        //判断是否在范围内
+        boolean locationInRange = PanXiaoZhang.isPtInPoly(jsonParam.getX(), jsonParam.getY(), ps);
+
+        if (locationInRange){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"在服务范围内，请前往定位打卡");
+        }
+        //存储项目信息
+        jsonParam.setManagement(management);
+        //判断当前是上班打卡还是下班打卡
+        wrapper = new QueryWrapper();
+        wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(clocking_day_time) = 0");
+        wrapper.eq("personnel_code",personnel.getPersonnelCode());
+        PunchingCardRecord punchingCardRecord = iPunchingCardRecordMapper.selectOne(wrapper);
+        //获取当前时分秒
+        LocalTime localTime = LocalTime.now();
+        //获取当前时间
+        Date date = new Date();
+        String format = DateFormatUtils.format(date, PanXiaoZhang.Hms());
+        Integer checkInTimeId = 0;//打卡类型的id
+        String startPunchIn = "";//上班打卡时间开始时间
+        String endPunchIn = "";//上班打卡时间结束时间
+        String startClockOut = "";//下班打卡时间开始时间
+        String endClockOut = "";//下班打卡时间结束时间
+        String checkInTimeName = "";//打卡项目
+        //查询打卡时间
+        CheckInTime checkInTime = iCheckInTimeMapper.selectById(jsonParam.getCheckInId());
+        if (ObjectUtils.isEmpty(checkInTime)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"未设置该类型的打卡时间");
+        }
+        startPunchIn = checkInTime.getStartPunchIn();
+        startClockOut = checkInTime.getStartClockOut();
+        endClockOut = checkInTime.getEndClockOut();
+        checkInTimeId = checkInTime.getId();
+        checkInTimeName = checkInTime.getName();
+        endPunchIn = checkInTime.getEndPunchIn();
+
+        wrapper = new QueryWrapper();
+        // 设置条件，如当天日期的范围
+        wrapper.apply("DATE(login_time) = CURDATE()");
+        // 按照时间降序排序
+        wrapper.orderByDesc("login_time");
+        // 获取最大的一条数据
+        wrapper.last("LIMIT 1");
+        // 当前用户
+        wrapper.eq("username",personnel.getUsername());
+        LoginRecord loginRecord = loginRecordMapper.selectOne(wrapper);
+        if (ObjectUtils.isEmpty(loginRecord)){
+            loginRecord = new LoginRecord();
+        }
+        if (ObjectUtils.isEmpty(punchingCardRecord)){//如果不存在则判定为上班打卡
+            //不让他打卡
+            int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(startPunchIn), localTime);
+            if (time == 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"未到上班打卡时间，无法打卡");
+            }
+            //如果 time1 在 time2 之前，返回-1；如果 time1 在 time2 之后，返回1；如果 time1 和 time2 相等，返回0。
+            int compareTime = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(endPunchIn));
+            //设置当前状态
+            String workingClockInState = "打卡成功";
+            if (compareTime > 0){
+                workingClockInState = "迟到";
+            }
+            //获取编码
+            String uuid = PanXiaoZhang.getID();
+            PunchingCardRecord cardRecord = new PunchingCardRecord(
+                    null,
+                    personnel.getName(),
+                    personnel.getPersonnelCode(),
+                    null,
+                    jsonParam.getManagement().getId(),
+                    personnel.getOpenId(),
+                    jsonParam.getOpenId(),
+                    workingClockInState,
+                    format,
+                    null,
+                    null,
+                    null,
+                    null,
+                    DateFormatUtils.format(date, PanXiaoZhang.yMd()),
+                    endPunchIn,
+                    startClockOut,
+                    checkInTimeId,
+                    checkInTimeName,
+                    loginRecord.getLoginTime(),
+                    null,
+                    jsonParam.getModel(),
+                    null,
+                    uuid,
+                    "上班视频签到",
+                    null
+            );
+            int insert = iPunchingCardRecordMapper.insert(cardRecord);
+            int insertImage = iReimbursementImageMapper.insert(new ReimbursementImage(
+                    jsonParam.getVideoPath(),
+                    uuid,
+                    "上班签到"
+            ));
+            if (insert != 1 || insertImage != 1){
+                return new ReturnEntity(
+                        CodeEntity.CODE_ERROR,
+                        jsonParam,
+                        MsgEntity.CODE_ERROR
+                );
+            }
+            PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
+                    "打卡信息",
+                    "",
+                    personnel.getName() + ":上班打卡时间" + format + "，状态:" + workingClockInState +"",
+                    "",
+                    ""
+            );
+            return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
+        }else {//如果存在则判定为下班打卡
+            //不让他打卡
+            int time = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(endClockOut));
+            if (time == 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"超出下班打卡时间，无法打卡");
+            }
+            //如果 time1 在 time2 之前，返回-1；如果 time1 在 time2 之后，返回1；如果 time1 和 time2 相等，返回0。
+            int compareTime = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(startClockOut), localTime);
+            //设置当前状态
+            String workingClockInState = "打卡成功";
+            if (compareTime > 0){
+                workingClockInState = "早退";
+            }
+            //进行下班打卡
+            PunchingCardRecord cardRecord = new PunchingCardRecord(
+                    punchingCardRecord.getId(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    personnel.getOpenId(),
+                    jsonParam.getOpenId(),
+                    workingClockInState,
+                    format,
+                    null,
+                    null,
+                    jsonParam.getManagement().getStartClockOut(),
+                    null,
+                    null,
+                    null,
+                    loginRecord.getLoginTime(),
+                    null,
+                    jsonParam.getModel(),
+                    null,
+                    null,
+                    "下班视频收工"
+            );
+            int insert = iPunchingCardRecordMapper.updateById(cardRecord);
+            int insertImage = iReimbursementImageMapper.insert(new ReimbursementImage(
+                    jsonParam.getVideoPath(),
+                    punchingCardRecord.getPunchingCardRecordCode(),
+                    "下班收工"
+            ));
+            if (insert != 1 || insertImage != 1){
+                return new ReturnEntity(
+                        CodeEntity.CODE_ERROR,
+                        jsonParam,
+                        MsgEntity.CODE_ERROR
+                );
+            }
+            PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
+                    "打卡信息",
+                    "",
+                    personnel.getName() + ":下班打卡时间" + format + "，状态:" + workingClockInState +"",
+                    "",
+                    ""
+            );
+            return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
         }
     }
 
@@ -719,6 +995,20 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         checkInTimeId = checkInTime.getId();
         checkInTimeName = checkInTime.getName();
         endPunchIn = checkInTime.getEndPunchIn();
+
+        wrapper = new QueryWrapper();
+        // 设置条件，如当天日期的范围
+        wrapper.apply("DATE(login_time) = CURDATE()");
+        // 按照时间降序排序
+        wrapper.orderByDesc("login_time");
+        // 获取最大的一条数据
+        wrapper.last("LIMIT 1");
+        // 当前用户
+        wrapper.eq("username",personnel.getUsername());
+        LoginRecord loginRecord = loginRecordMapper.selectOne(wrapper);
+        if (ObjectUtils.isEmpty(loginRecord)){
+            loginRecord = new LoginRecord();
+        }
         if (ObjectUtils.isEmpty(punchingCardRecord)){//如果不存在则判定为上班打卡
             //不让他打卡
             int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(startPunchIn), localTime);
@@ -750,7 +1040,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     endPunchIn,
                     startClockOut,
                     checkInTimeId,
-                    checkInTimeName
+                    checkInTimeName,
+                    loginRecord.getLoginTime(),
+                    null,
+                    jsonParam.getModel(),
+                    null
             );
             int insert = iPunchingCardRecordMapper.insert(cardRecord);
             if (insert != 1){
@@ -801,7 +1095,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     null,
                     jsonParam.getManagement().getStartClockOut(),
                     null,
-                    null
+                    null,
+                    null,
+                    loginRecord.getLoginTime(),
+                    null,
+                    jsonParam.getModel()
             );
             int insert = iPunchingCardRecordMapper.updateById(cardRecord);
             if (insert != 1){

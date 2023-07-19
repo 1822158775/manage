@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.StatisticsPunchingCardRecordMapper">
+<mapper namespace="com.example.manage.mapper.StatisticsFurloughRecordMapper">
     <resultMap id="entity" type="com.example.manage.entity.SysPersonnel">
         <result column="id" property="id" />
         <result column="phone" property="phone" />
@@ -57,23 +57,6 @@
             <result column="p_c_r_management_end_time" property="managementEndTime" />
         </collection>
 
-
-        <collection property="furloughRecords" ofType="com.example.manage.entity.FurloughRecord">
-            <result column="f_r_id" property="id" />
-            <result column="f_r_personnel_name" property="personnelName" />
-            <result column="f_r_personnel_id" property="personnelId" />
-            <result column="f_r_management_id" property="managementId" />
-            <result column="f_r_management_name" property="managementName" />
-            <result column="f_r_reissue_state" property="reissueState" />
-            <result column="f_r_max_number" property="maxNumber" />
-            <result column="f_r_reissue_code" property="reissueCode" />
-            <result column="f_r_reissue_type" property="reissueType" />
-            <result column="f_r_start_time" property="startTime" />
-            <result column="f_r_end_time" property="endTime" />
-            <result column="f_r_applicant_time" property="applicantTime" />
-            <result column="f_r_verifier_remark" property="verifierRemark" />
-        </collection>
-
         <collection property="sysManagement" ofType="com.example.manage.entity.SysManagement">
             <result column="m_id" property="id" />
             <result column="m_name" property="name" />
@@ -95,18 +78,6 @@
             <result column="s_m_name" property="name" />
         </collection>
     </resultMap>
-
-    <!--  查询总数量  -->
-    <select id="queryCount" resultType="int" parameterType="hashmap">
-        select count(DISTINCT <include refid="tableSqlAs"/>.id) as id
-        from
-        <include refid="tableSql" />
-        as
-        <include refid="tableSqlAs" />
-        <include refid="relevanceSql" />
-        <include refid="whereSqlModelCount"/>
-    </select>
-
     <!--  查询分页  -->
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
@@ -141,21 +112,6 @@
         ,<include refid="tableSqlPunchingCardRecord" />.clocking_day_time as p_c_r_clocking_day_time
         ,<include refid="tableSqlPunchingCardRecord" />.management_start_time as p_c_r_management_start_time
         ,<include refid="tableSqlPunchingCardRecord" />.management_end_time as p_c_r_management_end_time
-
-        ,<include refid="tableSqlFurloughRecord" />.id as f_r_id
-        ,<include refid="tableSqlFurloughRecord" />.personnel_name as f_r_personnel_name
-        ,<include refid="tableSqlFurloughRecord" />.personnel_id as f_r_personnel_id
-        ,<include refid="tableSqlFurloughRecord" />.management_id as f_r_management_id
-        ,<include refid="tableSqlFurloughRecord" />.management_name as f_r_management_name
-        ,<include refid="tableSqlFurloughRecord" />.reissue_state as f_r_reissue_state
-        ,<include refid="tableSqlFurloughRecord" />.max_number as f_r_max_number
-        ,<include refid="tableSqlFurloughRecord" />.reissue_code as f_r_reissue_code
-        ,<include refid="tableSqlFurloughRecord" />.reissue_type as f_r_reissue_type
-        ,<include refid="tableSqlFurloughRecord" />.start_time as f_r_start_time
-        ,<include refid="tableSqlFurloughRecord" />.end_time as f_r_end_time
-        ,<include refid="tableSqlFurloughRecord" />.applicant_time as f_r_applicant_time
-        ,<include refid="tableSqlFurloughRecord" />.verifier_remark as f_r_verifier_remark
-
         ,<include refid="tableSqlSysManagement" />.name as s_m_name
 
         ,<include refid="tableSqlSysManagement" />.start_punch_in as m_start_punch_in
@@ -170,8 +126,7 @@
 
         ,<include refid="tableSqlSP" />.name as s_p_name
         ,<include refid="tableSqlSP" />.sex as s_p_sex
-    </sql>
-    <!--  虚拟表  -->
+    </sql><!--  虚拟表  -->
     <sql id="tableSqlAs">
         sys_p
     </sql>
@@ -201,11 +156,6 @@
         manage.sys_role
     </sql>
 
-    <!--  请假表  -->
-    <sql id="tableSqlFurloughRecord">
-        manage.furlough_record
-    </sql>
-
     <!--  进行关联表  -->
     <sql id="relevanceSql">
         LEFT JOIN <include refid="tableSqlRole" /> on <include refid="tableSqlRole" />.id = <include refid="tableSqlAs" />.role_id
@@ -214,15 +164,12 @@
         LEFT JOIN <include refid="tableSqlManagementPersonnel" /> on <include refid="tableSqlManagementPersonnel" />.personnel_code = <include refid="tableSqlAs" />.personnel_code
         LEFT JOIN <include refid="tableSqlSysManagement" />  on <include refid="tableSqlSysManagement" />.id = <include refid="tableSqlManagementPersonnel" />.management_id
         LEFT JOIN
-            <include refid="tableSql" />
-         as
-            <include refid="tableSqlSP" />
-         on
-            <include refid="tableSqlSP" />.personnel_code = <include refid="tableSqlManagementPersonnel" />.personnel_code
-            <if test="sysRoleId != null and sysRoleId != ''"> and <include refid="tableSqlSP" />.`role_id` = #{sysRoleId}</if>
-        LEFT JOIN <include refid="tableSqlFurloughRecord" /> on <include refid="tableSqlFurloughRecord" />.personnel_id = <include refid="tableSqlAs" />.id
-        <if test="dateFormat == 'start' "> and (DATE_FORMAT(<include refid="tableSqlFurloughRecord" />.start_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime} or DATE_FORMAT(<include refid="tableSqlFurloughRecord" />.end_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime})</if>
-
+        <include refid="tableSql" />
+        as
+        <include refid="tableSqlSP" />
+        on
+        <include refid="tableSqlSP" />.personnel_code = <include refid="tableSqlManagementPersonnel" />.personnel_code
+        <if test="sysRoleId != null and sysRoleId != ''"> and <include refid="tableSqlSP" />.`role_id` = #{sysRoleId}</if>
     </sql>
 
     <!--  记录表查询  -->

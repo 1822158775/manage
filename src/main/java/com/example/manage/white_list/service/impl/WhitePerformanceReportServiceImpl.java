@@ -1016,7 +1016,9 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 performanceReportNumber.getRefuse()
         ));
         map.put("personnelCode",personnel.getPersonnelCode());
-        map.put("tyoe","自定义");
+        map.put("type","自定义");
+        map.put("thisStartTime",startTime + " 00:00:00");
+        map.put("thisEndTime",endTime + " 23:59:59");
         //权益
         List<PerformanceReportSales> performanceReportSales = iPerformanceReportSalesMapper.queryList(map);
         for (int i = 0; i < performanceReportSales.size(); i++) {

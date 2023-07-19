@@ -100,6 +100,8 @@ public class SysPersonnel implements Serializable {
     public Integer personnelId;//人员信息
     @TableField(exist = false)
     public List<PunchingCardRecord> punchingCardRecords;//打卡信息
+    @TableField(exist = false)
+    public List<FurloughRecord> furloughRecords;//请假信息
 
 
     @TableField(exist = false)
@@ -120,6 +122,12 @@ public class SysPersonnel implements Serializable {
     public List<Personnel> personnels;//上级信息
     @TableField(exist = false)
     public List<Management> managements;//项目名称
+
+    @TableField(exist = false)
+    public String updatePassword;//密码
+
+    @TableField(exist = false)
+    public String model;//手机型号
 
     @TableField(exist = false)
     public WorkingAgoOpenNumber workingAgoOpenNumber;//几个不同的微信号

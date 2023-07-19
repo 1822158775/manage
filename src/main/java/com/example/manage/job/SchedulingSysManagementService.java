@@ -7,4 +7,6 @@ package com.example.manage.job;
 
 public interface SchedulingSysManagementService {
     void windUpAnAccount();
+    void taskNotification();//日常请假任务提醒
+    void taskNotificationCardReplacement();//日常补卡任务提醒
 }

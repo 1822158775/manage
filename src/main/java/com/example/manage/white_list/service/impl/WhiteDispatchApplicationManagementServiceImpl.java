@@ -22,10 +22,7 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @avthor 潘小章
@@ -48,6 +45,9 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
 
     @Value("${role.manage}")
     private Integer roleId;
+
+    @Value("${role.manage2}")
+    private Integer manage2;
 
     @Value("${url.dispatch}")
     private String urlDispatch;
@@ -82,6 +82,8 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         try {
             if (name.equals("cat")){
                 return cat(request);
+            }else if (name.equals("cat_list")){
+                return cat_list(request);
             }else if (name.equals("add")){
                 return add(request);
             }else if (name.equals("cat_past_records")){
@@ -94,6 +96,51 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
+    }
+
+    //查询所有调派信息
+    private ReturnEntity cat_list(HttpServletRequest request) {
+        Map jsonMap = PanXiaoZhang.getJsonMap(request);
+
+        //查询该人员信息
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(String.valueOf(jsonMap.get("personnelId")));
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
+        //匹配角色职位
+        if (!sysPersonnel.getRoleId().equals(manage2)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"暂无权限查看");
+        }
+        // 获取当前时间
+        Calendar calendar = Calendar.getInstance();
+
+        // 获取本月的年份
+        int year = calendar.get(Calendar.YEAR);
+        // 获取本月的月份（注意：月份从0开始，所以要加1）
+        int month = calendar.get(Calendar.MONTH) + 1;
+
+        // 设置为本月第一天
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        // 获取本月第一天的日期
+        int firstDayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+
+        // 设置为本月最后一天
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        if (ObjectUtils.isEmpty(jsonMap.get("startTime"))){
+            jsonMap.put("startTime",year + "-" + month + "-" + firstDayOfMonth);
+        }
+        if (ObjectUtils.isEmpty(jsonMap.get("endTime"))){
+            jsonMap.put("endTime",DateFormatUtils.format(new Date(),PanXiaoZhang.yMd()));
+        }
+        jsonMap.put("startTime",jsonMap.get("startTime") + " 00:00:00");
+        jsonMap.put("endTime",jsonMap.get("endTime") + " 23:59:59");
+        //删除用户id
+        jsonMap.remove("personnelId");
+        ReturnEntity returnEntity = new ReturnEntity(CodeEntity.CODE_SUCCEED, iDispatchApplicationManagementMapper.queryAll(jsonMap), "");
+        return returnEntity;
     }
 
     //方法总管外加事务
@@ -344,6 +391,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
         jsonMap.put("type","gt");
+        jsonMap.put("queryAll","yes");
         List<DispatchApplicationManagement> dispatchApplicationManagements = iDispatchApplicationManagementMapper.queryAll(jsonMap);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,dispatchApplicationManagements,"");
     }

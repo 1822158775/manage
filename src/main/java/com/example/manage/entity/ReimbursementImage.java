@@ -1,6 +1,8 @@
 package com.example.manage.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.ToString;
@@ -16,6 +18,8 @@ import java.io.Serializable;
 @ToString
 @TableName(value = "reimbursement_image")
 public class ReimbursementImage implements Serializable {
+    @TableId(value = "id",type = IdType.AUTO)
+    public Integer id;//数据编码
     @TableField(value = "path_url")
     public String pathUrl;//路径
     @TableField(value = "path_code")
@@ -29,5 +33,11 @@ public class ReimbursementImage implements Serializable {
     public ReimbursementImage(String pathUrl, String pathCode) {
         this.pathUrl = pathUrl;
         this.pathCode = pathCode;
+    }
+
+    public ReimbursementImage(String pathUrl, String pathCode, String httpUrl) {
+        this.pathUrl = pathUrl;
+        this.pathCode = pathCode;
+        this.httpUrl = httpUrl;
     }
 }

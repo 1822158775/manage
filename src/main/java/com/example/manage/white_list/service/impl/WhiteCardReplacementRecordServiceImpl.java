@@ -144,6 +144,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
         jsonMap.put("type","gt");
         jsonMap.put("auditorPersonnelId",jsonMap.get("personnelId"));
         jsonMap.remove("personnelId");
+        jsonMap.put("queryAll","yes");
         List<CardReplacementRecord> cardReplacementRecords = whiteCardReplacementRecordMapper.queryAll(jsonMap);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,cardReplacementRecords,"");
     }
@@ -279,7 +280,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                                     selectById.getOpenId(),
                                     "补卡申请",
                                     "",
-                                    sysPersonnel.getName() + "提交了" + DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()) + "的补卡申请",
+                                    cardReplacementRecord.getPersonnelName() + "提交了" + DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()) + "的补卡申请",
                                     "",
                                     urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromRepairCheckverify=true"
                             );
@@ -368,8 +369,9 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
             if (updateById != 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"修改数据失败");
             }
+            SysPersonnel personnel = iSysPersonnelMapper.selectById(cardReplacementRecord.getPersonnelId());
             PanXiaoZhang.postWechatFer(
-                    sysPersonnel.getOpenId(),
+                    personnel.getOpenId(),
                     "补卡申请",
                     "",
                     DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()) + "日的补卡申请通过了",

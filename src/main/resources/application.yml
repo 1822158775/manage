@@ -24,8 +24,8 @@ magicalcoder:
           uploadDiskFolder:
           requestPrefix: upload
           fileExtraAddPrefix: upload/
-#          ap: D:\home\equity\manage\target\classes\upload\
-          ap: /www/springboot/manage/upload/
+          ap: D:\home\equity\manage\target\classes\upload\
+#          ap: /www/springboot/manage/upload/
       useAliyunOss:
         open: false
         returnUrl: true
@@ -65,6 +65,7 @@ wechat:
         aesKey: f1Wy2CjWtaLwKQ6C88AYFSqhAPbadT4LUWLGhlraMTw
 role:
   manage: 1
+  manage2: 2
   manage4: 4
   manage3: 3
   manage5: 5

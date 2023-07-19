@@ -79,6 +79,23 @@ public class PunchingCardRecord implements Serializable {
     @TableField(value = "check_in_time_name")
     public String checkInTimeName;//打卡项目
 
+    @TableField(value = "working_ago_state")
+    public String workingAgoState;//打卡和登录时间间隔
+    @TableField(value = "closed_ago_state")
+    public String closedAgoState;//打卡和登录时间间隔
+    @TableField(value = "working_model")
+    public String workingModel;//上班手机类型
+    @TableField(value = "closed_model")
+    public String closedModel;//下班打卡手机类型
+    @TableField(value = "punching_card_record_code")
+    public String punchingCardRecordCode;//打卡编码
+    @TableField(value = "working_check_in_type")
+    public String workingCheckInType;//上班打卡类型
+    @TableField(value = "closed_check_in_type")
+    public String closedCheckInType;//下班打卡类型
+
+    @TableField(exist = false)
+    public String model;//手机类型
     @TableField(exist = false)
     public String supervisor;//主管名称
     @TableField(exist = false)
@@ -121,6 +138,12 @@ public class PunchingCardRecord implements Serializable {
     @TableField(exist = false)
     public List<FurloughRecord> furloughRecords;//请假
 
+    @TableField(exist = false)
+    public String videoPath;//视频路径
+
+    @TableField(exist = false)
+    public List<ReimbursementImage> reimbursementImages;//附件
+
     public PunchingCardRecord() {
     }
 
@@ -143,5 +166,58 @@ public class PunchingCardRecord implements Serializable {
         this.managementEndTime = managementEndTime;
         this.checkInTimeId = checkInTimeId;
         this.checkInTimeName = checkInTimeName;
+    }
+
+    public PunchingCardRecord(Integer id, String name, String personnelCode, String clockInTime, Integer managementId, String workingAgoOpenId, String workingLaterOpenId, String workingClockInState, String workingAttendanceTime, String closedAgoOpenId, String closedLaterOpenId, String closedClockInState, String closedAttendanceTime, String clockingDayTime, String managementStartTime, String managementEndTime,Integer checkInTimeId,String checkInTimeName,String workingAgoState,String closedAgoState,String workingModel,String closedModel) {
+        this.id = id;
+        this.name = name;
+        this.personnelCode = personnelCode;
+        this.clockInTime = clockInTime;
+        this.managementId = managementId;
+        this.workingAgoOpenId = workingAgoOpenId;
+        this.workingLaterOpenId = workingLaterOpenId;
+        this.workingClockInState = workingClockInState;
+        this.workingAttendanceTime = workingAttendanceTime;
+        this.closedAgoOpenId = closedAgoOpenId;
+        this.closedLaterOpenId = closedLaterOpenId;
+        this.closedClockInState = closedClockInState;
+        this.closedAttendanceTime = closedAttendanceTime;
+        this.clockingDayTime = clockingDayTime;
+        this.managementStartTime = managementStartTime;
+        this.managementEndTime = managementEndTime;
+        this.checkInTimeId = checkInTimeId;
+        this.checkInTimeName = checkInTimeName;
+        this.workingAgoState = workingAgoState;
+        this.closedAgoState = closedAgoState;
+        this.workingModel = workingModel;
+        this.closedModel = closedModel;
+    }
+
+    public PunchingCardRecord(Integer id, String name, String personnelCode, String clockInTime, Integer managementId, String workingAgoOpenId, String workingLaterOpenId, String workingClockInState, String workingAttendanceTime, String closedAgoOpenId, String closedLaterOpenId, String closedClockInState, String closedAttendanceTime, String clockingDayTime, String managementStartTime, String managementEndTime, Integer checkInTimeId, String checkInTimeName, String workingAgoState, String closedAgoState, String workingModel, String closedModel, String punchingCardRecordCode, String workingCheckInType, String closedCheckInType) {
+        this.id = id;
+        this.name = name;
+        this.personnelCode = personnelCode;
+        this.clockInTime = clockInTime;
+        this.managementId = managementId;
+        this.workingAgoOpenId = workingAgoOpenId;
+        this.workingLaterOpenId = workingLaterOpenId;
+        this.workingClockInState = workingClockInState;
+        this.workingAttendanceTime = workingAttendanceTime;
+        this.closedAgoOpenId = closedAgoOpenId;
+        this.closedLaterOpenId = closedLaterOpenId;
+        this.closedClockInState = closedClockInState;
+        this.closedAttendanceTime = closedAttendanceTime;
+        this.clockingDayTime = clockingDayTime;
+        this.managementStartTime = managementStartTime;
+        this.managementEndTime = managementEndTime;
+        this.checkInTimeId = checkInTimeId;
+        this.checkInTimeName = checkInTimeName;
+        this.workingAgoState = workingAgoState;
+        this.closedAgoState = closedAgoState;
+        this.workingModel = workingModel;
+        this.closedModel = closedModel;
+        this.punchingCardRecordCode = punchingCardRecordCode;
+        this.workingCheckInType = workingCheckInType;
+        this.closedCheckInType = closedCheckInType;
     }
 }

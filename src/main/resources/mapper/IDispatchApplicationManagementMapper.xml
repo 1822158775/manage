@@ -114,6 +114,12 @@
         <if test="id != null "> and <include refid="tableSqlDAM"/>.`id` = #{id}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlDAM" />.`applicant` like concat('%',#{keyWord},'%')</if>
         <if test="personnelCode != null "> and <include refid="tableSqlDAM" />.`personnel_code` = #{personnelCode}</if>
+        <if test="applicantState != null and applicantState != ''">
+            and <include refid="tableSqlDAM" />.applicant_state = #{applicantState}
+        </if>
+        <if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+            and <include refid="tableSqlDAM" />.dispathch_time BETWEEN #{startTime} AND #{endTime}
+        </if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
@@ -123,7 +129,13 @@
         </if>
     </sql>
     <sql id="safeOrderBy">
-        order by <include refid="tableSql"/>.id desc,<include refid="tableSqlDAReimbursement" />.`number` desc
+        order by
+    <if test="type == 'gt'">
+        FIELD(<include refid="tableSqlDAReimbursement"/>.`dispatch_state`,
+        'pending',
+        'agree',
+        'refuse'),
+    </if><include refid="tableSql"/>.id desc,<include refid="tableSqlDAReimbursement" />.`number` desc
     </sql>
     <sql id="safeOrderByDAM">
         order by <include refid="tableSqlDAM"/>.id desc

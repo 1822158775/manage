@@ -13,7 +13,8 @@
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select <include refid="tableSql"/>.*
+        select
+        <include refid="tableSql"/>.*
         from
         <include refid="tableSql"/>
         <include refid="whereSqlModel" />

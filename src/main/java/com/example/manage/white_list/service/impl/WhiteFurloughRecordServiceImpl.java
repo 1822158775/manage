@@ -116,6 +116,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
         jsonMap.put("type","gt");
+        jsonMap.put("queryAll","yes");
         jsonMap.put("auditorPersonnelId",jsonMap.get("personnelId"));
         jsonMap.remove("personnelId");
         List<FurloughRecord> furloughRecords = whiteFurloughRecordMapper.queryAll(jsonMap);
@@ -493,7 +494,7 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
                                     selectById.getOpenId(),
                                     "请假信息",
                                     "",
-                                    sysPersonnel.getName() + "提交了的请假信息",
+                                    furloughRecord.getPersonnelName() + "提交了的请假信息",
                                     "",
                                     urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromRestVerify=true"
                             );
@@ -520,8 +521,9 @@ public class WhiteFurloughRecordServiceImpl implements IWhiteFurloughRecordServi
             if (updateById != 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"修改数据失败");
             }
+            SysPersonnel personnel = iSysPersonnelMapper.selectById(furloughRecord.getPersonnelId());
             PanXiaoZhang.postWechatFer(
-                    sysPersonnel.getOpenId(),
+                    personnel.getOpenId(),
                     "请假信息",
                     "",
                     "请假申请通过",

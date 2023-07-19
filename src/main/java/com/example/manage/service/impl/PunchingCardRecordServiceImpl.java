@@ -2,6 +2,7 @@ package com.example.manage.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.manage.entity.FurloughRecord;
 import com.example.manage.entity.SysManagement;
 import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.data_statistics.Management;
@@ -60,6 +61,9 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
     @Resource
     private StatisticsPunchingCardRecordMapper statisticsPunchingCardRecordMapper;
 
+    @Resource
+    private StatisticsFurloughRecordMapper statisticsFurloughRecordMapper;
+
     //方法总管
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -105,7 +109,6 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
     //打卡数据统计
     private ReturnEntity statistics(HttpServletRequest request) throws ParseException {
         Map map = PanXiaoZhang.getJsonMap(request);
-
         String startTime = String.valueOf(map.get("startTime"));
         String endTime = String.valueOf(map.get("endTime"));
         if (!PanXiaoZhang.isLegalDate(10,String.valueOf(startTime),PanXiaoZhang.yMd())){
@@ -131,9 +134,26 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
             List<String> days = PanXiaoZhang.getDays(startTime, endTime);
             //进行存储打卡记录
             Map<String,PunchingCardRecord> cardRecordMap = new HashMap<>();
+            //进行存储请假记录
+            Map<String,FurloughRecord> recordMap = new HashMap<>();
             //遍历人员
             for (int i = 0; i < personnels.size(); i++) {
                 SysPersonnel personnel = personnels.get(i);
+
+                //获取请假记录
+                List<FurloughRecord> furloughRecords = personnel.getFurloughRecords();
+                for (int j = 0; j < furloughRecords.size(); j++) {
+                    FurloughRecord furloughRecord = furloughRecords.get(j);
+                    List<String> stringList = PanXiaoZhang.getDays(DateFormatUtils.format(furloughRecord.getStartTime(), PanXiaoZhang.yMd()), DateFormatUtils.format(furloughRecord.getEndTime(), PanXiaoZhang.yMd()));
+                    for (int k = 0; k < stringList.size(); k++) {
+                        String dateTime = stringList.get(k);
+                        //存入map
+                        recordMap.put(
+                                dateTime + personnel.getPersonnelCode()
+                                , furloughRecord);
+                    }
+                }
+
                 //获取打卡记录
                 List<PunchingCardRecord> punchingCardRecords = personnel.getPunchingCardRecords();
                 for (int j = 0; j < punchingCardRecords.size(); j++) {
@@ -159,10 +179,20 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                 //遍历日期
                 for (int j = 0; j < days.size(); j++) {
                     String day = days.get(j);
-                    PunchingCardRecord punchingCardRecord = cardRecordMap.get(day + personnel.getPersonnelCode());
+                    String key = day + personnel.getPersonnelCode();
+                    //信息实体类
+                    PunchingCardRecordTime punchingCardRecordTime = new PunchingCardRecordTime();
+                    //获取请假信息
+                    FurloughRecord furloughRecord = recordMap.get(key);
+                    if (!ObjectUtils.isEmpty(furloughRecord)){
+                        punchingCardRecordTime.setFurloughRecordName(furloughRecord.getReissueType());
+                        punchingCardRecordTime.setFurloughRecordTime(
+                                DateFormatUtils.format(furloughRecord.getStartTime(),PanXiaoZhang.yMdHms())+ "~" +
+                                DateFormatUtils.format(furloughRecord.getEndTime(),PanXiaoZhang.yMdHms()));
+                    }
+                    //获取打卡信息
+                    PunchingCardRecord punchingCardRecord = cardRecordMap.get(key);
                     if (!ObjectUtils.isEmpty(punchingCardRecord)) {
-                        //上下班签到实体类
-                        PunchingCardRecordTime punchingCardRecordTime = new PunchingCardRecordTime();
                         if (!ObjectUtils.isEmpty(punchingCardRecord.getWorkingAttendanceTime()) && !ObjectUtils.isEmpty(punchingCardRecord.getClosedAttendanceTime())){
                             String[] startSplit = punchingCardRecord.getManagementStartTime().split(":");
                             String[] endSplit = punchingCardRecord.getManagementEndTime().split(":");
@@ -219,10 +249,9 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                         }
                         recordList.add(punchingCardRecordTime);
                     }else {
-                        recordList.add(new PunchingCardRecordTime(
-                                "缺勤",
-                                "缺勤"
-                        ));
+                        punchingCardRecordTime.setCheckIn("缺勤");
+                        punchingCardRecordTime.setCheckOut("缺勤");
+                        recordList.add(punchingCardRecordTime);
                     }
                 }
                 punchingCardRecordStatistcs.add(new PunchingCardRecordStatistcs(

@@ -14,6 +14,21 @@
         <result column="reissue_time" property="reissueTime" />
         <result column="verifier_remark" property="verifierRemark" />
         <result column="applicant_time" property="applicantTime" />
+
+        <association property="sysManagement" javaType="com.example.manage.entity.SysManagement">
+            <result column="s_m_name" property="name" />
+        </association>
+
+        <collection property="replacementReimbursements" ofType="com.example.manage.entity.CardReplacementReimbursement">
+            <result column="f_r_id" property="id" />
+            <result column="f_r_personnel_id" property="personnelId" />
+            <result column="f_r_verifier_remark" property="verifierRemark" />
+            <result column="f_r_verifier_time" property="verifierTime" />
+            <result column="f_r_reissue_code" property="reissueCode" />
+            <result column="f_r_reissue_state" property="reissueState" />
+            <result column="f_r_number" property="number" />
+            <result column="f_r_personnel_name" property="personnelName" />
+        </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
@@ -21,20 +36,78 @@
         <include refid="whereSqlModel"/>
     </select>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select <include refid="tableSql"/>.*
+        select
+        <include refid="returnSql"/>
+        from
+        (<include refid="tableReturn" />)
+        as
+        <include refid="fRecord"/>
+        <include refid="relevanceSql" />
+        <include refid="safeOrderByAs" />
+    </select>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="fRecord"/>.*
+
+        ,<include refid="tableSqlFurloughReimbursement" />.id as f_r_id
+        ,<include refid="tableSqlFurloughReimbursement" />.personnel_id as f_r_personnel_id
+        ,<include refid="tableSqlFurloughReimbursement" />.verifier_remark as f_r_verifier_remark
+        ,<include refid="tableSqlFurloughReimbursement" />.verifier_time as f_r_verifier_time
+        ,<include refid="tableSqlFurloughReimbursement" />.reissue_code as f_r_reissue_code
+        ,<include refid="tableSqlFurloughReimbursement" />.reissue_state as f_r_reissue_state
+        ,<include refid="tableSqlFurloughReimbursement" />.number as f_r_number
+
+        ,<include refid="tableSqlSysManagement" />.`name` as s_m_name
+
+        ,<include refid="tableSqlSysPersonnel" />.`name` as f_r_personnel_name
+    </sql>
+    <!--  虚拟表  -->
+    <sql id="fRecord">
+        f_record
+    </sql>
+    <!--  主表  -->
+    <sql id="tableSql">
+        manage.card_replacement_record
+    </sql>
+    <!--  审核人  -->
+    <sql id="tableSqlFurloughReimbursement">
+        manage.card_replacement_reimbursement
+    </sql>
+    <!--  项目组  -->
+    <sql id="tableSqlSysManagement">
+        manage.sys_management
+    </sql>
+    <!--  人员信息表  -->
+    <sql id="tableSqlSysPersonnel">
+        manage.sys_personnel
+    </sql>
+    <!--  子表  -->
+    <sql id="tableReturn">
+        select
+        <include refid="tableSql"/>.*
         from
         <include refid="tableSql"/>
         <include refid="whereSqlModel" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
-    </select>
-    <sql id="tableSql">
-        manage.card_replacement_record
+    </sql>
+
+    <!--  进行关联表  -->
+    <sql id="relevanceSql">
+        LEFT JOIN <include refid="tableSqlFurloughReimbursement" /> on <include refid="fRecord" />.reissue_code = <include refid="tableSqlFurloughReimbursement" />.reissue_code
+        LEFT JOIN <include refid="tableSqlSysManagement" /> on <include refid="fRecord" />.management_id = <include refid="tableSqlSysManagement" />.id
+        LEFT JOIN <include refid="tableSqlSysPersonnel" /> on <include refid="tableSqlFurloughReimbursement" />.personnel_id = <include refid="tableSqlSysPersonnel" />.id
+    </sql>
+
+    <!--  审批人排序  -->
+    <sql id="safeOrderByAs">
+        order by <include refid="tableSqlFurloughReimbursement"/>.number desc
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
         <if test="personnelId != null "> and `personnel_id` = #{personnelId}</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`personnel_name` like concat('%',#{personnelName},'%')</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

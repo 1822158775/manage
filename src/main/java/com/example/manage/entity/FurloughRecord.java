@@ -66,6 +66,9 @@ public class FurloughRecord implements Serializable {
     @TableField(exist = false)
     public List<ReimbursementImage> reimbursementImages;//附件
 
+    @TableField(exist = false)
+    public SysManagement sysManagement;//项目信息
+
     public FurloughRecord() {
     }
 

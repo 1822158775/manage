@@ -170,7 +170,7 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         wrapper.eq("username",phone);
         SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
         // 发送人事
-        ReturnEntity entity = PanXiaoZhang.postWechat(
+        ReturnEntity entity = PanXiaoZhang.postWechatFer(
                 personnel.getOpenId(),
                 "",
                 "",

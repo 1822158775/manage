@@ -39,6 +39,9 @@ public class SchedulingConfig {
     @Resource
     private IManageReimbursementCategoryMapper iManageReimbursementCategoryMapper;
 
+    @Resource
+    private SchedulingSysManagementService schedulingSysManagementService;
+
     //@Scheduled(cron = "0 0 20 ? * FRI") // 每周五晚上8点执行
     //public void SchedulingFRI() {
     //    Boolean aBoolean = theCommanderService.synchronousData();
@@ -71,21 +74,14 @@ public class SchedulingConfig {
 
     //@Scheduled(cron="0 0/1 * * * ?")
     //private void minute() {
-    //    // 获取当前时间
-    //    Calendar cal = Calendar.getInstance();
-    //    // 将当前时间减去一天
-    //    //cal.add(Calendar.DATE, -1);
-    //    // 获取昨天的日期
-    //    Date yesterday = cal.getTime();
-    //    System.out.println(ap + DateFormatUtils.format(yesterday, PanXiaoZhang.yMd(1)));
-    //    File dir = new File(ap + DateFormatUtils.format(yesterday, PanXiaoZhang.yMd(1)));
-    //    PanXiaoZhang.deleteFile(dir);
+    //
     //}
 
     //每天10点查询2天后的人员生日和周年纪念
     @Scheduled(cron="0 0 10 * * ?")
     public void ExecuteOncePerSecond(){
         schedulingSysPersonnelService.birthdayInform();
+        schedulingSysManagementService.taskNotification();
     }
 
     //每天23点查询离职

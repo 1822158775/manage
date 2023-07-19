@@ -3,8 +3,10 @@ package com.example.manage.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.manage.entity.LoginRecord;
 import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.is_not_null.SysPersonnelNotNull;
+import com.example.manage.mapper.ILoginRecordMapper;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.service.ILoginService;
 import com.example.manage.util.HttpUtil;
@@ -15,6 +17,7 @@ import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.util.entity.Token;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +38,8 @@ import java.util.Map;
 @Slf4j
 @Service
 public class ILoginServiceImpl implements ILoginService {
+    @Resource
+    private ILoginRecordMapper iLoginRecordMapper;
     /**
      * 引入账号管理表的服务层
      */
@@ -54,15 +60,17 @@ public class ILoginServiceImpl implements ILoginService {
             map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
             //查询账号信息
             List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
-            SysPersonnel sysPersonnel = sysPersonnels.get(0);
             //判断如果账号查到唯一个就成功登录
-            if (ObjectUtils.isEmpty(sysPersonnel)){
+            if (sysPersonnels.size() != 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码异常");
             }
+            SysPersonnel sysPersonnel = sysPersonnels.get(0);
             //添加会话
             session.setAttribute("user",sysPersonnel.getId());
             //添加添加角色id
             session.setAttribute("roleId",sysPersonnel.getRoleId());
+            //设置过期时间
+            session.setMaxInactiveInterval((7 * 60) * 60);
             //生成token参数设置
             map.put("id",sysPersonnel.getId());
             map.put("username",sysPersonnel.getUsername());
@@ -124,6 +132,7 @@ public class ILoginServiceImpl implements ILoginService {
             if(sysPersonnel.getEmploymentStatus().equals(2)){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"待审核");
             }
+            String openid = sysPersonnel.getOpenId();
             //判断该用户是否有openID
             if (ObjectUtils.isEmpty(sysPersonnel.getOpenId())){
                 String token = request.getHeader("Http-X-User-Access-Token");
@@ -131,7 +140,7 @@ public class ILoginServiceImpl implements ILoginService {
                 if (!parseObject.getSuccess()){
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"请关注常旅通公众号");
                 }
-                String openid = parseObject.getResponse().getOpenid();
+                openid = parseObject.getResponse().getOpenid();
                 QueryWrapper wrapper = new QueryWrapper();
                 wrapper.eq("open_id",openid);
                 SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
@@ -149,6 +158,25 @@ public class ILoginServiceImpl implements ILoginService {
                     );
                 }
             }
+            //登入记录表
+            iLoginRecordMapper.insert(new LoginRecord(
+                null,
+                jsonParam.getUsername(),
+                DateFormatUtils.format(new Date(),PanXiaoZhang.yMdHms()),
+                openid,
+                jsonParam.getModel(),
+                "",
+                sysPersonnel.getPersonnelCode()
+            ));
+
+            //PanXiaoZhang.postWechatFer(
+            //        openid,
+            //        "登入信息",
+            //        "",
+            //        "账号在上登入",
+            //        "",
+            //        ""
+            //);
             return new ReturnEntity(
                     CodeEntity.CODE_SUCCEED,
                     sysPersonnel,//返回用户所有信息

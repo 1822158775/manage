@@ -18,6 +18,9 @@
         <result column="clocking_day_time" property="clockingDayTime" />
         <result column="management_start_time" property="managementStartTime" />
         <result column="management_end_time" property="managementEndTime" />
+        <result column="working_check_in_type" property="workingCheckInType" />
+        <result column="closed_check_in_type" property="closedCheckInType" />
+
         <collection property="sysManagement" ofType="com.example.manage.entity.SysManagement">
             <result column="m_id" property="id" />
             <result column="m_name" property="name" />
@@ -26,9 +29,15 @@
             <result column="m_monthly_indicators" property="monthlyIndicators" />
             <result column="m_management_state" property="managementState" />
         </collection>
+
+        <collection property="reimbursementImages" ofType="com.example.manage.entity.ReimbursementImage">
+            <result column="path_code" property="pathCode" />
+            <result column="path_url" property="pathUrl" />
+            <result column="http_url" property="httpUrl" />
+        </collection>
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
-        select count(<include refid="tableSql"/>.id) as id from
+        select count(DISTINCT <include refid="tableSql"/>.id) as id from
         <include refid="tableSql"/>
         <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
@@ -60,6 +69,12 @@
     <sql id="tableSql">
         manage.punching_card_record
     </sql>
+    <sql id="tableSqlRI">
+        manage.reimbursement_image
+    </sql>
+    <sql id="tableSqlRIAs">
+        reimbursementImageAs
+    </sql>
     <!--  返回  -->
     <sql id="returnSql">
         <include refid="tableSqlAs"/>.*
@@ -69,11 +84,17 @@
         ,sys_management.available_balance as m_available_balance
         ,sys_management.monthly_indicators as m_monthly_indicators
         ,sys_management.management_state as m_management_state
+
+        ,<include refid="tableSqlRI" />.`path_url`
+        ,<include refid="tableSqlRI" />.`path_code`
+        ,<include refid="tableSqlRI" />.`http_url`
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSqlAs">
         LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSqlAs" />.personnel_code
         LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
+        LEFT JOIN <include refid="tableSqlRI" /> on <include refid="tableSqlRI" />.path_code = <include refid="tableSqlAs" />.punching_card_record_code
+<!--        LEFT JOIN <include refid="tableSqlRI" /> as <include refid="tableSqlRIAs" />  on <include refid="tableSqlRIAs" />.path_code = <include refid="tableSqlAs" />.punching_card_record_code-->
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
@@ -85,12 +106,14 @@
         <if test="id != null "> and `id` = #{id}</if>
         <if test="dateFormat == 'start' "> and DATE_FORMAT(<include refid="tableSql" />.clocking_day_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="checkInType != null and checkInType != ''"> and (<include refid="tableSql" />.`working_check_in_type` like concat('%',#{checkInType},'%') or <include refid="tableSql" />.`closed_check_in_type` like concat('%',#{checkInType},'%'))</if>
     </sql>
     <sql id="whereSqlModelAs">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
         <if test="dateFormat == 'start' "> and DATE_FORMAT(<include refid="tableSqlAs" />.clocking_day_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
+        <if test="checkInType != null and checkInType != ''"> and (<include refid="tableSqlAs" />.`working_check_in_type` like concat('%',#{checkInType},'%') or <include refid="tableSqlAs" />.`closed_check_in_type` like concat('%',#{checkInType},'%'))</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
@@ -103,6 +126,6 @@
         order by <include refid="tableSql"/>.id desc
     </sql>
     <sql id="safeOrderByAs">
-        order by <include refid="tableSqlAs"/>.id desc
+        order by <include refid="tableSqlAs"/>.id desc,<include refid="tableSqlRI" />.id
     </sql>
 </mapper>

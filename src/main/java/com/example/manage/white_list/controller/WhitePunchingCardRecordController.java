@@ -65,4 +65,10 @@ public class WhitePunchingCardRecordController {
     public ReturnEntity clocking_situation_particulars(HttpServletRequest request){
         return iWhitePunchingCardRecordService.methodMaster(request,"clocking_situation_particulars");
     }
+
+    // 视频打卡
+    @PostMapping(value = "video_check_in")
+    public ReturnEntity video_check_in(HttpServletRequest request){
+        return iWhitePunchingCardRecordService.methodMasterT(request,"video_check_in");
+    }
 }

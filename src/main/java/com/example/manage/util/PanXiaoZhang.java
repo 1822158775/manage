@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.data_statistics.Personnel;
+import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.util.entity.*;
 import com.example.manage.util.wechat.WechatMsg;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -1204,25 +1205,28 @@ public class PanXiaoZhang {
     //发送消息
     public static ReturnEntity postWechatFer(String openId,String keyword1,String keyword2,String keyword3,String keyword4,String pagepath){
         try {
-            openId = openId.replaceAll("1234567.*","");
-            Token token = JSONObject.parseObject(PanXiaoZhang.getToken(), Token.class);
             ReturnEntity entity = new ReturnEntity();
-            if (!ObjectUtils.isEmpty(openId) && token.getSuccess() != false) {
-                entity = WechatMsg.tuiSongXiaoXi(
-                        openId,
-                        keyword1,
-                        keyword2,
-                        keyword3,
-                        keyword4,
-                        "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
-                        token.getResponse().getAccess_token(),
-                        pagepath
-                );
+            Token token = JSONObject.parseObject(PanXiaoZhang.getToken(), Token.class);
+            if (!ObjectUtils.isEmpty(openId)){
+                openId = openId.replaceAll("1234567.*","");
+                if (!ObjectUtils.isEmpty(openId) && token.getSuccess() != false) {
+                    entity = WechatMsg.tuiSongXiaoXi(
+                            openId,
+                            keyword1,
+                            keyword2,
+                            keyword3,
+                            keyword4,
+                            "5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg",
+                            token.getResponse().getAccess_token(),
+                            pagepath
+                    );
+                }
             }
-            if (!entity.getCode().equals("0")){
+            log.info("entity==================>{}",entity);
+            if (ObjectUtils.isEmpty(entity.getCode()) || !entity.getCode().equals("0")){
                 Token admin = JSONObject.parseObject(PanXiaoZhang.getOpenId("15830024173"), Token.class);
                 log.info("消息发送失败:{},{}",openId,token);
-                return WechatMsg.tuiSongXiaoXi(
+                entity = WechatMsg.tuiSongXiaoXi(
                         admin.getResponse().getOpenid(),
                         keyword1,
                         keyword2,
@@ -1232,6 +1236,7 @@ public class PanXiaoZhang {
                         token.getResponse().getAccess_token(),
                         pagepath
                 );
+                return entity;
             }
         }catch (Exception e){
             log.info("捕获异常：{}",e.getMessage());
@@ -1690,6 +1695,9 @@ public class PanXiaoZhang {
     }
 
     public static void main(String[] args) throws ParseException, IOException, BiffException {
+        //ISysPersonnelMapper bean = GetSpringBean.getBean(ISysPersonnelMapper.class);
+        //SysPersonnel personnel = bean.selectById(1);
+        //System.out.println(personnel);
 //        // 获取当前时间
 //        Calendar calendar = Calendar.getInstance();
 //        Date today = calendar.getTime();
@@ -1731,15 +1739,15 @@ public class PanXiaoZhang {
         //System.out.println(send);
 
         //Map<String,Integer> map = new HashMap<String,Integer>();
-        ReturnEntity entity = PanXiaoZhang.postWechatFer(
-                "o_QtX5qJzKGc3YmCG2eUb-v5ZEm8",
-                "",
-                "",
-                "补卡",
-                "",
-                "/pages/guide/guide?from=zn&redirect_url=/packageZn/pages/repair_check_list/repair_check_list?fromDispatchVerify=true"
-        );
-        System.out.println(entity);
+        //ReturnEntity entity = PanXiaoZhang.postWechatFer(
+        //        "o_QtX5qJzKGc3YmCG2eUb-v5ZEm8",
+        //        "",
+        //        "",
+        //        "补卡",
+        //        "",
+        //        "/pages/guide/guide?from=zn&redirect_url=/packageZn/pages/repair_check_list/repair_check_list?fromDispatchVerify=true"
+        //);
+        //System.out.println(entity);
 
 
         //LocalTime startTime = LocalTime.of(9, 0,3); // 上班时间为 9:00

@@ -47,7 +47,9 @@ public class WechatMsg {
         //消息主题显示相关map
         Map<String, Object> dataMap = new HashMap<String, Object>();
         if("5_XBlqDRj5EQpliJcjCBoYrrKNiZAdOU54ZTX8H1Dvg".equals(templateId)){
-            return new ReturnEntity(CodeEntity.CODE_SUCCEED, SendWeChatSignificance(token, openId, keyword1, keyword2, keyword3, keyword4, templateId,pagepath));
+            String significance = SendWeChatSignificance(token, openId, keyword1, keyword2, keyword3, keyword4, templateId, pagepath);
+            JSONObject jsonObject = JSONObject.parseObject(significance);
+            return new ReturnEntity(String.valueOf(jsonObject.get("errcode")), significance);
         }
         return new ReturnEntity("2","模板ID不正确");
     }

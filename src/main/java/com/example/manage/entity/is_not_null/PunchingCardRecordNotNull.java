@@ -35,6 +35,7 @@ public class PunchingCardRecordNotNull implements Serializable {
     public String openId;//当前打卡的openid
     public String x;//x
     public String y;//y
+    public String videoPath;//视频路径
 
     public PunchingCardRecordNotNull() {
     }
@@ -58,5 +59,27 @@ public class PunchingCardRecordNotNull implements Serializable {
         this.openId = openId;
         this.x = x;
         this.y = y;
+    }
+
+    public PunchingCardRecordNotNull(String id, String name, String personnelCode, String clockInTime, String managementId, String workingAgoOpenId, String workingLaterOpenId, String workingClockInState, String workingAttendanceTime, String closedAgoOpenId, String closedLaterOpenId, String closedClockInState, String closedAttendanceTime, String clockingDayTime, String personnelId, String openId, String x, String y, String videoPath) {
+        this.id = id;
+        this.name = name;
+        this.personnelCode = personnelCode;
+        this.clockInTime = clockInTime;
+        this.managementId = managementId;
+        this.workingAgoOpenId = workingAgoOpenId;
+        this.workingLaterOpenId = workingLaterOpenId;
+        this.workingClockInState = workingClockInState;
+        this.workingAttendanceTime = workingAttendanceTime;
+        this.closedAgoOpenId = closedAgoOpenId;
+        this.closedLaterOpenId = closedLaterOpenId;
+        this.closedClockInState = closedClockInState;
+        this.closedAttendanceTime = closedAttendanceTime;
+        this.clockingDayTime = clockingDayTime;
+        this.personnelId = personnelId;
+        this.openId = openId;
+        this.x = x;
+        this.y = y;
+        this.videoPath = videoPath;
     }
 }

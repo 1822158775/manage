@@ -59,7 +59,11 @@ public class CardReplacementRecord implements Serializable {
     public Date applicantTime;//申请时间
 
     @TableField(exist = false)
-    public List<CardReplacementReimbursement> replacementReimbursements;
+    public List<CardReplacementReimbursement> replacementReimbursements;//补卡审核人
+
+    @TableField(exist = false)
+    public SysManagement sysManagement;//项目信息
+
 
     public CardReplacementRecord() {
     }

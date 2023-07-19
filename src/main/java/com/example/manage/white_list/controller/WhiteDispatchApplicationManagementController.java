@@ -27,6 +27,12 @@ public class WhiteDispatchApplicationManagementController {
         return iWhiteDispatchApplicationManagementService.methodMaster(request,"cat");
     }
 
+    // 查询所有调派信息
+    @PostMapping(value = "cat_list")
+    public ReturnEntity cat_list(HttpServletRequest request){
+        return iWhiteDispatchApplicationManagementService.methodMaster(request,"cat_list");
+    }
+
     // 添加调派管理
     @PostMapping(value = "add")
     public ReturnEntity add(HttpServletRequest request){

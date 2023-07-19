@@ -235,7 +235,6 @@
         <if test="managementId != null and managementId != ''"> and <include refid="tableSqlPerformanceReport" />.`management_id` = #{managementId}</if>
         <if test="manageCardTypeId != null and manageCardTypeId != ''"> and <include refid="tableSqlPerformanceReport" />.`card_type_id` = #{manageCardTypeId}</if>
         <if test="sysPersonnelId != null and sysPersonnelId != ''"> and <include refid="tableSqlSPersonnel" />.`id` = #{sysPersonnelId}</if>
-        <if test="startTime != null and startTime != '' and endTime != null and endTime != ''"> and <include refid="tableSqlPerformanceReport" />.`report_time` BETWEEN #{startTime} AND #{endTime}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

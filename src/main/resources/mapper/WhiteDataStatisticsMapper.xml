@@ -425,13 +425,28 @@
     <sql id="yesterday">
         AND date(<include refid="tableSqlPReport" />.report_time)= DATE(NOW() - INTERVAL 1 DAY)
     </sql>
+
     <!--  上周记录  -->
     <sql id="lastWeek">
-        AND WEEK(<include refid="tableSqlPReport" />.report_time, 1) = WEEK(DATE_SUB(NOW(), INTERVAL 1 WEEK), 1)
+        <choose>
+            <when test="lastMondayStart != null and lastMondayStart != '' and lastMondayEnd != null and lastMondayEnd != ''">
+                AND <include refid="tableSqlPReport" />.report_time BETWEEN #{lastMondayStart} AND #{lastMondayEnd}
+            </when>
+            <otherwise>
+                AND WEEK(<include refid="tableSqlPReport" />.report_time, 1) = WEEK(DATE_SUB(NOW(), INTERVAL 1 WEEK), 1)
+            </otherwise>
+        </choose>
     </sql>
     <!--  上月记录  -->
     <sql id="lastMonth">
-        AND PERIOD_DIFF( date_format( now( ) , '%Y%m' ) , date_format( <include refid="tableSqlPReport" />.report_time , '%Y%m' ) ) = 1
+        <choose>
+            <when test="lastMonthTimeStart != null and lastMonthTimeStart != '' and lastMonthTimeEnd != null and lastMonthTimeEnd != ''">
+                AND <include refid="tableSqlPReport" />.report_time BETWEEN #{lastMonthTimeStart} AND #{lastMonthTimeEnd}
+            </when>
+            <otherwise>
+                AND PERIOD_DIFF( date_format( now( ) , '%Y%m' ) , date_format( <include refid="tableSqlPReport" />.report_time , '%Y%m' ) ) = 1
+            </otherwise>
+        </choose>
     </sql>
     <!--  激活状态  -->
     <sql id="statusActivation">

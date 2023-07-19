@@ -89,8 +89,6 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
                 return cat(request);
             }else if (name.equals("cat_list")){
                 return cat_list(request);
-            }else if (name.equals("edit_password")){
-                return edit_password(request);
             }else if (name.equals("cat_new_list")){
                 return cat_new_list(request);
             }
@@ -118,6 +116,8 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 }
                 return returnEntity;
+            }else if (name.equals("edit_password")){
+                return edit_password(request);
             }
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
@@ -147,14 +147,15 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
     //修改个人密码
     private ReturnEntity edit_password(HttpServletRequest request) throws IOException {
         SysPersonnel jsonParam = PanXiaoZhang.getJSONParam(request, SysPersonnel.class);
-        ReturnEntity returnEntity = PanXiaoZhang.isNull(
-                jsonParam,
-                new SysPersonnelNotNull(
-                        "isNotNullAndIsLengthNot0"
-                )
-        );
-        if (returnEntity.getState()){
-            return returnEntity;
+
+        if (ObjectUtils.isEmpty(jsonParam.getPersonnelId())){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"用户编码不可为空");
+        }
+
+        boolean password = PanXiaoZhang.isPassword(jsonParam.getPassword());
+        boolean updatePassword = PanXiaoZhang.isPassword(jsonParam.getUpdatePassword());
+        if (!password || !updatePassword){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"请输入大于5位小于17位的密码");
         }
 
         //查询当前填写信息的人
@@ -165,10 +166,6 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         if (estimateState.getState()){
             return estimateState;
         }
-        boolean password = PanXiaoZhang.isPassword(jsonParam.getPassword());
-        if (!password){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"请输入大于5位小于17位的密码");
-        }
         String s = sysPersonnel.getId() + "password";
         Object o = redisUtil.get(s);
         if (!ObjectUtils.isEmpty(o)){
@@ -176,13 +173,12 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         }
         redisUtil.set(s,sysPersonnel.getPassword(),10);
         String ago_password = PanXiaoZhang.getPassword(jsonParam.getPassword());
-        String lev_password = PanXiaoZhang.getPassword(sysPersonnel.getPassword());
-        if (!ago_password.equals(lev_password)){
+        if (!ago_password.equals(sysPersonnel.getPassword())){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"密码错误");
         }
         SysPersonnel personnel = new SysPersonnel();
         personnel.setId(sysPersonnel.getId());
-        personnel.setPassword(ago_password);
+        personnel.setPassword(PanXiaoZhang.getPassword(jsonParam.getUpdatePassword()));
         int updateById = iSysPersonnelMapper.updateById(personnel);
         if (updateById != 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"密码修改失败");
@@ -191,7 +187,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
                 sysPersonnel.getOpenId(),
                 "设置密码提醒",
                 "",
-                "最新密码：" + jsonParam.getPassword(),
+                "最新密码：" + jsonParam.getUpdatePassword(),
                 "",
                 ""
         );

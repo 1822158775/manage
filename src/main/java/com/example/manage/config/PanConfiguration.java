@@ -90,6 +90,8 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
             //ReturnEntity statistics = iPunchingCardRecordService.ceshi(map, "statistics");
             //System.out.println(statistics + "=======================");
             //xlsxReader.add(34,"兰州机场");
+            //schedulingSysManagementService.taskNotification();
+            //schedulingSysManagementService.taskNotificationCardReplacement();
 
     } catch (SocketException e) {
             e.printStackTrace();

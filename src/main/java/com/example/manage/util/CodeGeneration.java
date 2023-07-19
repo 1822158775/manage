@@ -510,7 +510,7 @@ public class CodeGeneration {
     }
     public static void main(String[] args) {
         try {
-            methodMaster("出差审核表","go_out_to_work_reimbursement","GoOutToWorkReimbursement");
+            methodMaster("登入表","login_record","LoginRecord");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {
