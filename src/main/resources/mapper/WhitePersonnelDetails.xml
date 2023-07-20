@@ -44,6 +44,7 @@
         <include refid="tableSqlSysPersonnel" />
         <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
+        <include refid="sysPersonnelEmploymentStatus" />
         <include refid="safeOrderBy" />
     </select>
 
@@ -110,6 +111,10 @@
     <!--  请假状态  -->
     <sql id="furloughRecordState">
         AND <include refid="tableSqlFurloughRecord" />.reissue_state = 'agree'
+    </sql>
+    <!--  查询在职人  -->
+    <sql id="sysPersonnelEmploymentStatus">
+        and <include refid="tableSqlSysPersonnel" />.employment_status != 0
     </sql>
     <!--  排序  -->
     <sql id="safeOrderBy">

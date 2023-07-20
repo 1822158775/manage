@@ -24,8 +24,8 @@ magicalcoder:
           uploadDiskFolder:
           requestPrefix: upload
           fileExtraAddPrefix: upload/
-          ap: D:\home\equity\manage\target\classes\upload\
-#          ap: /www/springboot/manage/upload/
+#          ap: D:\home\equity\manage\target\classes\upload\
+          ap: /www/springboot/manage/upload/
       useAliyunOss:
         open: false
         returnUrl: true
@@ -93,3 +93,5 @@ url:
   employer_list: /packageZn/pages/employer_list/employer_list?managementId=
 card:
   number: 5
+card_type:
+  id: 4

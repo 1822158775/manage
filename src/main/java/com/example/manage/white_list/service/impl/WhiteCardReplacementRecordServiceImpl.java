@@ -289,16 +289,25 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                 }
                 return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
             }
+            //获取申请人信息
+            SysPersonnel personnel = iSysPersonnelMapper.selectById(cardReplacementRecord.getPersonnelId());
+            if (ObjectUtils.isEmpty(personnel)){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"申请人信息不存在");
+            }
             //获取补卡类型
             String reissueType = cardReplacementRecord.getReissueType();
+            //查询当天是否有打卡信息
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.eq("personnel_code",personnel.getPersonnelCode());
+            wrapper.eq("clocking_day_time",cardReplacementRecord.getReissueTime());
+            PunchingCardRecord cardRecord = iPunchingCardRecordMapper.selectOne(wrapper);
+            if (!ObjectUtils.isEmpty(cardRecord) && reissueType.equals("3")){
+                reissueType = "1";
+            }
             if (reissueType.equals("3")){
                 CheckInTime checkInTime = iCheckInTimeMapper.selectById(cardReplacementRecord.getCheckInTimeId());
                 if (ObjectUtils.isEmpty(checkInTime)){
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"当前打卡规则不存在");
-                }
-                SysPersonnel personnel = iSysPersonnelMapper.selectById(cardReplacementRecord.getPersonnelId());
-                if (ObjectUtils.isEmpty(personnel)){
-                    return new ReturnEntity(CodeEntity.CODE_ERROR,"申请人信息不存在");
                 }
                 PunchingCardRecord punchingCardRecord = new PunchingCardRecord(
                         null,
@@ -325,11 +334,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"添加进入记录失败");
                 }
             }else{
-                SysPersonnel personnel = iSysPersonnelMapper.selectById(cardReplacementRecord.getPersonnelId());
-                if (ObjectUtils.isEmpty(personnel)){
-                    return new ReturnEntity(CodeEntity.CODE_ERROR,"申请人信息不存在");
-                }
-                QueryWrapper wrapper = new QueryWrapper();
+                wrapper = new QueryWrapper();
                 wrapper.eq("personnel_code",personnel.getPersonnelCode());
                 wrapper.eq("clocking_day_time",DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()));
                 PunchingCardRecord punchingCardRecord = iPunchingCardRecordMapper.selectOne(wrapper);
@@ -369,7 +374,6 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
             if (updateById != 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"修改数据失败");
             }
-            SysPersonnel personnel = iSysPersonnelMapper.selectById(cardReplacementRecord.getPersonnelId());
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
                     "补卡申请",

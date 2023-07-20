@@ -487,7 +487,7 @@ public class PanXiaoZhang {
         return new BigDecimal(d).setScale(integer,BigDecimal.ROUND_HALF_UP).doubleValue();
     }
     public static Double doubleD(Double d,Integer integer){
-        if (d != 0){
+        if (d > 0D){
             return new BigDecimal(d).setScale(integer,BigDecimal.ROUND_HALF_UP).doubleValue();
         }else {
             return d;

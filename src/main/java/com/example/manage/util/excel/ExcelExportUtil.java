@@ -485,9 +485,9 @@ public class ExcelExportUtil {
         stringList.add("区域");
         stringList.add("项目类型");
         stringList.add("场景");
-        stringList.add("本月进件");
-        stringList.add("本月批核");
-        stringList.add("本月有效");
+        stringList.add("本" + type + "进件");
+        stringList.add("本" + type + "批核");
+        stringList.add("本" + type + "有效");
         stringList.add("指标");
         stringList.add("指标完成率");
         for (int i = 0; i < list.size(); i++) {

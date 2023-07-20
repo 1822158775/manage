@@ -44,6 +44,10 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
     @Value("${role.manage}")
     private Integer roleId;
 
+    //中信信用卡
+    @Value("${card_type.id}")
+    private Integer cardTypeId4;
+
     @Value("${role.manage3}")
     private Integer manage3;
 
@@ -126,12 +130,359 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 return cat_xlsx(request);
             }else if (name.equals("cat_month_xlsx")){
                 return cat_month_xlsx(request);
+            }else if (name.equals("cat_zx_month_xlsx")){
+                return cat_zx_month_xlsx(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
+    }
+
+    //导出中信
+    private ReturnEntity cat_zx_month_xlsx(HttpServletRequest request) throws IOException {
+        Map jsonMap = PanXiaoZhang.getJsonMap(request);
+        System.out.println(jsonMap.get("type"));
+        System.out.println(jsonMap.get("personnelId"));
+        //名字集合
+        List<String> stringList = new ArrayList<>();
+        Map map = new HashMap();
+        //字符串Map
+        Map<String, String> stringMap = new HashMap<>();
+        //数字Map
+        Map<String, Integer> integerMap = new HashMap<>();
+        //时间类型
+        String timeType = "日";
+        map.put("approverState","agree");
+        if (ObjectUtils.isEmpty(jsonMap.get("type"))){
+            map.put("type","day");
+        }else {
+            map.put("type",jsonMap.get("type"));
+            if (String.valueOf(jsonMap.get("type")).equals("week")){
+                timeType = "周";
+            }else if (String.valueOf(jsonMap.get("type")).equals("month")){
+                timeType = "月";
+            }
+        }
+        List<PerformanceReportSales> salesList = iPerformanceReportSalesMapper.queryListManagementCardType(map);
+        for (int i = 0; i < salesList.size(); i++) {
+            PerformanceReportSales reportSales = salesList.get(i);
+            String id = reportSales.getType() + "-" + reportSales.getManagementId() + "-" + reportSales.getCardTypeId();
+            if (ObjectUtils.isEmpty(stringMap.get(reportSales.getType()))){
+                stringList.add(reportSales.getType());
+                stringList.add(reportSales.getType() + "覆盖率");
+                stringMap.put(reportSales.getType(),reportSales.getType());
+            }
+            Integer integer = integerMap.get(id);
+            if (ObjectUtils.isEmpty(integer)){
+                integerMap.put(id,reportSales.getSales());
+            }else {
+                integer += reportSales.getSales();
+                integerMap.put(id,integer);
+            }
+        }
+
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(String.valueOf(jsonMap.get("personnelId")));
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
+        //初始化抬头
+        List<GetExcel> getExcels = ExcelExportUtil.initMonth(stringMap, timeType,stringList);
+        //通用in集合
+        ArrayList<Integer> arrayList = new ArrayList<>();
+        //查询部门类型
+        List<DivisionType> divisionTypes = divisionTypeMapper.selectList(null);
+        //行数
+        int countRow = 3;
+        //下标
+        int index = 0;
+        int row = countRow;
+        for (int i = 0; i < divisionTypes.size(); i++) {
+            List<GetExcel> typeExcels = new ArrayList<>();
+            DivisionType divisionType = divisionTypes.get(i);
+            //查询部门类型关联的部门
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.eq("division_type_id",divisionType.getId());
+            List<DivisionTypeManagement> divisionTypeManagements = iDivisionTypeManagementMapper.selectList(wrapper);
+            arrayList.clear();
+            for (int j = 0; j < divisionTypeManagements.size(); j++) {
+                DivisionTypeManagement divisionTypeManagement = divisionTypeManagements.get(j);
+                arrayList.add(divisionTypeManagement.getDivisionManagementId());
+            }
+            //查询相关部门
+            wrapper = new QueryWrapper();
+            wrapper.in("id",arrayList.toArray(new Integer[arrayList.size()]));
+            List<DivisionManagement> divisionManagements = iDivisionManagementMapper.selectList(wrapper);
+            //进件
+            Integer divisionTypeSumCountNumber = 0;
+            //批核
+            Integer divisionTypeSumApproved = 0;
+            //激活
+            Integer divisionTypeSumActivation = 0;
+            //项目指标
+            Integer divisionTypeSumMonthlyIndicators = 0;
+            //部门关联人员人数
+            Integer personnelNumber = 0;
+            //存储权益总数
+            Map<String,Integer> divisionTypeSumMap = new HashMap<>();
+            for (int j = 0; j < divisionManagements.size(); j++) {
+                List<GetExcel> excels = new ArrayList<>();
+                //部门
+                int divisionRow = countRow;
+                DivisionManagement divisionManagement = divisionManagements.get(j);
+                wrapper = new QueryWrapper();
+                wrapper.eq("division_management_id",divisionManagement.getId());
+                List<DivisionManagementPersonnel> personnelList = iDivisionManagementPersonnelMapper.selectList(wrapper);
+                personnelNumber = personnelList.size();
+                //进件
+                Integer divisionSumCountNumber = 0;
+                //批核
+                Integer divisionSumApproved = 0;
+                //激活
+                Integer divisionSumActivation = 0;
+                //项目指标
+                Integer divisionSumMonthlyIndicators = 0;
+                //存储权益总数
+                Map<String,Integer> divisionSumMap = new HashMap<>();
+                //查询部门关联经理
+                for (int k = 0; k < personnelList.size(); k++) {
+                    DivisionManagementPersonnel managementPersonnel = personnelList.get(k);
+                    map.clear();
+                    //查询该项目区域经理
+                    map = new HashMap();
+                    map.put("roleId",manage3);
+                    map.put("personnelId",managementPersonnel.getPersonnelId());
+                    List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
+                    if (sysPersonnels.size() < 1){
+                        List<SysManagement> managements = new ArrayList<>();
+                        List<DirectProject> list = iDirectProjectMapper.selectList(wrapper);
+                        for (int l = 0; l < list.size(); l++) {
+                            DirectProject directProject = list.get(l);
+                            managements.add(new SysManagement(
+                                    directProject.getManagementId(),
+                                    null
+                            ));
+                        }
+                        SysPersonnel personnel = new SysPersonnel(
+                                null,
+                                divisionManagement.getName(),
+                                null,
+                                null
+                        );
+                        personnel.setSysManagement(managements);
+                        sysPersonnels.add(personnel);
+                    }
+
+
+                    for (int l = 0; l < sysPersonnels.size(); l++) {
+                        SysPersonnel personnel = sysPersonnels.get(l);
+                        List<SysManagement> sysManagement = personnel.getSysManagement();
+                        arrayList.clear();
+                        for (int m = 0; m < sysManagement.size(); m++) {
+                            SysManagement management = sysManagement.get(m);
+                            arrayList.add(management.getId());
+                        }
+                        if (ObjectUtils.isEmpty(jsonMap.get("type"))){
+                            map.put("type","day");
+                        }else {
+                            map.put("type",jsonMap.get("type"));
+                        }
+                        map.put("inManagementId",arrayList.toArray(new Integer[arrayList.size()]));
+                        map.put("manageCardTypeId",cardTypeId4);
+                        List<RankingList> queryAllCount = whiteRankingListMapper.queryAllCount(map);
+                        //获取办卡名称
+                        CardType cardType = iCardTypeMapper.selectById(cardTypeId4);
+                        //进件
+                        Integer sumCountNumber = 0;
+                        //批核
+                        Integer sumApproved = 0;
+                        //激活
+                        Integer sumActivation = 0;
+                        //项目指标
+                        Integer sumMonthlyIndicators = 0;
+                        //存储权益总数
+                        Map<String,Integer> sumMap = new HashMap<>();
+                        for (int m = 0; m < queryAllCount.size(); m++) {
+                            int col = 2;
+                            RankingList rankingList = queryAllCount.get(m);
+                            //进件divisionS
+                            Integer countNumber = rankingList.getCountNumber();
+                            countNumber = ObjectUtils.isEmpty(countNumber) ? 0 : countNumber;
+                            sumCountNumber += countNumber;
+                            divisionSumCountNumber += countNumber;
+                            divisionTypeSumCountNumber += countNumber;
+                            //批核
+                            Integer approved = rankingList.getApproved();
+                            approved = ObjectUtils.isEmpty(approved) ? 0 : approved;
+                            sumApproved += approved;
+                            divisionSumApproved += approved;
+                            divisionTypeSumApproved += approved;
+                            //激活
+                            Integer activation = rankingList.getActivation();
+                            activation = ObjectUtils.isEmpty(activation) ? 0 : activation;
+                            sumActivation += activation;
+                            divisionSumActivation += activation;
+                            divisionTypeSumActivation += activation;
+                            //项目指标
+                            Integer monthlyIndicators = rankingList.getMonthlyIndicators();
+                            monthlyIndicators = ObjectUtils.isEmpty(monthlyIndicators) ? 0 : monthlyIndicators;
+                            sumMonthlyIndicators += monthlyIndicators;
+                            divisionSumMonthlyIndicators += monthlyIndicators;
+                            divisionTypeSumMonthlyIndicators += monthlyIndicators;
+
+                            excels.add(XlsxLayoutReader.text(rankingList.getName(), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(cardType.getName(), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(String.valueOf(countNumber), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(String.valueOf(approved), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(String.valueOf(activation), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(String.valueOf(monthlyIndicators), countRow, countRow, col, col));
+                            col++;
+                            excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(activation,monthlyIndicators,1,100)+"%", countRow, countRow, col, col));
+                            for (int n = 0; n < stringList.size(); n++) {
+                                col++;
+                                String s = stringList.get(n);
+                                String id = s.replaceAll("覆盖率","") + "-" + rankingList.getId() + "-" + rankingList.getCardTypeId();
+                                Integer integer = integerMap.get(id);
+                                if (ObjectUtils.isEmpty(integer)){
+                                    integer = 0;
+                                }
+                                if (s.contains("覆盖率")){
+                                    excels.add(XlsxLayoutReader.text(PanXiaoZhang.doubleD(integer + approved > 0 ? (integer * 1.0 / approved * 1.0) * 100 : 0D,1) + "%", countRow, countRow, col, col));
+                                }else {
+                                    //区域总和
+                                    Integer salesNumber = sumMap.get(s);
+                                    if (ObjectUtils.isEmpty(salesNumber)){
+                                        sumMap.put(s,integer);
+                                    }else {
+                                        salesNumber += integer;
+                                        sumMap.put(s,salesNumber);
+                                    }
+                                    //部门总和
+                                    Integer divisionSalesNumber = divisionSumMap.get(s);
+                                    if (ObjectUtils.isEmpty(divisionSalesNumber)){
+                                        divisionSumMap.put(s,integer);
+                                    }else {
+                                        divisionSalesNumber += integer;
+                                        divisionSumMap.put(s,divisionSalesNumber);
+                                    }
+                                    //总部门总和
+                                    Integer divisionTypeNumber = divisionTypeSumMap.get(s);
+                                    if (ObjectUtils.isEmpty(divisionTypeNumber)){
+                                        divisionTypeSumMap.put(s,integer);
+                                    }else {
+                                        divisionTypeNumber += integer;
+                                        divisionTypeSumMap.put(s,divisionTypeNumber);
+                                    }
+                                    excels.add(XlsxLayoutReader.text(String.valueOf(integer), countRow, countRow, col, col));
+                                }
+                            }
+                            countRow++;
+                        }
+                        excels.add(XlsxLayoutReader.text(personnel.getName() + "合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
+                        excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(sumActivation,sumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
+
+                        Integer sumCol = 9;
+                        for (int n = 0; n < stringList.size(); n++) {
+                            String s = stringList.get(n);
+                            Integer integer = sumMap.get(s.replaceAll("覆盖率",""));
+                            if (s.contains("覆盖率")){
+                                excels.add(XlsxLayoutReader.text(PanXiaoZhang.doubleD(integer + sumApproved > 0 ? (integer * 1.0 / sumApproved * 1.0) * 100 : 0D,1) + "%", countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                            }else {
+                                excels.add(XlsxLayoutReader.text(String.valueOf(integer), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                            }
+                            sumCol++;
+                        }
+                        if (personnelList.size() > 1 && k+1 == personnelList.size()){
+                            countRow++;
+                        }
+                        if (divisionManagements.size() > 1 && j+1 == divisionManagements.size()){
+                            countRow++;
+                        }
+                        excels.add(XlsxLayoutReader.text(personnel.getName(), row, countRow, 1, 1));
+                        if (personnelList.size() > 1 && k+1 == personnelList.size()){
+                            countRow--;
+                        }
+                        if (divisionManagements.size() > 1 && j+1 == divisionManagements.size()){
+                            countRow--;
+                        }
+                        countRow++;
+                        row = countRow;
+                    }
+                }
+                //部门
+                excels.add(index, XlsxLayoutReader.text(divisionManagement.getName(), divisionRow, countRow, 0, 0));
+
+                if (personnelNumber > 1){
+                    excels.add(XlsxLayoutReader.text(divisionManagement.getName() + "总合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
+                    excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(divisionSumActivation,divisionSumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
+                    Integer sumCol = 9;
+                    for (int n = 0; n < stringList.size(); n++) {
+                        String s = stringList.get(n);
+                        Integer integer = divisionSumMap.get(s.replaceAll("覆盖率",""));
+                        if (s.contains("覆盖率")){
+                            excels.add(XlsxLayoutReader.text(PanXiaoZhang.doubleD(integer + divisionSumApproved > 0 ? (integer * 1.0 / divisionSumApproved * 1.0) * 100 : 0D,1) + "%", countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                        }else {
+                            excels.add(XlsxLayoutReader.text(String.valueOf(integer), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                        }
+                        sumCol++;
+                    }
+                    countRow++;
+                    row = countRow;
+                }
+                getExcels.add(new GetExcel(
+                        divisionRow,
+                        countRow,
+                        excels,
+                        false
+                ));
+            }
+            if (divisionTypeManagements.size() > 1){
+                typeExcels.add(XlsxLayoutReader.text(divisionType.getName() + "总合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
+                typeExcels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(divisionTypeSumActivation,divisionTypeSumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
+                Integer sumCol = 9;
+                for (int n = 0; n < stringList.size(); n++) {
+                    String s = stringList.get(n);
+                    Integer integer = divisionTypeSumMap.get(s.replaceAll("覆盖率",""));
+                    if (s.contains("覆盖率")){
+                        typeExcels.add(XlsxLayoutReader.text(PanXiaoZhang.doubleD(integer + divisionTypeSumApproved > 0 ? (integer * 1.0 / divisionTypeSumApproved * 1.0) * 100 : 0D,1) + "%", countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                    }else {
+                        typeExcels.add(XlsxLayoutReader.text(String.valueOf(integer), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                    }
+                    sumCol++;
+                }
+                countRow++;
+                row = countRow;
+                getExcels.add(new GetExcel(
+                        countRow,
+                        countRow,
+                        typeExcels,
+                        false
+                ));
+            }
+        }
+        String xlsx = exportTool.xlsx(getExcels);
+        System.out.println(xlsx + "=================");
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,MsgEntity.CODE_SUCCEED);
     }
 
     //导出月数据
