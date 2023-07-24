@@ -242,7 +242,7 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
                             //告知审核人前往审核
                             PanXiaoZhang.postWechatFer(
                                     selectById.getOpenId(),
-                                    "出差信息",
+                                    "",
                                     "",
                                     sysPersonnel.getName() + "提交了的出差信息",
                                     "",
@@ -271,7 +271,7 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
             }
             PanXiaoZhang.postWechatFer(
                     sysPersonnel.getOpenId(),
-                    "出差信息",
+                    "",
                     "",
                     "出差申请通过",
                     "",
@@ -300,7 +300,7 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
             }
             PanXiaoZhang.postWechatFer(
                     sysPersonnel.getOpenId(),
-                    "出差信息",
+                    "",
                     "",
                     remark,
                     "",
@@ -466,7 +466,7 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
                 //告知审核人前往审核
                 PanXiaoZhang.postWechatFer(
                         value.getOpenId(),
-                        "出差信息",
+                        "",
                         "",
                         sysPersonnel.getName() + "提交了出差信息",
                         "",

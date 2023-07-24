@@ -26,4 +26,14 @@ public class CardType implements Serializable {
     public String amount;//金额
     @TableField(value = "type")
     public String type;//类型
+
+    public CardType() {
+    }
+
+    public CardType(Integer id, String name, String amount, String type) {
+        this.id = id;
+        this.name = name;
+        this.amount = amount;
+        this.type = type;
+    }
 }

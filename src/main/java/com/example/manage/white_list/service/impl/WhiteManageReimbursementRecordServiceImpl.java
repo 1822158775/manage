@@ -272,7 +272,7 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                 SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(queryWrapper);
                 PanXiaoZhang.postWechatFer(
                         sysPersonnel.getOpenId(),
-                        "报销信息",
+                        "",
                         "",
                         "报销：审核通过",
                         "",
@@ -301,7 +301,7 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
                         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(queryWrapper);
                         PanXiaoZhang.postWechatFer(
                                 sysPersonnel.getOpenId(),
-                                "报销信息",
+                                "",
                                 "",
                                 personnel.getName() + ":提交了报销信息,请前往审核",
                                 "",
@@ -357,7 +357,7 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
             PanXiaoZhang.postWechatFer(
                     sysPersonnel.getOpenId(),
-                    "报销信息",
+                    "",
                     "",
                     "报销：审核失败",
                     "",
@@ -705,7 +705,7 @@ public class WhiteManageReimbursementRecordServiceImpl implements IWhiteManageRe
             String openId = approvalOpenId.get(i);
             PanXiaoZhang.postWechatFer(
                     openId,
-                    "报销信息",
+                    "",
                     "",
                     personnel.getName() + ":提交了报销信息,请前往审核",
                     "",

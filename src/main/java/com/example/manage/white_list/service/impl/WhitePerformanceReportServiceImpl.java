@@ -143,8 +143,6 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
     //导出中信
     private ReturnEntity cat_zx_month_xlsx(HttpServletRequest request) throws IOException {
         Map jsonMap = PanXiaoZhang.getJsonMap(request);
-        System.out.println(jsonMap.get("type"));
-        System.out.println(jsonMap.get("personnelId"));
         //名字集合
         List<String> stringList = new ArrayList<>();
         Map map = new HashMap();
@@ -482,11 +480,12 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
         String xlsx = exportTool.xlsx(getExcels);
         System.out.println(xlsx + "=================");
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,MsgEntity.CODE_SUCCEED);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,xlsx,MsgEntity.CODE_SUCCEED);
     }
 
     //导出月数据
     private ReturnEntity cat_month_xlsx(HttpServletRequest request) throws IOException {
+        PerformanceReport jsonParam = PanXiaoZhang.getJSONParam(request, PerformanceReport.class);
         //名字集合
         List<String> stringList = new ArrayList<>();
         Map map = new HashMap();
@@ -495,7 +494,44 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         //数字Map
         Map<String, Integer> integerMap = new HashMap<>();
         map.put("approverState","agree");
-        map.put("type","month");
+        if (ObjectUtils.isEmpty(jsonParam.getType())){
+            jsonParam.setRiqiDay("今日");
+            jsonParam.setType("day");
+        }else if (jsonParam.getType().equals("day")){
+            jsonParam.setRiqiDay("今日");
+        }else if (jsonParam.getType().equals("week")){
+            jsonParam.setRiqiDay("本周");
+        }else if (jsonParam.getType().equals("month")){
+            jsonParam.setRiqiDay("本月");
+        }else {
+            jsonParam.setRiqiDay("自定义");
+
+            String thisStartTime = jsonParam.getStartTime();
+            if (ObjectUtils.isEmpty(thisStartTime)){
+                thisStartTime = DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
+            }
+
+            String thisEndTime = jsonParam.getEndTime();
+            if (ObjectUtils.isEmpty(thisEndTime)){
+                thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 0);
+            }
+
+            Long dayTime = PanXiaoZhang.getDayTime(String.valueOf(thisStartTime), String.valueOf(thisEndTime));
+
+            if (dayTime > 31){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"查询天数最多一个月");
+            }
+
+            if (dayTime < 0){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"开始时间不可以大于结束时间");
+            }
+
+            map.put("thisStartTime",thisStartTime + " 00:00:00");
+            map.put("thisEndTime",thisEndTime + " 23:59:59");
+            stringMap.put("thisStartTime",thisStartTime + " 00:00:00");
+            stringMap.put("thisEndTime",thisEndTime + " 23:59:59");
+        }
+        map.put("type",jsonParam.getType());
         List<PerformanceReportSales> salesList = iPerformanceReportSalesMapper.queryListManagementCardType(map);
         for (int i = 0; i < salesList.size(); i++) {
             PerformanceReportSales reportSales = salesList.get(i);
@@ -513,7 +549,6 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             }
         }
 
-        PerformanceReport jsonParam = PanXiaoZhang.getJSONParam(request, PerformanceReport.class);
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
         //判断当前人员状态
         ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
@@ -521,7 +556,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             return estimateState;
         }
         //初始化抬头
-        List<GetExcel> getExcels = ExcelExportUtil.initMonth(stringMap, "月",stringList);
+        List<GetExcel> getExcels = ExcelExportUtil.initMonth(stringMap, jsonParam.getRiqiDay(),stringList);
         //通用in集合
         ArrayList<Integer> arrayList = new ArrayList<>();
         //查询部门类型
@@ -566,6 +601,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 DivisionManagement divisionManagement = divisionManagements.get(j);
                 wrapper = new QueryWrapper();
                 wrapper.eq("division_management_id",divisionManagement.getId());
+                wrapper.last("order by FIELD(id,3,1,4,2)");
                 List<DivisionManagementPersonnel> personnelList = iDivisionManagementPersonnelMapper.selectList(wrapper);
                 personnelNumber = personnelList.size();
                 //进件
@@ -581,12 +617,11 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 //查询部门关联经理
                 for (int k = 0; k < personnelList.size(); k++) {
                     DivisionManagementPersonnel managementPersonnel = personnelList.get(k);
-                    map.clear();
                     //查询该项目区域经理
-                    map = new HashMap();
-                    map.put("roleId",manage3);
-                    map.put("personnelId",managementPersonnel.getPersonnelId());
-                    List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
+                    Map sysPersonnelMap = new HashMap();
+                    sysPersonnelMap.put("roleId",manage3);
+                    sysPersonnelMap.put("personnelId",managementPersonnel.getPersonnelId());
+                    List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(sysPersonnelMap);
                     if (sysPersonnels.size() < 1){
                         List<SysManagement> managements = new ArrayList<>();
                         List<DirectProject> list = iDirectProjectMapper.selectList(wrapper);
@@ -606,7 +641,6 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                         personnel.setSysManagement(managements);
                         sysPersonnels.add(personnel);
                     }
-                    map.clear();
 
                     for (int l = 0; l < sysPersonnels.size(); l++) {
                         SysPersonnel personnel = sysPersonnels.get(l);
@@ -786,7 +820,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
         String xlsx = exportTool.xlsx(getExcels);
         System.out.println(xlsx + "=================");
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,MsgEntity.CODE_SUCCEED);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,xlsx,MsgEntity.CODE_SUCCEED);
     }
 
     //导出日数据
@@ -823,6 +857,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         Map map = new HashMap();
         map.put("inManagementId",toArray);
         map.put("roleId",roleId);
+        map.put("employmentStatus",1);
         List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
         ArrayList<Integer> arrayList = new ArrayList<>();
         for (int i = 0; i < sysPersonnels.size(); i++) {
@@ -836,32 +871,46 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             }
         }
         map.put("inManagementId",arrayList.toArray(new Integer[arrayList.size()]));
+
         map.put("type","month");
+
+
+        //存储独立项目
+        Map<String,RankingList> manageMap = new HashMap();
+        Integer[] integers = {1, 2};
+        for (int i = 0; i < integers.length; i++) {
+            Integer integer = integers[i];
+            manageMap.put("manageNH" + integer,new RankingList(
+                    integer
+            ));
+        }
+        //不查询指定的项目
+        map.put("noManage","yes");
         //本月数据
         List<RankingList> rankingLists = whiteRankingListMapper.queryCount(map);
         for (int i = 0; i < rankingLists.size(); i++) {
             RankingList rankingList = rankingLists.get(i);
-            stringMap.put("monthCardType" + rankingList.getCardTypeId(),String.valueOf(rankingList.getActivation()));
+            stringMap.put("monthCardType" + rankingList.getCardTypeId(), String.valueOf(rankingList.getActivation()));
         }
-        if (ObjectUtils.isEmpty(jsonParam.getRiqiDay())){
-            map.put("type","day");
+
+        if (ObjectUtils.isEmpty(jsonParam.getType())){
             jsonParam.setRiqiDay("今日");
-        }else if (jsonParam.getRiqiDay().equals("day")){
+            jsonParam.setType("day");
+        }else if (jsonParam.getType().equals("day")){
             jsonParam.setRiqiDay("今日");
-        }else if (jsonParam.getRiqiDay().equals("week")){
+        }else if (jsonParam.getType().equals("week")){
             jsonParam.setRiqiDay("本周");
-        }else if (jsonParam.getRiqiDay().equals("month")){
+        }else if (jsonParam.getType().equals("month")){
             jsonParam.setRiqiDay("本月");
         }else {
-            jsonParam.setRiqiDay("自定义时间");
-            map.put("type",jsonParam.getRiqiDay());
+            jsonParam.setRiqiDay("自定义");
 
-            Object thisStartTime = map.get("startTime");
+            String thisStartTime = jsonParam.getStartTime();
             if (ObjectUtils.isEmpty(thisStartTime)){
                 thisStartTime = DateFormatUtils.format(new Date(),PanXiaoZhang.yMd());
             }
 
-            Object thisEndTime = map.get("endTime");
+            String thisEndTime = jsonParam.getEndTime();
             if (ObjectUtils.isEmpty(thisEndTime)){
                 thisEndTime = PanXiaoZhang.GetNextDay(String.valueOf(thisStartTime), 0);
             }
@@ -881,14 +930,17 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             stringMap.put("thisStartTime",thisStartTime + " 00:00:00");
             stringMap.put("thisEndTime",thisEndTime + " 23:59:59");
         }
+        map.put("type",jsonParam.getType());
 
-        //List<PerformanceReportSales> salesList = iPerformanceReportSalesMapper.queryListManagementCardType(map);
-        //for (int i = 0; i < salesList.size(); i++) {
-        //    PerformanceReportSales reportSales = salesList.get(i);
-        //    System.out.println(reportSales + "=========================");
-        //}
-        //
-        //return null;
+        //本日数据
+        List<RankingList> queryCount = whiteRankingListMapper.queryCount(map);
+        for (int i = 0; i < queryCount.size(); i++) {
+            RankingList rankingList = queryCount.get(i);
+            stringMap.put("dayCardType" + rankingList.getCardTypeId(),String.valueOf(rankingList.getActivation()));
+        }
+
+        //不查询指定的项目
+        map.remove("noManage");
 
         //查询签到人数
         List<RankingList> queryPunchingCount = whiteRankingListMapper.queryPunchingCount(map);
@@ -897,46 +949,68 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             integerMap.put("attendance" + rankingList.getId(),rankingList.getAttendance());
             integerMap.put("numberOfPeople" + rankingList.getId(),rankingList.getNumberOfPeople());
         }
-        //本月数据
-        List<RankingList> queryCount = whiteRankingListMapper.queryCount(map);
-        for (int i = 0; i < queryCount.size(); i++) {
-            RankingList rankingList = queryCount.get(i);
-            stringMap.put("dayCardType" + rankingList.getCardTypeId(),String.valueOf(rankingList.getActivation()));
-        }
         List<GetExcel> getExcels = ExcelExportUtil.init(stringMap,ap,cardTypes,jsonParam.getRiqiDay());
         int row = 7;
+
+
+        //总数
+        //进件数
+        Integer sumCountNumber = 0;
+        //批核数
+        Integer sumApproved = 0;
+        //有效
+        Integer sumActivation = 0;
+        //实际签到人数
+        Integer sumCountAttendance = 0;
+        //应道人数
+        Integer sumCountNumberOfPeople = 0;
         //详情数据
         for (int i = 0; i < cardTypes.size(); i++) {
             CardType cardType = cardTypes.get(i);
             map.put("manageCardTypeId",cardType.getId());
             List<RankingList> queryAllCount = whiteRankingListMapper.queryAllCount(map);
-
+            //进件数
             Integer countNumber = 0;
+            //批核数
             Integer approved = 0;
+            //有效
             Integer activation = 0;
-
+            //实际签到人数
             Integer countAttendance = 0;
+            //应道人数
             Integer countNumberOfPeople = 0;
+            //当前行数
+            Integer rowSum = row;
             for (int j = 0; j < queryAllCount.size(); j++) {
                 RankingList rankingList = queryAllCount.get(j);
+                if (ObjectUtils.isEmpty(manageMap.get("manageNH" + rankingList.getId()))){
 
-                countNumber += rankingList.getCountNumber();
-                approved += rankingList.getApproved();
-                activation += rankingList.getActivation();
+                    Integer integerAttendance = integerMap.get("attendance" + rankingList.getId());
+                    Integer attendance = (ObjectUtils.isEmpty(integerAttendance)) ? 0 : integerAttendance;
+                    Integer integerNumberOfPeople = integerMap.get("numberOfPeople" + rankingList.getId());
+                    Integer numberOfPeople = (ObjectUtils.isEmpty(integerNumberOfPeople)) ? 0 : integerNumberOfPeople;
+                    //卡总数
+                    countNumber += rankingList.getCountNumber();
+                    approved += rankingList.getApproved();
+                    activation += rankingList.getActivation();
 
+                    countAttendance += attendance;
+                    countNumberOfPeople += numberOfPeople;
+                    //所有卡的总数
+                    sumCountNumber += rankingList.getCountNumber();
+                    sumApproved += rankingList.getApproved();
+                    sumActivation += rankingList.getActivation();
 
-                Integer integerAttendance = integerMap.get("attendance" + rankingList.getId());
-                Integer attendance = (ObjectUtils.isEmpty(integerAttendance)) ? 0 : integerAttendance;
-                countAttendance += attendance;
-                Integer integerNumberOfPeople = integerMap.get("numberOfPeople" + rankingList.getId());
-                Integer numberOfPeople = (ObjectUtils.isEmpty(integerNumberOfPeople)) ? 0 : integerNumberOfPeople;
-                countNumberOfPeople += numberOfPeople;
-                if (j == 0){
+                    sumCountAttendance += attendance;
+                    sumCountNumberOfPeople += numberOfPeople;
+
+                    if (j + 1 == queryAllCount.size()){
                         getExcels.add(new GetExcel(
                                 row,
                                 row,
                                 XlsxLayoutReader.template1(
                                         cardType,
+                                        rowSum,
                                         row,
                                         queryAllCount,
                                         stringMap,
@@ -946,23 +1020,25 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                                 ),
                                 false
                         ));
-                    }else {
-                        getExcels.add(new GetExcel(
-                                row,
-                                row,
-                                XlsxLayoutReader.template2(
-                                        cardType,
-                                        row,
-                                        queryAllCount,
-                                        stringMap,
-                                        rankingList,
-                                        numberOfPeople,
-                                        attendance
-                                ),
-                                false
-                        ));
+                    }
+                    getExcels.add(new GetExcel(
+                            row,
+                            row,
+                            XlsxLayoutReader.template2(
+                                    cardType,
+                                    row,
+                                    queryAllCount,
+                                    stringMap,
+                                    rankingList,
+                                    numberOfPeople,
+                                    attendance
+                            ),
+                            false
+                    ));
+                    row++;
+                }else {
+                    manageMap.put("manageNH" + rankingList.getId() + "-" + cardType.getId(),rankingList);
                 }
-                row++;
             }
             //合计
             getExcels.add(new GetExcel(
@@ -971,16 +1047,162 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     XlsxLayoutReader.template3(
                         cardType,
                         row,
-                        countNumber,
-                        approved,
-                        activation,
-                        countAttendance,
-                        countNumberOfPeople
+                        countNumber,//当日进件量
+                        approved,//当日批核量
+                        activation,//有效客户量
+                        countAttendance,//实出勤
+                        countNumberOfPeople//应出勤
                     ),
                     true)
             );
             row++;
         }
+        //合计
+        getExcels.add(new GetExcel(
+                row,
+                row,
+                XlsxLayoutReader.template3(
+                        new CardType(
+                                null,
+                                "总数",
+                                null,
+                                null
+                        ),
+                        row,
+                        sumCountNumber,//当日进件量
+                        sumApproved,//当日批核量
+                        sumActivation,//有效客户量
+                        sumCountAttendance,//实出勤
+                        sumCountNumberOfPeople//应出勤
+                ),
+                true)
+        );
+        row++;
+
+
+        //独立项目
+
+        //总数
+        //进件数
+        sumCountNumber = 0;
+        //批核数
+        sumApproved = 0;
+        //有效
+        sumActivation = 0;
+        //实际签到人数
+        sumCountAttendance = 0;
+        //应道人数
+        sumCountNumberOfPeople = 0;
+        for (int i = 0; i < cardTypes.size(); i++) {
+            CardType cardType = cardTypes.get(i);
+            //进件数
+            Integer countNumber = 0;
+            //批核数
+            Integer approved = 0;
+            //有效
+            Integer activation = 0;
+            //实际签到人数
+            Integer countAttendance = 0;
+            //应道人数
+            Integer countNumberOfPeople = 0;
+            //当前行数
+            Integer rowSum = row;
+            for (int j = 0; j < integers.length; j++) {
+                Integer integer = integers[j];
+                RankingList rankingList = manageMap.get("manageNH" + integer + "-" + cardType.getId());
+
+                if (!ObjectUtils.isEmpty(rankingList)){
+                    Integer integerAttendance = integerMap.get("attendance" + rankingList.getId());
+                    Integer attendance = (ObjectUtils.isEmpty(integerAttendance)) ? 0 : integerAttendance;
+                    Integer integerNumberOfPeople = integerMap.get("numberOfPeople" + rankingList.getId());
+                    Integer numberOfPeople = (ObjectUtils.isEmpty(integerNumberOfPeople)) ? 0 : integerNumberOfPeople;
+                    //卡总数
+                    countNumber += rankingList.getCountNumber();
+                    approved += rankingList.getApproved();
+                    activation += rankingList.getActivation();
+
+                    countAttendance += attendance;
+                    countNumberOfPeople += numberOfPeople;
+                    //所有卡的总数
+                    sumCountNumber += rankingList.getCountNumber();
+                    sumApproved += rankingList.getApproved();
+                    sumActivation += rankingList.getActivation();
+
+                    sumCountAttendance += attendance;
+                    sumCountNumberOfPeople += numberOfPeople;
+
+                    if (j + 1 == integers.length){
+                        getExcels.add(new GetExcel(
+                                row,
+                                row,
+                                XlsxLayoutReader.template1(
+                                        cardType,
+                                        rowSum,
+                                        row,
+                                        null,
+                                        stringMap,
+                                        rankingList,
+                                        numberOfPeople,
+                                        attendance
+                                ),
+                                false
+                        ));
+                    }
+                    getExcels.add(new GetExcel(
+                            row,
+                            row,
+                            XlsxLayoutReader.template2(
+                                    cardType,
+                                    row,
+                                    null,
+                                    stringMap,
+                                    rankingList,
+                                    numberOfPeople,
+                                    attendance
+                            ),
+                            false
+                    ));
+                    row++;
+                }
+            }
+            //合计
+            getExcels.add(new GetExcel(
+                    row,
+                    row,
+                    XlsxLayoutReader.template3(
+                            cardType,
+                            row,
+                            countNumber,//当日进件量
+                            approved,//当日批核量
+                            activation,//有效客户量
+                            countAttendance,//实出勤
+                            countNumberOfPeople//应出勤
+                    ),
+                    true)
+            );
+            row++;
+        }
+
+        //合计
+        getExcels.add(new GetExcel(
+                row,
+                row,
+                XlsxLayoutReader.template3(
+                        new CardType(
+                                null,
+                                "总数",
+                                null,
+                                null
+                        ),
+                        row,
+                        sumCountNumber,//当日进件量
+                        sumApproved,//当日批核量
+                        sumActivation,//有效客户量
+                        sumCountAttendance,//实出勤
+                        sumCountNumberOfPeople//应出勤
+                ),
+                true)
+        );
 
         String xlsx = exportTool.xlsx(getExcels);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,xlsx,MsgEntity.CODE_SUCCEED);
@@ -1087,7 +1309,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "业绩信息",
+                    "",
                     "",
                     performanceReport.getReportTime() + "提交的业绩信息,已审核",
                     "",
@@ -1219,7 +1441,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
        PanXiaoZhang.postWechatFer(
                 personnel.getOpenId(),
-                "业绩信息",
+                "",
                 "",
                 sysPersonnel.getName() + ":修改了业绩信息,请前往审核",
                 "",
@@ -1311,7 +1533,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
         ReturnEntity entity = PanXiaoZhang.postWechatFer(
                 personnel.getOpenId(),
-                "业绩信息",
+                "",
                 "",
                 performanceReport.getReportTime() + "提交的业绩信息,已审核",
                 "",
@@ -1565,7 +1787,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
         ReturnEntity entity = PanXiaoZhang.postWechatFer(
                 jsonParam.getSysPersonnel().getOpenId(),
-                "业绩信息",
+                "",
                 "",
                 sysPersonnel.getName() + ":提交业绩信息,请前往审核",
                 "",

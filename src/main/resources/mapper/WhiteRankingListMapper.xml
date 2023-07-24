@@ -46,6 +46,7 @@
         <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
         <include refid="managementState"/>
+        <include refid="noSManagementId" />
         <include refid="safeGroupByCardType" />
     </select>
     <!--  查询当月数量  -->
@@ -267,6 +268,13 @@
     <sql id="managementState">
         AND <include refid="tableSqlSManagement" />.management_state = 1
     </sql>
+    <!--  不查询指定项目  -->
+    <sql id="noSManagementId">
+        <if test="noManage != null">
+            AND <include refid="tableSqlSManagement" />.id != 1
+            AND <include refid="tableSqlSManagement" />.id != 2
+        </if>
+    </sql>
     <!--  卡类型  -->
     <sql id="manageCardTypeId">
         <if test="manageCardTypeId != null and manageCardTypeId != ''">
@@ -339,7 +347,35 @@
     <!--  分组  -->
     <!--  排序  -->
     <sql id="safeOrderBy">
-        ORDER BY approved DESC,activation DESC,<include refid="tableSqlPReport" />.report_time
+        ORDER BY
+            FIELD(<include refid="tableSqlSManagement"/>.`id`,
+            15,
+            27,
+            16,
+            17,
+            18,
+            38,
+            20,
+            36,
+            28,
+            14,
+            29,
+            13,
+            23,
+            19,
+            34,
+            6,
+            7,
+            11,
+            5,
+            8,
+            12,
+            26,
+            12,
+            37,
+            30,
+            32),
+            approved DESC,activation DESC,<include refid="tableSqlPReport" />.report_time
     </sql>
     <!--  分页  -->
     <sql id="safeLIMIT">

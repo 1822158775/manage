@@ -83,6 +83,12 @@ public class PerformanceReport implements Serializable {
     public List<PerformanceReportSales> salesList;//关联权益表单
     @TableField(exist = false)
     public Boolean timeType;//日期类型
+    @TableField(exist = false)
+    public String startTime;//开始时间
+    @TableField(exist = false)
+    public String endTime;//结束时间
+    @TableField(exist = false)
+    public String type;//日期类型
 
     public PerformanceReport() {
     }

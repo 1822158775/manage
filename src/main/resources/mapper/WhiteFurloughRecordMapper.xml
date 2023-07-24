@@ -132,6 +132,10 @@
             'refuse'),
         </if>
         <include refid="tableSql"/>.id desc,
-        <include refid="tableSqlReimbursement" />.`number` desc
+        <include refid="tableSqlReimbursement" />.`number` desc,
+        FIELD(<include refid="tableSqlReimbursement"/>.`reissue_state`,
+        'refuse',
+        'agree',
+        'pending')
     </sql>
 </mapper>

@@ -22,16 +22,17 @@ import java.util.Map;
  */
 
 public class XlsxLayoutReader {
-    public static List<GetExcel> template1(CardType cardType, int row, List<RankingList> queryAllCount, Map<String, String> stringMap,RankingList rankingList,Integer numberOfPeople,Integer attendance){
-            List<GetExcel> arrayList = template2(
-                    cardType,
-                    row,
-                    queryAllCount,
-                    stringMap,
-                    rankingList,
-                    numberOfPeople,
-                    attendance
-            );
+    public static List<GetExcel> template1(CardType cardType, int row, int rowEnd, List<RankingList> queryAllCount, Map<String, String> stringMap,RankingList rankingList,Integer numberOfPeople,Integer attendance){
+            //List<GetExcel> arrayList = template2(
+            //        cardType,
+            //        row,
+            //        queryAllCount,
+            //        stringMap,
+            //        rankingList,
+            //        numberOfPeople,
+            //        attendance
+            //);
+            List<GetExcel> arrayList = new ArrayList<>();
             arrayList.add(
                 new GetExcel(
                     cardType.getName(),
@@ -41,7 +42,7 @@ public class XlsxLayoutReader {
                     ExcelExportUtil.colorBlack(),
                     0,
                     row,
-                    row + queryAllCount.size(),
+                    rowEnd,
                     0,
                     0,
                     HorizontalAlignment.CENTER,

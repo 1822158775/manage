@@ -131,11 +131,15 @@
     <sql id="safeOrderBy">
         order by
     <if test="type == 'gt'">
-        FIELD(<include refid="tableSqlDAReimbursement"/>.`dispatch_state`,
+        FIELD(<include refid="tableSqlDAReimbursement"/>.`verifier_state`,
         'pending',
         'agree',
         'refuse'),
-    </if><include refid="tableSql"/>.id desc,<include refid="tableSqlDAReimbursement" />.`number` desc
+    </if><include refid="tableSql"/>.id desc,<include refid="tableSqlDAReimbursement" />.`number` desc,
+    FIELD(<include refid="tableSqlDAReimbursement"/>.`verifier_state`,
+    'refuse',
+    'agree',
+    'pending')
     </sql>
     <sql id="safeOrderByDAM">
         order by <include refid="tableSqlDAM"/>.id desc

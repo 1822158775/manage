@@ -278,7 +278,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                             //告知审核人前往审核
                             PanXiaoZhang.postWechatFer(
                                     selectById.getOpenId(),
-                                    "补卡申请",
+                                    "",
                                     "",
                                     cardReplacementRecord.getPersonnelName() + "提交了" + DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()) + "的补卡申请",
                                     "",
@@ -376,7 +376,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
             }
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "补卡申请",
+                    "",
                     "",
                     DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()) + "日的补卡申请通过了",
                     "",
@@ -406,7 +406,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
             }
             PanXiaoZhang.postWechatFer(
                     sysPersonnel.getOpenId(),
-                    "补卡申请",
+                    "",
                     "",
                     remark,
                     "",
@@ -618,7 +618,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     value.getOpenId(),
-                    "补卡申请",
+                    "",
                     "",
                     sysPersonnel.getName() + "提交了" + DateFormatUtils.format(jsonParam.getReissueTime(),PanXiaoZhang.yMd()) + "补卡信息",
                     "",
@@ -635,8 +635,15 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
     }
 
     public static void main(String[] args) {
-        String s = "ahdgsajhgdj1234567454353";
-        System.out.println(s.replaceAll("1234567.*",""));
+
+        PanXiaoZhang.postWechatFer(
+                "o_QtX5qJzKGc3YmCG2eUb-v5ZEm81234567",
+                "日的补卡申请通过了",
+                "",
+                "日的补卡申请通过了",
+                "",
+                ""
+        );
     }
 }
 

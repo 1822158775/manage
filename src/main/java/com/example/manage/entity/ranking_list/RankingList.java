@@ -36,6 +36,10 @@ public class RankingList implements Serializable {
     public RankingList() {
     }
 
+    public RankingList(Integer id) {
+        this.id = id;
+    }
+
     public RankingList(Integer id, Integer countNumber, String name, String dayTime, String cardTypeName, String personnelName, String reportStatus, String alreadyReportStatus, Integer activation, Integer approved, Integer artificial, Integer refuse) {
         this.id = id;
         this.countNumber = countNumber;

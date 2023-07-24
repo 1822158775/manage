@@ -6,6 +6,7 @@ import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.GetExcel;
 import org.apache.commons.collections4.Get;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -13,6 +14,7 @@ import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.util.ObjectUtils;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
@@ -138,6 +140,7 @@ public class ExcelExportUtil {
                 //边框线设置
                 for (int j = 0; j < excels.size(); j++) {
                     GetExcel excel = excels.get(j);
+
                     if (rowCount < excel.getLastRow()){
                         rowCount = excel.getLastRow();
                     }
@@ -276,23 +279,279 @@ public class ExcelExportUtil {
             }
         }
     }
+
+    /**
+     * 创建标题样式
+     *
+     * @param wb
+     * @return
+     */
+    private static HSSFCellStyle createTitleCellStyle(HSSFWorkbook wb) {
+        HSSFCellStyle cellStyle = wb.createCellStyle();
+        //水平居中
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        //垂直对齐
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        //背景颜色
+        cellStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+        // 创建字体样式
+        HSSFFont headerFont1 = (HSSFFont) wb.createFont();
+        //字体加粗
+        headerFont1.setBold(true);
+        // 设置字体类型
+        headerFont1.setFontName("黑体");
+        // 设置字体大小
+        headerFont1.setFontHeightInPoints((short) 15);
+        // 为标题样式设置字体样式
+        cellStyle.setFont(headerFont1);
+
+        return cellStyle;
+    }
+
+    /**
+     * 创建表头样式
+     *
+     * @param wb
+     * @return
+     */
+    private static HSSFCellStyle createHeadCellStyle(HSSFWorkbook wb) {
+        HSSFCellStyle cellStyle = wb.createCellStyle();
+        // 设置自动换行
+        cellStyle.setWrapText(true);
+        //背景颜色
+        cellStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        //水平居中
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        //垂直对齐
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        cellStyle.setBottomBorderColor(IndexedColors.BLACK.index);
+        //下边框
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        //左边框
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        //右边框
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        //上边框
+        cellStyle.setBorderTop(BorderStyle.THIN);
+         //创建字体样式
+        HSSFFont headerFont = (HSSFFont) wb.createFont();
+        //字体加粗
+        headerFont.setBold(true);
+        // 设置字体类型
+        headerFont.setFontName("黑体");
+        // 设置字体大小
+        headerFont.setFontHeightInPoints((short) 12);
+        // 为标题样式设置字体样式
+        cellStyle.setFont(headerFont);
+
+        return cellStyle;
+    }
+
+    //导出模版2
+    public static void writeExcelTo(List<List<DataStatisticsTodayDay>> pageList, List<GetExcel> getExcels, File tmpFile) {
+            /** 第一步，创建一个Workbook，对应一个Excel文件  */
+            HSSFWorkbook wb = new HSSFWorkbook();
+
+            /** 第二步，在Workbook中添加一个sheet,对应Excel文件中的sheet  */
+            HSSFSheet sheet = wb.createSheet("excel导出标题");
+
+            /** 第三步，设置样式以及字体样式*/
+            HSSFCellStyle titleStyle = createTitleCellStyle(wb);
+            HSSFCellStyle headerStyle = createHeadCellStyle(wb);
+
+
+            ////记录最长的行数
+            //int rowCount = 0;
+            ////记录最长的列数
+            //int colCount = 0;
+            //for (int i = 0; i < getExcels.size(); i++) {
+            //    GetExcel getExcel = getExcels.get(i);
+            //    List<GetExcel> excels = getExcel.getGetExcels();
+            //    for (int j = 0; j < excels.size(); j++) {
+            //        GetExcel excel = excels.get(j);
+            //        if (rowCount < excel.getLastRow()) {
+            //            rowCount = excel.getLastRow();
+            //        }
+            //        if (colCount < excel.getLastCol()) {
+            //            colCount = excel.getLastCol();
+            //        }
+            //
+            //        if (excel.getMergeSwitch()) {
+            //            //添加要合并地址到表格
+            //            sheet.addMergedRegion(new CellRangeAddress(
+            //                    excel.getFirstRow()
+            //                    , excel.getLastRow()
+            //                    , excel.getFirstCol()
+            //                    , excel.getLastCol()));
+            //        }
+            //
+            //        Row headRow = sheet.getRow(excel.getFirstRow());
+            //        if (ObjectUtils.isEmpty(headRow)) {
+            //            headRow = sheet.createRow(excel.getFirstRow());
+            //        }
+            //        // 创建工作表
+            //        //sheet.setDefaultRowHeight((short) 500);
+            //        //int fontSize = 0;
+            //        //if (!ObjectUtils.isEmpty(excel.getName()) && ObjectUtils.isEmpty(excel.getWidthSwitch())){
+            //        //    fontSize = (excel.getName().length() - 5) * 500;
+            //        //    if (fontSize > 0){
+            //        //        fontSize = fontSize + 3000;
+            //        //    }
+            //        //}
+            //        //if (fontSize == 0){
+            //        //    fontSize = 3000;
+            //        //}
+            //        //sh.setColumnWidth(excel.getFirstCol(), fontSize);
+            //        //创建单元格，指定起始列号，从0开始
+            //        Cell cell = headRow.createCell(excel.getFirstCol());
+            //        //设置单元格内容
+            //        cell.setCellValue(excel.getName());
+            //        cell.setCellStyle(headerStyle);
+            //    }
+            //}
+
+            /** 第四步，创建标题 ,合并标题单元格 */
+            // 行号
+            int rowNum = 0;
+            // 创建第一页的第一行，索引从0开始
+            HSSFRow row0 = sheet.createRow(rowNum++);
+            row0.setHeight((short) 800);// 设置行高
+
+            String title = "标题名";
+            HSSFCell c00 = row0.createCell(0);
+            c00.setCellValue(title);
+            c00.setCellStyle(titleStyle);
+            // 合并单元格，参数依次为起始行，结束行，起始列，结束列 （索引0开始）
+            //标题合并单元格操作，7为总列数
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+            // 第二行
+            HSSFRow row1 = sheet.createRow(rowNum++);
+            //第二行表头名称
+            String[] row_first = {"", "", "", "", "", "", "", ""};
+            for (int i = 0; i < row_first.length; i++) {
+                HSSFCell tempCell = row1.createCell(i);
+                tempCell.setCellStyle(headerStyle);
+                tempCell.setCellValue(row_first[i]);
+            }
+
+            sheet.addMergedRegion(new CellRangeAddress(1, 2, 0, 1));
+            sheet.addMergedRegion(new CellRangeAddress(1, 2, 2, 3));
+            sheet.addMergedRegion(new CellRangeAddress(1, 2, 4, 5));
+
+            sheet.addMergedRegion(new CellRangeAddress(3, 4, 0, 1));
+            sheet.addMergedRegion(new CellRangeAddress(3, 4, 2, 3));
+            sheet.addMergedRegion(new CellRangeAddress(3, 4, 4, 5));
+
+            //加多一条list
+            //for (GetExcel excelData : getExcels) {
+            //    HSSFRow tempRow = sheet.createRow(rowNum++);
+            //    tempRow.setHeight((short) 500);
+            //    // 循环单元格填入数据
+            //    for (int j = 0; j < 8; j++) {
+            //        HSSFCell tempCell = tempRow.createCell(j);
+            //        String tempValue = excelData.getName();
+            //        tempCell.setCellValue(tempValue);
+            //    }
+            //}
+            //
+            ////sheet.addMergedRegion(new CellRangeAddress(8, 10, 0, 0));
+            ////sheet.addMergedRegion(new CellRangeAddress(11, 13, 0, 0));
+            ////sheet.addMergedRegion(new CellRangeAddress(14, 18, 0, 0));
+            //
+            ////根据业务需求对单元格进行合并   参数依次为起始行，结束行，起始列，结束列 （索引0开始）
+            //sheet.addMergedRegion(new CellRangeAddress(8, 10, 0, 0));
+            //sheet.addMergedRegion(new CellRangeAddress(8, 10, 2, 2));
+            //sheet.addMergedRegion(new CellRangeAddress(8, 10, 3, 3));
+            //sheet.addMergedRegion(new CellRangeAddress(8, 10, 4, 4));
+            //sheet.addMergedRegion(new CellRangeAddress(12, 13, 0, 0));
+            //sheet.addMergedRegion(new CellRangeAddress(12, 13, 2, 2));
+            //sheet.addMergedRegion(new CellRangeAddress(12, 13, 3, 3));
+            //sheet.addMergedRegion(new CellRangeAddress(12, 13, 4, 4));
+            //sheet.addMergedRegion(new CellRangeAddress(7, 8, 6, 6));
+            //sheet.addMergedRegion(new CellRangeAddress(7, 8, 7, 7));
+            //sheet.addMergedRegion(new CellRangeAddress(10, 12, 6, 6));
+            //sheet.addMergedRegion(new CellRangeAddress(10, 12, 7, 7));
+
+
+            FileOutputStream out = null;
+            try {
+                out = new FileOutputStream(tmpFile);
+                wb.write(out);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                    if (wb != null) {
+                        wb.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+    }
+
+    //导出3
+    public static void getExcel3(List<List<DataStatisticsTodayDay>> pageList, List<GetExcel> getExcels, File tmpFile){
+        String excelCon = "<table ><tr><td colspan='23' align='center'>分县局刑侦支(大)队技术工作情况统计表</td></tr></table><table><tr><td align='left'>主办单位：</td><td></td> <td  colspan='21' align='right'>统计时间:2023年4月-2023年5月</td></tr></table> <table border='2' width='100%' >   <tr><td rowspan='2' colspan='2'>现场接报<br/>总数</td><td rowspan='2' colspan='2'>现场勘验<br/>总数</td><td rowspan='2' colspan='2'>         现场录入<br/>总数</td><td rowspan='2' colspan='2'>未立案刑<br/>案勘验总<br/>数</td> <td colspan='4'>立案刑案勘验案数</td> <td rowspan='2'>        写出<br/>分析<br/>案数</td><td rowspan='2'>痕迹<br/>提取<br/>案数</td><td rowspan='2'>制作<br/>记录<br/>案数</td><td rowspan='2'>痕迹<br/>建档<br/>案数</td><td rowspan='2'>       受理<br/>检案<br/>案数</td><td rowspan='2'>得出<br/>结论<br/>案数</td>   <td colspan='2'>技术破<br/>案案数</td>   <td colspan='2'>     鉴定书</td> <td rowspan='2'>在岗技<br/>术员数</td></tr> <tr><td>总<br/>计</td><td>九<br/>类</td><td>入室<br/>盗窃</td><td>其<br/>它</td><td>痕迹</td><td>DNA</td><td>案<br/>数</td><td>   份<br/>数</td></tr> <tr><td colspan='2'>5</td><td colspan='2'>11</td><td colspan='2'>11</td><td colspan='2'>3</td><td>          9</td><td>8</td><td>4</td><td>3</td><td>11</td><td>        6</td><td>6</td><td>6</td><td>7</td><td>      9</td><td>4</td><td>8</td><td>2</td><td>6</td><td>3</td></tr> <tr><td colspan='8'>痕迹提取种类</td> <td colspan='6'>发挥作用破案</td> <td colspan='2'>指纹正查档</td> <td colspan='4'>    指纹、足迹倒查档</td> <td colspan='2'>串并案数</td><td rowspan='3'>嫌疑人<br/>十指纹<br/>建档数</td></tr>   <tr> <td colspan='2' >指纹案数</td> <td colspan='2' >足迹案数</td>         <td colspan='2' >DNA提取<br/>案数</td>   <td >工具<br/>案数</td><td >其<br/>它</td>          <td rowspan='2'>总<br/>数</td> <td rowspan='2'>查<br/>档<br/>认<br/>定<br/>数</td> <td rowspan='2'>证<br/>实<br/>认<br/>定<br/>数</td> <td rowspan='2'>      确<br/>定<br/>性<br/>质<br/>数</td> <td rowspan='2'>串<br/>并<br/>破<br/>案<br/>数</td> <td rowspan='2'>提<br/>取<br/>证<br/>据<br/>数</td> <td rowspan='2'>     案<br/>数</td> <td rowspan='2'>查<br/>破<br/>案<br/>数</td> <td rowspan='2'>人<br/>数</td> <td rowspan='2'>查<br/>破<br/>人<br/>数</td>  <td rowspan='2' colspan='2'>    查<br/>破<br/>案<br/>数</td>   <td rowspan='2'>串</td><td rowspan='2'>起</td>  </tr>  <tr><td>全部<br/>刑案</td><td>十类<br/>案件</td><td>全部<br/>案件</td><td>十类<br/>案件</td><td>全部<br/>案件</td><td>十类<br/>案件</td><td>     全部<br/>刑案</td><td>全部<br/>刑案</td>  </tr>            <tr><td>10</td><td>7</td><td>9</td><td>8</td><td>6</td><td>3</td><td>3</td><td>2</td><td>5</td><td>9</td><td>6</td><td>8</td><td>9</td><td>3</td><td>8</td><td>3</td><td>7</td><td >2</td><td colspan='2'>2</td><td>11</td><td>2</td><td>6</td></tr>  </table>\n";
+        BufferedOutputStream buff = null;
+
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(tmpFile);
+            buff = new BufferedOutputStream(out);
+            buff.write(excelCon.getBytes("UTF-8"));
+            buff.flush();
+            buff.close();
+        } catch (Exception e) {
+        } finally {
+            try {
+                buff.close();
+                out.close();
+            } catch (Exception e) {
+            }
+        }
+    }
     public static void main(String[] args) throws IOException {
-        ArrayList<List<DataStatisticsTodayDay>> arrayList = new ArrayList<>();
-        ArrayList<DataStatisticsTodayDay> list = new ArrayList<>();
-        DataStatisticsTodayDay dataStatisticsTodayDay = new DataStatisticsTodayDay(
-                1,
-                2,
-                3
-        );
-        list.add(dataStatisticsTodayDay);
-        list.add(dataStatisticsTodayDay);
-        list.add(dataStatisticsTodayDay);
-        list.add(dataStatisticsTodayDay);
-        arrayList.add(list);
-        arrayList.add(list);
+        //ArrayList<List<DataStatisticsTodayDay>> arrayList = new ArrayList<>();
+        //ArrayList<DataStatisticsTodayDay> list = new ArrayList<>();
+        //DataStatisticsTodayDay dataStatisticsTodayDay = new DataStatisticsTodayDay(
+        //        1,
+        //        2,
+        //        3
+        //);
+        //list.add(dataStatisticsTodayDay);
+        //list.add(dataStatisticsTodayDay);
+        //list.add(dataStatisticsTodayDay);
+        //list.add(dataStatisticsTodayDay);
+        //arrayList.add(list);
+        //arrayList.add(list);
 
         //File tmpFile = File.createTempFile("ceshi",".xlsx",new File(fileExtraAddPrefix));
         //writeExcelToTemp(arrayList,init(),tmpFile);
+
+        String excelCon = "<table ><tr><td colspan='23' align='center'>分县局刑侦支(大)队技术工作情况统计表</td></tr></table><table><tr><td align='left'>主办单位：</td><td></td> <td  colspan='21' align='right'>统计时间:2023年4月-2023年5月</td></tr></table> <table border='2' width='100%' >   <tr><td rowspan='2' colspan='2'>现场接报<br/>总数</td><td rowspan='2' colspan='2'>现场勘验<br/>总数</td><td rowspan='2' colspan='2'>         现场录入<br/>总数</td><td rowspan='2' colspan='2'>未立案刑<br/>案勘验总<br/>数</td> <td colspan='4'>立案刑案勘验案数</td> <td rowspan='2'>        写出<br/>分析<br/>案数</td><td rowspan='2'>痕迹<br/>提取<br/>案数</td><td rowspan='2'>制作<br/>记录<br/>案数</td><td rowspan='2'>痕迹<br/>建档<br/>案数</td><td rowspan='2'>       受理<br/>检案<br/>案数</td><td rowspan='2'>得出<br/>结论<br/>案数</td>   <td colspan='2'>技术破<br/>案案数</td>   <td colspan='2'>     鉴定书</td> <td rowspan='2'>在岗技<br/>术员数</td></tr> <tr><td>总<br/>计</td><td>九<br/>类</td><td>入室<br/>盗窃</td><td>其<br/>它</td><td>痕迹</td><td>DNA</td><td>案<br/>数</td><td>   份<br/>数</td></tr> <tr><td colspan='2'>5</td><td colspan='2'>11</td><td colspan='2'>11</td><td colspan='2'>3</td><td>          9</td><td>8</td><td>4</td><td>3</td><td>11</td><td>        6</td><td>6</td><td>6</td><td>7</td><td>      9</td><td>4</td><td>8</td><td>2</td><td>6</td><td>3</td></tr> <tr><td colspan='8'>痕迹提取种类</td> <td colspan='6'>发挥作用破案</td> <td colspan='2'>指纹正查档</td> <td colspan='4'>    指纹、足迹倒查档</td> <td colspan='2'>串并案数</td><td rowspan='3'>嫌疑人<br/>十指纹<br/>建档数</td></tr>   <tr> <td colspan='2' >指纹案数</td> <td colspan='2' >足迹案数</td>         <td colspan='2' >DNA提取<br/>案数</td>   <td >工具<br/>案数</td><td >其<br/>它</td>          <td rowspan='2'>总<br/>数</td> <td rowspan='2'>查<br/>档<br/>认<br/>定<br/>数</td> <td rowspan='2'>证<br/>实<br/>认<br/>定<br/>数</td> <td rowspan='2'>      确<br/>定<br/>性<br/>质<br/>数</td> <td rowspan='2'>串<br/>并<br/>破<br/>案<br/>数</td> <td rowspan='2'>提<br/>取<br/>证<br/>据<br/>数</td> <td rowspan='2'>     案<br/>数</td> <td rowspan='2'>查<br/>破<br/>案<br/>数</td> <td rowspan='2'>人<br/>数</td> <td rowspan='2'>查<br/>破<br/>人<br/>数</td>  <td rowspan='2' colspan='2'>    查<br/>破<br/>案<br/>数</td>   <td rowspan='2'>串</td><td rowspan='2'>起</td>  </tr>  <tr><td>全部<br/>刑案</td><td>十类<br/>案件</td><td>全部<br/>案件</td><td>十类<br/>案件</td><td>全部<br/>案件</td><td>十类<br/>案件</td><td>     全部<br/>刑案</td><td>全部<br/>刑案</td>  </tr>            <tr><td>10</td><td>7</td><td>9</td><td>8</td><td>6</td><td>3</td><td>3</td><td>2</td><td>5</td><td>9</td><td>6</td><td>8</td><td>9</td><td>3</td><td>8</td><td>3</td><td>7</td><td >2</td><td colspan='2'>2</td><td>11</td><td>2</td><td>6</td></tr>  </table>\n";
+        BufferedOutputStream buff = null;
+        FileOutputStream outStr = null;
+        File tmpFile = File.createTempFile(DateFormatUtils.format(new Date(),PanXiaoZhang.yMdHms()),".xlsx",new File("D:\\home\\equity\\manage\\target\\classes\\upload\\20230721"));
+        try {
+            outStr = new FileOutputStream(tmpFile);
+            buff = new BufferedOutputStream(outStr);
+            buff.write(excelCon.getBytes("UTF-8"));
+            buff.flush();
+            buff.close();
+        } catch (Exception e) {
+        } finally {
+            try {
+                buff.close();
+                outStr.close();
+            } catch (Exception e) {
+            }
+        }
     }
     //红色
     public static XSSFColor colorRed(){
@@ -526,7 +785,7 @@ public class ExcelExportUtil {
                         "dayCardType",
                         type
                 ),
-                true
+                false
         ));
 
         getExcels.add(new GetExcel(
@@ -565,591 +824,6 @@ public class ExcelExportUtil {
                         6),
                 false)
         );
-    //
-    //    //主要内容
-    //    getExcels.add(new GetExcel(
-    //            7,
-    //            7,
-    //            new GetExcel[]{new GetExcel(
-    //                    "中信银行",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    9,
-    //                    0,
-    //                    0,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    true,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "深圳南航",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    1,
-    //                    1,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "方筠思",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    2,
-    //                    2,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "15",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    3,
-    //                    3,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "7",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    4,
-    //                    4,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "101",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    5,
-    //                    5,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "80",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    6,
-    //                    6,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "22",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    7,
-    //                    7,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "34",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    8,
-    //                    8,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "28%",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    9,
-    //                    9,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "11.4",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    10,
-    //                    10,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    7,
-    //                    7,
-    //                    11,
-    //                    11,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            )},
-    //            false)
-    //    );
-    //
-    //    //主要内容
-    //    getExcels.add(new GetExcel(
-    //            8,
-    //            8,
-    //            new GetExcel[]{new GetExcel(
-    //                    "深圳深航",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    1,
-    //                    1,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "邹霞",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    2,
-    //                    2,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "11",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    3,
-    //                    3,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "11",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    4,
-    //                    4,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "67",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    5,
-    //                    5,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "55",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    6,
-    //                    6,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "24",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    7,
-    //                    7,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "43",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    8,
-    //                    8,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "44%",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    9,
-    //                    9,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "5.0",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    10,
-    //                    10,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "",
-    //                    null,
-    //                    "text",
-    //                    colorWhite(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    8,
-    //                    8,
-    //                    11,
-    //                    11,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            )},
-    //            true)
-    //    );
-    //
-    //    //合计
-    //    getExcels.add(new GetExcel(
-    //            9,
-    //            9,
-    //            new GetExcel[]{new GetExcel(
-    //                    "中信银行合计",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    1,
-    //                    2,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    true,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "26",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    3,
-    //                    3,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "18",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    4,
-    //                    4,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "168",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    5,
-    //                    5,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "135",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    6,
-    //                    6,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "46",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    7,
-    //                    7,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "77",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    8,
-    //                    8,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "待计算",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    9,
-    //                    9,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "待计算",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    10,
-    //                    10,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            ),new GetExcel(
-    //                    "",
-    //                    null,
-    //                    "text",
-    //                    ExcelExportUtil.colorYellow(),
-    //                    ExcelExportUtil.colorBlack(),
-    //                    0,
-    //                    9,
-    //                    9,
-    //                    11,
-    //                    11,
-    //                    HorizontalAlignment.CENTER,
-    //                    VerticalAlignment.CENTER,
-    //                    (short) 11,
-    //                    false,
-    //                    false,
-    //                    data()
-    //            )},
-    //            true)
-    //    );
         return getExcels;
     }
     public void writeExcelToTempFile(List<List<String>> pageList, String[] titles, String[] mappingArr, File tmpFile) {

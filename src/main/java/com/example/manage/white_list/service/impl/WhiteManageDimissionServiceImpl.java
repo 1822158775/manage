@@ -183,7 +183,7 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
             // 发送上级领导
             PanXiaoZhang.postWechatFer(
                     jsonParam.getSysPersonnel().getOpenId(),
-                    "离职信息",
+                    "",
                     "",
                     sysPersonnel.getName() + "提交了离职申请",
                     "",

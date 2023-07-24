@@ -113,7 +113,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     openId,
-                    "请假信息",
+                    "",
                     "",
                     personnel.getUsername() + "您有：" + entry.getValue() + "条请假待审核数据",
                     "",
@@ -163,7 +163,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     openId,
-                    "请假信息",
+                    "",
                     "",
                     personnel.getUsername() + "您有：" + entry.getValue() + "条补卡待审核数据",
                     "",
@@ -213,7 +213,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     openId,
-                    "请假信息",
+                    "",
                     "",
                     personnel.getUsername() + "您有：" + entry.getValue() + "条调派待审核数据",
                     "",
@@ -260,7 +260,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "请假信息",
+                    "",
                     "",
                     personnel.getUsername() + "您有：" + entry.getValue() + "条补卡待审核数据",
                     "",

@@ -267,7 +267,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                             //告知审核人前往审核
                             PanXiaoZhang.postWechatFer(
                                     selectById.getOpenId(),
-                                    "调派申请",
+                                    "",
                                     "",
                                     personnel.getName() + "提交了调派申请",
                                     "",
@@ -320,7 +320,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             }
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "调派信息",
+                    "",
                     "",
                     "同意调派",
                     "",
@@ -332,7 +332,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 String openId = phone[i];
                 PanXiaoZhang.postWechatFer(
                         openId,
-                        "调派信息",
+                        "",
                         "",
                         personnel.getName() + "已调派到" + management.getName(),
                         "",
@@ -372,7 +372,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             }
             PanXiaoZhang.postWechatFer(
                     personnel.getOpenId(),
-                    "调派信息",
+                    "",
                     "",
                     remark,
                     "",
@@ -612,7 +612,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     value.getOpenId(),
-                    "调派信息",
+                    "",
                     "",
                     sysPersonnel.getName() + "提交了调派申请",
                     "",

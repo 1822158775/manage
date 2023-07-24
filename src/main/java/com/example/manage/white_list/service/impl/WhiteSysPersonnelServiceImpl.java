@@ -185,7 +185,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         }
         PanXiaoZhang.postWechatFer(
                 sysPersonnel.getOpenId(),
-                "设置密码提醒",
+                "",
                 "",
                 "最新密码：" + jsonParam.getUpdatePassword(),
                 "",
@@ -380,7 +380,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
             }
             PanXiaoZhang.postWechatFer(
                     openId,
-                    "入职信息",
+                    "",
                     "",
                     management.getName() + ":" + jsonParam.getName() + "提交了入职申请",
                     "",
@@ -409,7 +409,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         SysPersonnel personnel = iSysPersonnelMapper.selectById(4);
         PanXiaoZhang.postWechatFer(
                 personnel.getOpenId(),
-                "入职信息",
+                "",
                 "",
                 "提交了入职申请",
                 "",
