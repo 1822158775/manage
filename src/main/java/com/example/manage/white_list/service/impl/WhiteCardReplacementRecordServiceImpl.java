@@ -551,7 +551,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
         //从最大的开始审核
         jsonParam.setMaxNumber(0);
         //设置审核职位
-        Integer[] integers = {1,3,4};
+        Integer[] integers = {1};
         //存储map
         Map<Integer, SysRole> mapRole = new HashMap();
         //存储通知的人

@@ -1,5 +1,6 @@
 package com.example.manage.entity.data_statistics;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.ToString;
 
@@ -17,6 +18,8 @@ public class PunchingCardRecordTime implements Serializable {
     public String checkOut;//下班签到
     public String furloughRecordName;//请假类型
     public String furloughRecordTime;//请假时间
+    public String workingCheckRemark;//上班备注
+    public String closedCheckRemark;//下班备注
 
     public PunchingCardRecordTime() {
     }

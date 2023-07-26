@@ -287,6 +287,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     null,
                     uuid,
                     "上班视频签到",
+                    null,
+                    jsonParam.getRemark(),
                     null
             );
             int insert = iPunchingCardRecordMapper.insert(cardRecord);
@@ -350,7 +352,9 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     jsonParam.getModel(),
                     null,
                     null,
-                    "下班视频收工"
+                    "下班视频收工",
+                    null,
+                    jsonParam.getRemark()
             );
             int insert = iPunchingCardRecordMapper.updateById(cardRecord);
             int insertImage = iReimbursementImageMapper.insert(new ReimbursementImage(

@@ -101,13 +101,13 @@
 
     <!--  审批人排序  -->
     <sql id="safeOrderByAs">
-        order by <include refid="tableSqlFurloughReimbursement"/>.number desc
+        order by <include refid="fRecord" />.id DESC,<include refid="tableSqlFurloughReimbursement"/>.number desc
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
         <if test="personnelId != null "> and `personnel_id` = #{personnelId}</if>
-        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`personnel_name` like concat('%',#{personnelName},'%')</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`personnel_name` like concat('%',#{keyWord},'%')</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

@@ -93,7 +93,13 @@ public class PunchingCardRecord implements Serializable {
     public String workingCheckInType;//上班打卡类型
     @TableField(value = "closed_check_in_type")
     public String closedCheckInType;//下班打卡类型
+    @TableField(value = "working_check_remark")
+    public String workingCheckRemark;//上班备注
+    @TableField(value = "closed_check_remark")
+    public String closedCheckRemark;//下班备注
 
+    @TableField(exist = false)
+    public String remark;//备注
     @TableField(exist = false)
     public String model;//手机类型
     @TableField(exist = false)
@@ -219,5 +225,35 @@ public class PunchingCardRecord implements Serializable {
         this.punchingCardRecordCode = punchingCardRecordCode;
         this.workingCheckInType = workingCheckInType;
         this.closedCheckInType = closedCheckInType;
+    }
+
+    public PunchingCardRecord(Integer id, String name, String personnelCode, String clockInTime, Integer managementId, String workingAgoOpenId, String workingLaterOpenId, String workingClockInState, String workingAttendanceTime, String closedAgoOpenId, String closedLaterOpenId, String closedClockInState, String closedAttendanceTime, String clockingDayTime, String managementStartTime, String managementEndTime, Integer checkInTimeId, String checkInTimeName, String workingAgoState, String closedAgoState, String workingModel, String closedModel, String punchingCardRecordCode, String workingCheckInType, String closedCheckInType, String workingCheckRemark, String closedCheckRemark) {
+        this.id = id;
+        this.name = name;
+        this.personnelCode = personnelCode;
+        this.clockInTime = clockInTime;
+        this.managementId = managementId;
+        this.workingAgoOpenId = workingAgoOpenId;
+        this.workingLaterOpenId = workingLaterOpenId;
+        this.workingClockInState = workingClockInState;
+        this.workingAttendanceTime = workingAttendanceTime;
+        this.closedAgoOpenId = closedAgoOpenId;
+        this.closedLaterOpenId = closedLaterOpenId;
+        this.closedClockInState = closedClockInState;
+        this.closedAttendanceTime = closedAttendanceTime;
+        this.clockingDayTime = clockingDayTime;
+        this.managementStartTime = managementStartTime;
+        this.managementEndTime = managementEndTime;
+        this.checkInTimeId = checkInTimeId;
+        this.checkInTimeName = checkInTimeName;
+        this.workingAgoState = workingAgoState;
+        this.closedAgoState = closedAgoState;
+        this.workingModel = workingModel;
+        this.closedModel = closedModel;
+        this.punchingCardRecordCode = punchingCardRecordCode;
+        this.workingCheckInType = workingCheckInType;
+        this.closedCheckInType = closedCheckInType;
+        this.workingCheckRemark = workingCheckRemark;
+        this.closedCheckRemark = closedCheckRemark;
     }
 }

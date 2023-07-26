@@ -193,6 +193,10 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                     //获取打卡信息
                     PunchingCardRecord punchingCardRecord = cardRecordMap.get(key);
                     if (!ObjectUtils.isEmpty(punchingCardRecord)) {
+                        //附上备注
+                        punchingCardRecordTime.setWorkingCheckRemark(punchingCardRecord.getWorkingCheckRemark());
+                        punchingCardRecordTime.setClosedCheckRemark(punchingCardRecord.getClosedCheckRemark());
+
                         if (!ObjectUtils.isEmpty(punchingCardRecord.getWorkingAttendanceTime()) && !ObjectUtils.isEmpty(punchingCardRecord.getClosedAttendanceTime())){
                             String[] startSplit = punchingCardRecord.getManagementStartTime().split(":");
                             String[] endSplit = punchingCardRecord.getManagementEndTime().split(":");

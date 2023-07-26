@@ -55,8 +55,9 @@
             <result column="p_c_r_clocking_day_time" property="clockingDayTime" />
             <result column="p_c_r_management_start_time" property="managementStartTime" />
             <result column="p_c_r_management_end_time" property="managementEndTime" />
+            <result column="p_c_r_working_check_remark" property="workingCheckRemark" />
+            <result column="p_c_r_closed_check_remark" property="closedCheckRemark" />
         </collection>
-
 
         <collection property="furloughRecords" ofType="com.example.manage.entity.FurloughRecord">
             <result column="f_r_id" property="id" />
@@ -141,6 +142,8 @@
         ,<include refid="tableSqlPunchingCardRecord" />.clocking_day_time as p_c_r_clocking_day_time
         ,<include refid="tableSqlPunchingCardRecord" />.management_start_time as p_c_r_management_start_time
         ,<include refid="tableSqlPunchingCardRecord" />.management_end_time as p_c_r_management_end_time
+        ,<include refid="tableSqlPunchingCardRecord" />.working_check_remark as p_c_r_working_check_remark
+        ,<include refid="tableSqlPunchingCardRecord" />.closed_check_remark as p_c_r_closed_check_remark
 
         ,<include refid="tableSqlFurloughRecord" />.id as f_r_id
         ,<include refid="tableSqlFurloughRecord" />.personnel_name as f_r_personnel_name
