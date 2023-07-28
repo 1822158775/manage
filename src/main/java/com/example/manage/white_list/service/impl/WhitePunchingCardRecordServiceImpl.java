@@ -1048,6 +1048,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     loginRecord.getLoginTime(),
                     null,
                     jsonParam.getModel(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    jsonParam.getRemark(),
                     null
             );
             int insert = iPunchingCardRecordMapper.insert(cardRecord);
@@ -1103,7 +1108,12 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     null,
                     loginRecord.getLoginTime(),
                     null,
-                    jsonParam.getModel()
+                    jsonParam.getModel(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    jsonParam.getRemark()
             );
             int insert = iPunchingCardRecordMapper.updateById(cardRecord);
             if (insert != 1){
