@@ -51,6 +51,10 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
 
     //请假
     @Value("${url.rest_list}")
+    private String restList;
+
+    //调派
+    @Value("${url.dispatch}")
     private String urlDispatch;
 
     @Value("${url.transfer}")
@@ -117,7 +121,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                     "",
                     personnel.getUsername() + "您有：" + entry.getValue() + "条请假待审核数据",
                     "",
-                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromRestVerify=true"
+                    urlTransfer + "?from=zn&redirect_url=" + restList + "?fromRestVerify=true"
             );
         }
 
@@ -167,7 +171,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                     "",
                     personnel.getUsername() + "您有：" + entry.getValue() + "条补卡待审核数据",
                     "",
-                    urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromRestVerify=true"
+                    urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromRepairCheckverify=true"
             );
         }
 
@@ -217,7 +221,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                     "",
                     personnel.getUsername() + "您有：" + entry.getValue() + "条调派待审核数据",
                     "",
-                    urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromRestVerify=true"
+                    urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromDispatchVerify=true"
             );
         }
     }

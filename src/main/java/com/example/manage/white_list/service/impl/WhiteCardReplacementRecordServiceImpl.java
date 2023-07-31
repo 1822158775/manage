@@ -130,6 +130,9 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
         List<CardReplacementRecord> recordList = iCardReplacementRecordMapper.selectList(wrapper);
         int i = cardNumber - recordList.size();
         if (i < 1){
+            if (i < 0){
+                i = 0;
+            }
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,i,"本月补卡次数为" + i);
         }
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,i,"");

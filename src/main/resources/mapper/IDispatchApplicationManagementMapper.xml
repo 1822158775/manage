@@ -111,6 +111,16 @@
     </sql>
     <sql id="whereSqlModelDAM">
         where 1 = 1
+        <if test="toArray != null and toArray != ''">
+            and ( <include refid="tableSqlDAM" />.ago_management_id in
+            <foreach collection="toArray" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+            or <include refid="tableSqlDAM" />.later_management_id in
+            <foreach collection="toArray" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>)
+        </if>
         <if test="id != null "> and <include refid="tableSqlDAM"/>.`id` = #{id}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlDAM" />.`applicant` like concat('%',#{keyWord},'%')</if>
         <if test="personnelCode != null "> and <include refid="tableSqlDAM" />.`personnel_code` = #{personnelCode}</if>

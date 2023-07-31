@@ -84,6 +84,18 @@ public class SchedulingConfig {
         schedulingSysManagementService.taskNotification();
     }
 
+    //每天13点查询2天后的人员生日和周年纪念
+    @Scheduled(cron="0 0 13 * * ?")
+    public void ExecuteOncePerSecond13(){
+        schedulingSysManagementService.taskNotification();
+    }
+
+    //每天13点查询2天后的人员生日和周年纪念
+    @Scheduled(cron="0 0 16 * * ?")
+    public void ExecuteOncePerSecond16(){
+        schedulingSysManagementService.taskNotification();
+    }
+
     //每天23点查询离职
     @Scheduled(cron="0 0 23 * * ?")
     public void DimissionOncePerSecond(){

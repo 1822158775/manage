@@ -110,9 +110,18 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
             return estimateState;
         }
         //匹配角色职位
-        if (!sysPersonnel.getRoleId().equals(manage2)){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"暂无权限查看");
+        //if (!sysPersonnel.getRoleId().equals(manage2)){
+        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"暂无权限查看");
+        //}
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+        List<ManagementPersonnel> list = iManagementPersonnelMapper.selectList(wrapper);
+        List<Integer> integers = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            ManagementPersonnel managementPersonnel = list.get(i);
+            integers.add(managementPersonnel.getManagementId());
         }
+        Integer[] toArray = integers.toArray(new Integer[integers.size()]);
         // 获取当前时间
         Calendar calendar = Calendar.getInstance();
 
@@ -137,6 +146,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         }
         jsonMap.put("startTime",jsonMap.get("startTime") + " 00:00:00");
         jsonMap.put("endTime",jsonMap.get("endTime") + " 23:59:59");
+        jsonMap.put("toArray",toArray);
         //删除用户id
         jsonMap.remove("personnelId");
         ReturnEntity returnEntity = new ReturnEntity(CodeEntity.CODE_SUCCEED, iDispatchApplicationManagementMapper.queryAll(jsonMap), "");

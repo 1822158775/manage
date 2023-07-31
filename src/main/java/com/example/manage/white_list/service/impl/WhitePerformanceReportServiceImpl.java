@@ -233,6 +233,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                 DivisionManagement divisionManagement = divisionManagements.get(j);
                 wrapper = new QueryWrapper();
                 wrapper.eq("division_management_id",divisionManagement.getId());
+                wrapper.last("order by FIELD(id,3,1,4,2)");
                 List<DivisionManagementPersonnel> personnelList = iDivisionManagementPersonnelMapper.selectList(wrapper);
                 personnelNumber = personnelList.size();
                 //进件
