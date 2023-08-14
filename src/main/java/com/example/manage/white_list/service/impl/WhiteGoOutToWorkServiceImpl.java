@@ -356,6 +356,7 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
                 "'" + DateFormatUtils.format(jsonParam.getEndTime(),PanXiaoZhang.yMdHms()) + "')" +
                 "AND\n" +
                 "personnel_id = "+ sysPersonnel.getId());
+        wrapper.ne("reissue_state","refuse");
         List<GoOutToWork> goOutToWorks = iGoOutToWorkMapper.selectList(wrapper);
         if (goOutToWorks.size() > 0){
             return new ReturnEntity(CodeEntity.CODE_ERROR,DateFormatUtils.format(jsonParam.getStartTime(), PanXiaoZhang.yMd()) + "~" + DateFormatUtils.format(jsonParam.getEndTime(), PanXiaoZhang.yMd()) + "已有出差记录");
@@ -462,17 +463,17 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
                         MsgEntity.CODE_ERROR
                 );
             }
-            mapPersonnel.forEach((key,value)->{
-                //告知审核人前往审核
-                PanXiaoZhang.postWechatFer(
-                        value.getOpenId(),
-                        "",
-                        "",
-                        sysPersonnel.getName() + "提交了出差信息",
-                        "",
-                        urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromWorkOutVerify=true"
-                );
-            });
+            //mapPersonnel.forEach((key,value)->{
+            //    //告知审核人前往审核
+            //    PanXiaoZhang.postWechatFer(
+            //            value.getOpenId(),
+            //            "",
+            //            "",
+            //            sysPersonnel.getName() + "提交了出差信息",
+            //            "",
+            //            urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromWorkOutVerify=true"
+            //    );
+            //});
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,"申请成功");
         }else {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"职位不符，申请失败");

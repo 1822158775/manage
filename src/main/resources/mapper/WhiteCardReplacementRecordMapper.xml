@@ -42,6 +42,7 @@
         <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
         <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
     </select>
     <sql id="tableSql">
         c_r_r
@@ -62,7 +63,6 @@
         from
         <include refid="tableSqlCRR"/>
         <include refid="safeOrderByCRR"/>
-        <include refid="safeLIMIT"/>
     </sql>
     <!--  返回  -->
     <sql id="returnSql">

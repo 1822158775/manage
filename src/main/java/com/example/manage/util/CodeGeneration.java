@@ -492,25 +492,25 @@ public class CodeGeneration {
                 table_name,
                 class_name + "NotNull"
         );
-        progressBar(0,100,"准备创建mapper层");
-        //mapper层创建
-        addJavaMapper(remark,table_name,class_name);
-        progressBar(0,100,"准备创建MyBatis xml文件");
-         //创建MyBatis xml文件
-        addMapperXml(remark,table_name,class_name);
-        progressBar(0,100,"准备创建service层");
-        //service层创建
-        addService(remark,table_name,class_name);
-        progressBar(0,100,"准备创建service实现层");
-        //service实现层创建
-        addServiceImpl(remark,table_name,class_name);
-        progressBar(0,100,"准备创建controller层");
-        //controller层创建
-        addController(remark,table_name,class_name);
+        //progressBar(0,100,"准备创建mapper层");
+        ////mapper层创建
+        //addJavaMapper(remark,table_name,class_name);
+        //progressBar(0,100,"准备创建MyBatis xml文件");
+        // //创建MyBatis xml文件
+        //addMapperXml(remark,table_name,class_name);
+        //progressBar(0,100,"准备创建service层");
+        ////service层创建
+        //addService(remark,table_name,class_name);
+        //progressBar(0,100,"准备创建service实现层");
+        ////service实现层创建
+        //addServiceImpl(remark,table_name,class_name);
+        //progressBar(0,100,"准备创建controller层");
+        ////controller层创建
+        //addController(remark,table_name,class_name);
     }
     public static void main(String[] args) {
         try {
-            methodMaster("登入表","login_record","LoginRecord");
+            methodMaster("反馈记录表","feedback_record_sheet","FeedbackRecordSheet");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

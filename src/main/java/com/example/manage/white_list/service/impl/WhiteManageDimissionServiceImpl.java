@@ -24,10 +24,7 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @avthor 潘小章
@@ -43,6 +40,9 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
 
     @Value("${role.manage3}")
     private String manage3;
+
+    @Value("${role.manage}")
+    private String manage;
 
     @Value("${url.dimission}")
     private String urlDimission;
@@ -115,6 +115,8 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         if (!ObjectUtils.isEmpty(manageDimission)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"不可重复提交");
         }
+        //审核人
+        List<SysPersonnel> sysPersonnels = new ArrayList<>();
         //查询当前个人的信息
         if (!returnEntity.getState()){
             //如果查不到人员信息
@@ -139,9 +141,10 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
             //查询该项目主管
             Map map = new HashMap();
             map.put("managementId",jsonParam.getManagementId());
-            map.put("roleId",manage3);
+            String[] strings = {manage3, manage};
+            map.put("inRoleId",strings);
             map.put("employmentStatus","1");
-            List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
+            sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
             if (sysPersonnels.size() > 0){
                 SysPersonnel personnel = sysPersonnels.get(0);
                 //添加审核人编码
@@ -179,10 +182,11 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
                 ""
         );
         // 如果有上一级
-        if (!ObjectUtils.isEmpty(jsonParam.getSysPersonnel()) && !ObjectUtils.isEmpty(jsonParam.getSysPersonnel().getPhone())){
+        for (int i = 0; i < sysPersonnels.size(); i++) {
+            SysPersonnel sysP = sysPersonnels.get(i);
             // 发送上级领导
             PanXiaoZhang.postWechatFer(
-                    jsonParam.getSysPersonnel().getOpenId(),
+                    sysP.getOpenId(),
                     "",
                     "",
                     sysPersonnel.getName() + "提交了离职申请",

@@ -147,7 +147,6 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
         jsonMap.put("type","gt");
         jsonMap.put("auditorPersonnelId",jsonMap.get("personnelId"));
         jsonMap.remove("personnelId");
-        jsonMap.put("queryAll","yes");
         List<CardReplacementRecord> cardReplacementRecords = whiteCardReplacementRecordMapper.queryAll(jsonMap);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,cardReplacementRecords,"");
     }
