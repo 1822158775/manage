@@ -39,6 +39,8 @@ public class SysManagement implements Serializable {
     public String managementCode;//项目编码
     @TableField(value = "number_of_people")
     public Integer numberOfPeople;//人的数量
+    @TableField(value = "guide_number_of_people")
+    public Integer guideNumberOfPeople;//引导人的数量
 
     @TableField(value = "south_latitude")
     public String southLatitude;//东南角经纬度

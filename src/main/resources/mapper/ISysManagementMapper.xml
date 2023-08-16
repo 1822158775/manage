@@ -10,6 +10,7 @@
         <result column="management_state" property="managementState" />
         <result column="management_code" property="managementCode" />
         <result column="number_of_people" property="numberOfPeople" />
+        <result column="guide_number_of_people" property="guideNumberOfPeople" />
 
         <result column="south_latitude" property="southLatitude" />
         <result column="northern_latitude" property="northernLatitude" />
