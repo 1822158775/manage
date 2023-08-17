@@ -10,6 +10,8 @@
         <result column="guide_number" property="guideNumber" />
         <result column="name" property="name" />
         <result column="rate_of_full_capacity" property="rateOfFullCapacity" />
+        <result column="guide_rate_of_full_capacity" property="guideRateOfFullCapacity" />
+        <result column="business_rate_of_full_capacity" property="businessRateOfFullCapacity" />
     </resultMap>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
         select
@@ -30,6 +32,8 @@
         <include refid="tableSql" />.guide_number_of_people as guide_number_of_people,
         SUM(case when <include refid="tableSqlPersonnel" />.`position_post` = 1 then 1 else 0 end) AS business_number,
         SUM(case when <include refid="tableSqlPersonnel" />.`position_post` = 2 then 1 else 0 end) AS guide_number,
+        format(coalesce((SUM(case when <include refid="tableSqlPersonnel" />.`position_post` = 1 then 1 else 0 end) / <include refid="tableSql" />.number_of_people) * 100,0),2) as business_rate_of_full_capacity,
+        format(coalesce((SUM(case when <include refid="tableSqlPersonnel" />.`position_post` = 2 then 1 else 0 end) / <include refid="tableSql" />.guide_number_of_people) * 100,0),2) as guide_rate_of_full_capacity,
         <include refid="tableSql" />.number_of_people - COUNT(DISTINCT <include refid="tableSqlPersonnel" />.id) as real_quantity,
         format(coalesce((COUNT(DISTINCT <include refid="tableSqlPersonnel" />.id) / <include refid="tableSql" />.number_of_people) * 100,0),2) as rate_of_full_capacity
     </sql>

@@ -320,13 +320,13 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                         "",
                         "",
                         "补卡",
-                        checkInTime.getStartClockOut(),
+                        checkInTime.getEndPunchIn(),
                         null,
                         null,
                         null,
                         null,
                         DateFormatUtils.format(cardReplacementRecord.getReissueTime(),PanXiaoZhang.yMd()),
-                        checkInTime.getStartClockOut(),
+                        checkInTime.getEndPunchIn(),
                         checkInTime.getStartClockOut(),
                         checkInTime.getId(),
                         checkInTime.getName()
@@ -344,7 +344,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"当前打卡规则不存在");
                 }
                 if (reissueType.equals("1")){
-                    punchingCardRecord.setWorkingAttendanceTime(punchingCardRecord.getManagementEndTime());
+                    punchingCardRecord.setWorkingAttendanceTime(punchingCardRecord.getManagementStartTime());
                     punchingCardRecord.setWorkingClockInState("补卡");
                     punchingCardRecord.setWorkingAgoOpenId(personnel.getOpenId());
                     punchingCardRecord.setWorkingLaterOpenId(personnel.getOpenId());

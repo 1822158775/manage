@@ -96,7 +96,7 @@ public class WhiteSysManagementServiceImpl implements IWhiteSysManagementService
             map.put("inId",toArray);
         }
 
-        map.put("inRoleId", new Integer[]{manage,manage5});
+        map.put("inRoleId", new Integer[]{manage5});
 
         List<SysManagement> sysManagements = whiteSysManagementMapper.queryAll(map);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,sysManagements,"");

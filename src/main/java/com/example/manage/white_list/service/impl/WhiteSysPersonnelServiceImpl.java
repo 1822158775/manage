@@ -81,6 +81,12 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
     @Resource
     private ISysManagementMapper iSysManagementMapper;
 
+    @Resource
+    private IPunchingCardRecordMapper iPunchingCardRecordMapper;
+
+    @Resource
+    private ICheckInTimeMapper iCheckInTimeMapper;
+
     //方法总管
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -406,15 +412,19 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
 
     @Override
     public void ceshi() {
-        SysPersonnel personnel = iSysPersonnelMapper.selectById(4);
-        PanXiaoZhang.postWechatFer(
-                personnel.getOpenId(),
-                "",
-                "",
-                "提交了入职申请",
-                "",
-                urlTransfer + "?from=zn&redirect_url=" + employerList + 1
-        );
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("working_clock_in_state","补卡");
+        List<PunchingCardRecord> selectList = iPunchingCardRecordMapper.selectList(wrapper);
+        for (int i = 0; i < selectList.size(); i++) {
+            PunchingCardRecord cardRecord = selectList.get(i);
+            CheckInTime checkInTime = iCheckInTimeMapper.selectById(cardRecord.getCheckInTimeId());
+            if (ObjectUtils.isEmpty(checkInTime)){
+                log.info("cardRecord:{}",cardRecord);
+                //cardRecord.setWorkingAttendanceTime(checkInTime.getEndPunchIn());
+                //cardRecord.setManagementStartTime(checkInTime.getEndPunchIn());
+                //iPunchingCardRecordMapper.updateById(cardRecord);
+            }
+        }
     }
 
     //根据人员查询当下的卡种
