@@ -99,7 +99,7 @@ public class FileServiceImpl implements FileService {
                     File storeFile = null;
                     // 文件名后缀处理 使用uuid方式生成新文件名称 绝对唯一
                     String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
-                    String newFileName = UUID.randomUUID().toString() + "-" + PanXiaoZhang.getSession(request,"user") + suffix;
+                    String newFileName = UUID.randomUUID().toString() + suffix;
                     if(uploadFilePathConfig.getUseDisk()){//本地路径
                         storeFile = new File(realPath, newFileName);
                         if(!storeFile.getParentFile().exists()){

@@ -414,7 +414,7 @@ public class PanXiaoZhang {
     //接口token的数据
     public static String judgmentToken(HttpServletRequest request){
         String token = request.getHeader("token");
-        TokenEntity tokenEntity = TokenUtil.tokenToOut(token,request.getSession());
+        TokenEntity tokenEntity = TokenUtil.tokenToOut(token);
         Integer integer = PanXiaoZhang.tokenExpiration(tokenEntity.getUserAddTime(), tokenEntity.getUserRemove());
         if (integer == 0){
             return token;

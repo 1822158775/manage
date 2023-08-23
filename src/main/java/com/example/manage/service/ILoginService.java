@@ -11,6 +11,6 @@ import javax.servlet.http.HttpSession;
  */
 
 public interface ILoginService {
-    ReturnEntity login(HttpServletRequest request, HttpSession session);
+    ReturnEntity login(HttpServletRequest request);
     ReturnEntity whiteListLogin(HttpServletRequest request);
 }

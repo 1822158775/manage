@@ -3,6 +3,7 @@ package com.example.manage.entity;
 import lombok.Data;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
  */
 @Data
 @ToString
-public class TableAuthorityName {
+public class TableAuthorityName implements Serializable {
     public List<SysTableAuthority> sysTableAuthorities;//权限
     public List<SysTableName> sysTableNames;//名称
 

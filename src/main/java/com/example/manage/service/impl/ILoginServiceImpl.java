@@ -46,7 +46,7 @@ public class ILoginServiceImpl implements ILoginService {
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
     @Override
-    public ReturnEntity login(HttpServletRequest request, HttpSession session) {
+    public ReturnEntity login(HttpServletRequest request) {
         try {
             SysPersonnel jsonParam = PanXiaoZhang.getJSONParam(request, SysPersonnel.class);
             //判断账号和密码是否符合条件
@@ -65,15 +65,10 @@ public class ILoginServiceImpl implements ILoginService {
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号或密码异常");
             }
             SysPersonnel sysPersonnel = sysPersonnels.get(0);
-            //添加会话
-            session.setAttribute("user",sysPersonnel.getId());
-            //添加添加角色id
-            session.setAttribute("roleId",sysPersonnel.getRoleId());
-            //设置过期时间
-            session.setMaxInactiveInterval((7 * 60) * 60);
             //生成token参数设置
             map.put("id",sysPersonnel.getId());
             map.put("username",sysPersonnel.getUsername());
+            map.put("role",sysPersonnel.getRoleId());
             return new ReturnEntity(
                     CodeEntity.CODE_SUCCEED,
                     sysPersonnel,//返回用户所有信息

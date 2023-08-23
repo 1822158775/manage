@@ -26,14 +26,15 @@ public class TokenUtil {
                 .setSubject(map.get("username").toString())    //用户名
                 .setIssuedAt(new Date())//登录时间
                 .signWith(SignatureAlgorithm.HS256, "my-123")
-                .setExpiration(new Date(System.currentTimeMillis()+20800000));
+                .setExpiration(new Date(System.currentTimeMillis()+20800000))
+                .setAudience(map.get("role").toString());
         //设置过期时间
         //前三个为载荷playload 最后一个为头部 header
         //System.out.println(jwtBuilder.compact());
         return  jwtBuilder.compact();
     }
-    public static TokenEntity tokenToOut(String token, HttpSession session) {
-        Object user = session.getAttribute("user");
+    public static TokenEntity tokenToOut(String token) {
+        //Object user = session.getAttribute("user");
         try {
             Claims claims = Jwts.parser()
                     .setSigningKey("my-123")
@@ -46,19 +47,18 @@ public class TokenUtil {
             //System.out.println("过期时间:"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").
             //        format(claims.getExpiration()));
             //System.out.println("用户角色:"+claims.get("role"));
-            if (!user.toString().equals(claims.getId())){
-                session.removeAttribute("user");
-                log.info("token和预期不符");
-                return null;
-            }
+            //if (!user.toString().equals(claims.getId())){
+            //    session.removeAttribute("user");
+            //    log.info("token和预期不符");
+            //    return null;
+            //}
             return new TokenEntity(
                     claims.getId(),
                     claims.getSubject(),
                     claims.getIssuedAt(),
                     claims.getExpiration(),
-                    claims.get("role"));
+                    claims.getAudience());
         }catch (Exception e){
-            session.removeAttribute("user");
             log.info("Token过期");
             return null;
         }

@@ -25,11 +25,10 @@ public class LoginController {
      * 登录功能模块
      * @param request
      * @param response
-     * @param session
      * @return
      */
     @PostMapping(value = "sign")
-    public ReturnEntity sign(HttpServletRequest request, HttpServletResponse response,HttpSession session){
-        return iLoginService.login(request,session);
+    public ReturnEntity sign(HttpServletRequest request, HttpServletResponse response){
+        return iLoginService.login(request);
     }
 }

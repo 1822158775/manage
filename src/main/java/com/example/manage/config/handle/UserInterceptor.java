@@ -5,8 +5,6 @@ import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.SysTableAuthority;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.mapper.ISysTableAuthorityMapper;
-import com.example.manage.service.ISysPersonnelService;
-import com.example.manage.service.ISysTableAuthorityService;
 import com.example.manage.util.GetSpringBean;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.TokenUtil;
@@ -33,32 +31,19 @@ public class UserInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        HttpSession session = request.getSession();
-        Object reglister = session.getAttribute("user");
         String url = "/api/error/getBack";
-        if (!ObjectUtils.isEmpty(reglister) && !reglister.equals("null") && !StringUtils.isEmpty(request.getHeader("token"))) {
-            String roleId = String.valueOf(session.getAttribute("roleId"));
-            String userId = String.valueOf(reglister);
+        if (!StringUtils.isEmpty(request.getHeader("token"))) {
             String requestURI = request.getRequestURI();
-            log.info("账号编码:{}会话请求地址:{},token:{}",userId,requestURI,request.getHeader("token"));
-            session.setMaxInactiveInterval((7 * 60) * 60);
+            log.info("会话请求地址:{},token:{}",requestURI,request.getHeader("token"));
             String token = request.getHeader("token");
-            TokenEntity tokenEntity = TokenUtil.tokenToOut(token,session);
+            TokenEntity tokenEntity = TokenUtil.tokenToOut(token);
             if (ObjectUtils.isEmpty(tokenEntity)){
                 log.info("token过期");
                 request.setAttribute("msg", "请重新登录!");
                 request.getRequestDispatcher(url).forward(request,response);
                 return false;
             }
-            ISysPersonnelMapper iSysPersonnelMapper = GetSpringBean.getBean(ISysPersonnelMapper.class);
-            SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(userId);
-            if (ObjectUtils.isEmpty(sysPersonnel)){
-                log.info("账号异常");
-                session.removeAttribute("user");
-                request.setAttribute("msg", "请重新登录!");
-                request.getRequestDispatcher(url).forward(request,response);
-                return false;
-            }
+            String roleId = String.valueOf(tokenEntity.getUserRole());
             Integer integer = PanXiaoZhang.tokenExpiration(tokenEntity.getUserAddTime(), tokenEntity.getUserRemove());
             if (integer == 2){
                 log.info("token过期");
