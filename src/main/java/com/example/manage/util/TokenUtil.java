@@ -8,7 +8,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
-import javax.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ public class TokenUtil {
         return  jwtBuilder.compact();
     }
     public static TokenEntity tokenToOut(String token) {
-        //Object user = session.getAttribute("user");
         try {
             Claims claims = Jwts.parser()
                     .setSigningKey("my-123")
@@ -48,7 +46,6 @@ public class TokenUtil {
             //        format(claims.getExpiration()));
             //System.out.println("用户角色:"+claims.get("role"));
             //if (!user.toString().equals(claims.getId())){
-            //    session.removeAttribute("user");
             //    log.info("token和预期不符");
             //    return null;
             //}

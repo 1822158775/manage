@@ -421,7 +421,8 @@ public class PanXiaoZhang {
         }else {
             Map map = new HashMap();
             map.put("id",tokenEntity.getId());
-            map.put("user_name",tokenEntity.getUserName());
+            map.put("username",tokenEntity.getUserName());
+            map.put("role",tokenEntity.getUserRole());
             String getoken = TokenUtil.getoken(map);
             log.info(tokenEntity.getId()+":"+tokenEntity.getUserName()+"token老化,更新为"+getoken);
             return getoken;

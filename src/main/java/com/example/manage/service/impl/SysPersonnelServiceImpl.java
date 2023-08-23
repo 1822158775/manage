@@ -73,9 +73,11 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (IOException ioException) {
+            ioException.printStackTrace();
             log.info("捕获异常方法{},捕获异常{}",name,ioException.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR, ioException.getMessage());
         }catch (Exception e){
+            e.printStackTrace();
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
