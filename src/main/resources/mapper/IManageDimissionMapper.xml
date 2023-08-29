@@ -59,6 +59,7 @@
         <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`applicant` like concat('%',#{keyWord},'%')</if>
         <if test="applicantState != null and applicantState != ''"> and <include refid="tableSql" />.`applicant_state` = #{applicantState}</if>
+        <if test="startTime != null and endTime != ''"> and <include refid="tableSql" />.`resignation_time` BETWEEN #{startTime} AND #{endTime}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

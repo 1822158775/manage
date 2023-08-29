@@ -109,7 +109,9 @@
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
         <if test="personnelId != null "> and `personnel_id` = #{personnelId}</if>
+        <if test="reissueState != null "> and <include refid="tableSql" />.`reissue_state` = #{reissueState}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`personnel_name` like concat('%',#{personnelName},'%')</if>
+        <if test="startTime != null and endTime != ''"> and (<include refid="tableSql" />.`start_time` BETWEEN #{startTime} AND #{endTime} or <include refid="tableSql" />.`end_time` BETWEEN #{startTime} AND #{endTime})</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

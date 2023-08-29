@@ -92,7 +92,7 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
             //xlsxReader.add(34,"兰州机场");
             //schedulingSysManagementService.taskNotification();
             //schedulingSysManagementService.taskNotificationCardReplacement();
-            iWhiteSysPersonnelService.ceshi();
+            //iWhiteSysPersonnelService.ceshi();
 
     } catch (SocketException e) {
             e.printStackTrace();

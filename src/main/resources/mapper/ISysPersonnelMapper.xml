@@ -115,6 +115,10 @@
         where 1 = 1
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
         <if test="roleId != null and roleId != ''"> and <include refid="tableSql" />.`role_id` = #{roleId}</if>
+        <if test="standbyApplication != null">
+            and <include refid="tableSql" />.`standby_application` = #{standbyApplication}
+        </if>
+        <if test="startTime != null and endTime != ''"> and <include refid="tableSql" />.`entry_time` BETWEEN #{startTime} AND #{endTime}</if>
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
@@ -129,6 +133,10 @@
         <if test="managementId != null and managementId != ''"> and management_personnel.`management_id` = #{managementId}</if>
         <if test="dateFormatBirthday == 'start' "> and DATE_FORMAT(<include refid="tableSqlAs" />.birthday,"%m-%d") BETWEEN #{agoBirthday} AND #{backBirthday}</if>
         <if test="dateFormatBirthday == 'entryTime' "> and DATE_FORMAT(<include refid="tableSqlAs" />.entry_time,"%m-%d") BETWEEN #{agoBirthday} AND #{backBirthday}</if>
+        <if test="standbyApplication != null">
+            and <include refid="tableSqlAs" />.`standby_application` = #{standbyApplication}
+        </if>
+        <if test="startTime != null and endTime != ''"> and <include refid="tableSqlAs" />.`entry_time` BETWEEN #{startTime} AND #{endTime}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

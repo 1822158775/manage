@@ -5,6 +5,7 @@ import com.example.manage.entity.*;
 import com.example.manage.job.SchedulingSysManagementService;
 import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
+import com.example.manage.util.entity.ReturnEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,9 +46,14 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
 
+    @Resource
+    private IManagementPersonnelMapper iManagementPersonnelMapper;
 
     @Resource
     private IDispatchApplicationManagementMapper iDispatchApplicationManagementMapper;
+
+    @Resource
+    private IManageDimissionMapper iManageDimissionMapper;
 
     //请假
     @Value("${url.rest_list}")
@@ -63,6 +69,13 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
     //补卡
     @Value("${url.repair_check}")
     private String repairCheck;
+
+    //入职审核
+    @Value("${url.employer_list}")
+    private String employerList;
+
+    @Value("${phone.personnel}")
+    private String personnelPhone;
 
     @Override
     public void windUpAnAccount() {
@@ -222,6 +235,55 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                     personnel.getUsername() + "您有：" + entry.getValue() + "条调派待审核数据",
                     "",
                     urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromDispatchVerify=true"
+            );
+        }
+
+        // 入职审核提醒
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("employment_status","2");
+        List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.selectList(wrapper);
+        for (int i = 0; i < sysPersonnels.size(); i++) {
+            SysPersonnel personnel = sysPersonnels.get(i);
+            wrapper = new QueryWrapper();
+            wrapper.eq("personnel_code",personnel.getPersonnelCode());
+            List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(wrapper);
+            for (int j = 0; j < managementPersonnels.size(); j++) {
+                ManagementPersonnel managementPersonnel = managementPersonnels.get(j);
+                if (j == 0){
+                    SysManagement sysManagement = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+                    wrapper.eq("username",personnelPhone);
+                    SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
+                    PanXiaoZhang.postWechatFer(
+                            sysPersonnel.getOpenId(),
+                            "",
+                            "",
+                            sysManagement.getName() + ":" + sysManagement.getName() + "提交了入职申请",
+                            "",
+                            urlTransfer + "?from=zn&redirect_url=" + employerList + sysManagement.getId()
+                    );
+                    break;
+                }
+            }
+        }
+
+        // 离职提醒
+        wrapper = new QueryWrapper();
+        wrapper.eq("applicant_state","pending");
+        List<ManageDimission> manageDimissions = iManageDimissionMapper.selectList(wrapper);
+        for (int i = 0; i < manageDimissions.size(); i++) {
+            ManageDimission manageDimission = manageDimissions.get(i);
+            wrapper = new QueryWrapper();
+            wrapper.eq("username",personnelPhone);
+            SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
+            SysManagement sysManagement = iSysManagementMapper.selectById(manageDimission.getManagementId());
+            // 发送人事
+            ReturnEntity entity = PanXiaoZhang.postWechatFer(
+                    sysPersonnel.getOpenId(),
+                    "",
+                    "",
+                    sysManagement.getName() + ":" + sysPersonnel.getName() + "提交了离职申请",
+                    "",
+                    ""
             );
         }
     }

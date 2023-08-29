@@ -250,7 +250,8 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
                 jsonParam.getIdNumber(),
                 jsonParam.getEmergencyContactName(),
                 jsonParam.getEmergencyContactPhone(),
-                jsonParam.getPermanentResidence()
+                jsonParam.getPermanentResidence(),
+                jsonParam.getStandbyApplication()
         );
         SysPersonnel byId = iSysPersonnelMapper.selectById(jsonParam.getId());
         if (byId.getEmploymentStatus().equals(2)){
@@ -259,6 +260,17 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         int updateById = iSysPersonnelMapper.updateById(personnel);
         if (updateById != 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"信息修改失败");
+        }
+
+        if (byId.getEmploymentStatus() == 2 && jsonParam.getEmploymentStatus() == 1){
+            ReturnEntity entity = PanXiaoZhang.postWechatFer(
+                    byId.getOpenId(),
+                    "",
+                    "",
+                    "入职申请已通过",
+                    "",
+                    ""
+            );
         }
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"信息修改成功");
     }
@@ -309,6 +321,15 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         );
         if (returnEntity.getState()){
             return returnEntity;
+        }
+        try {
+            //判断是否成年
+            int age = PanXiaoZhang.getAge(jsonParam.getIdNumber());
+            if (age < 18){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"未成年无法录入系统");
+            }
+        }catch (Exception e){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"请检查身份证号是否有误");
         }
         //查询当前填写信息的人
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
@@ -362,6 +383,8 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         jsonParam.setEmploymentStatus(2);
         //设置唯一标识
         jsonParam.setPersonnelCode(PanXiaoZhang.getID());
+        //未报备
+        jsonParam.setStandbyApplication("0");
         //设置员工所属项目
         int insert = iManagementPersonnelMapper.insert(new ManagementPersonnel(
                 jsonParam.getMId(),
@@ -375,7 +398,7 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"员工录入失败");
         }
         wrapper = new QueryWrapper();
-        String[] strings = {personnelPhone, "zgceshi"};
+        String[] strings = {personnelPhone};
         wrapper.in("username",strings);
         List<SysPersonnel> list = iSysPersonnelMapper.selectList(wrapper);
         for (int i = 0; i < list.size(); i++) {

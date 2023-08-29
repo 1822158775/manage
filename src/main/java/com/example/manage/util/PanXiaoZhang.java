@@ -1694,8 +1694,33 @@ public class PanXiaoZhang {
         }
         return stringList;
     }
+    //判断是否成年
+    /**
+     *  根据身份证号判断当前年龄
+     * @param cardNo
+     * @return
+     */
+    public static int getAge(String cardNo) {
+        String birthday = cardNo.substring(6, 14);
+        Date birthdate = null;
+        try {
+            birthdate = new SimpleDateFormat("yyyyMMdd").parse(birthday);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        GregorianCalendar currentDay = new GregorianCalendar();
+        currentDay.setTime(birthdate);
+        int birYear = currentDay.get(Calendar.YEAR);
 
+        // 获取年龄
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy");
+        String thisYear = simpleDateFormat.format(new Date());
+        int age = Integer.parseInt(thisYear) - birYear;
+
+        return age;
+    }
     public static void main(String[] args) throws ParseException, IOException, BiffException {
+        System.out.println(getAge("130430199910140513"));
         //ISysPersonnelMapper bean = GetSpringBean.getBean(ISysPersonnelMapper.class);
         //SysPersonnel personnel = bean.selectById(1);
         //System.out.println(personnel);

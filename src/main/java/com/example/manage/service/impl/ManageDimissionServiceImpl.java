@@ -15,6 +15,8 @@ import com.example.manage.util.entity.MsgEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -121,6 +123,14 @@ public class ManageDimissionServiceImpl implements IManageDimissionService {
     // 查询模块
     private ReturnEntity cat(HttpServletRequest request) {
         Map map = PanXiaoZhang.getJsonMap(request);
+
+        if (!ObjectUtils.isEmpty(map.get("startTime"))){
+            map.put("startTime",map.get("startTime") + " 00:00:00");
+        }
+        if (!ObjectUtils.isEmpty(map.get("endTime"))){
+            map.put("endTime",map.get("endTime") + " 23:59:59");
+        }
+
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,iManageDimissionMapper.queryAll(map),request,MsgEntity.CODE_SUCCEED,iManageDimissionMapper.queryCount(map));
     }
 }

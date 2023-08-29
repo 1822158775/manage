@@ -246,6 +246,16 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
                     MsgEntity.CODE_ERROR
             );
         }
+        if (sysPersonnel.getEmploymentStatus() == 2 && jsonParam.getEmploymentStatus() == 1){
+            ReturnEntity entity = PanXiaoZhang.postWechatFer(
+                    sysPersonnel.getOpenId(),
+                    "",
+                    "",
+                    "入职申请已通过",
+                    "",
+                    ""
+            );
+        }
         return new ReturnEntity(
                 CodeEntity.CODE_SUCCEED,
                 jsonParam,
@@ -350,6 +360,13 @@ public class SysPersonnelServiceImpl implements ISysPersonnelService {
     //查询人员信息
     private ReturnEntity cat(HttpServletRequest request) {
         Map map = PanXiaoZhang.getJsonMap(request);
+
+        if (!ObjectUtils.isEmpty(map.get("startTime"))){
+            map.put("startTime",map.get("startTime") + " 00:00:00");
+        }
+        if (!ObjectUtils.isEmpty(map.get("endTime"))){
+            map.put("endTime",map.get("endTime") + " 23:59:59");
+        }
         return new ReturnEntity(
                 CodeEntity.CODE_SUCCEED,
                 iSysPersonnelMapper.queryAll(map),

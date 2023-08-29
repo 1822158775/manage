@@ -2,10 +2,7 @@ package com.example.manage.white_list.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.manage.entity.ManageDimission;
-import com.example.manage.entity.ManagementPersonnel;
-import com.example.manage.entity.SysPersonnel;
-import com.example.manage.entity.SysRole;
+import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.ManageDimissionNotNull;
 import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
@@ -57,16 +54,13 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
     private ISysPersonnelMapper iSysPersonnelMapper;
 
     @Resource
-    private WhiteManageDimissionMapper whiteManageDimissionMapper;
-
-    @Resource
-    private ISysRoleMapper iSysRoleMapper;
-
-    @Resource
     private IManagementPersonnelMapper iManagementPersonnelMapper;
 
     @Resource
     private WhiteSysPersonnelMapper whiteSysPersonnelMapper;
+
+    @Resource
+    private ISysManagementMapper iSysManagementMapper;
 
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
@@ -172,12 +166,14 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         wrapper = new QueryWrapper();
         wrapper.eq("username",phone);
         SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
+        //查询项目
+        SysManagement sysManagement = iSysManagementMapper.selectById(jsonParam.getManagementId());
         // 发送人事
         ReturnEntity entity = PanXiaoZhang.postWechatFer(
                 personnel.getOpenId(),
                 "",
                 "",
-                sysPersonnel.getName() + "提交了离职申请",
+                sysManagement.getName() + ":" + sysPersonnel.getName() + "提交了离职申请",
                 "",
                 ""
         );

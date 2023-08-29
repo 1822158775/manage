@@ -186,6 +186,26 @@ public class SysPersonnel implements Serializable {
         this.permanentResidence = permanentResidence;
     }
 
+    public SysPersonnel(Integer id, String phone, String placeOfDomicile, String password, String name, Integer positionPost, String image, Date birthday, String sex, Integer officialOrTraineeStaff, Integer socialSecurityPayment, Integer commercialInsurance, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence, String standbyApplication) {
+        this.id = id;
+        this.phone = phone;
+        this.placeOfDomicile = placeOfDomicile;
+        this.password = password;
+        this.name = name;
+        this.positionPost = positionPost;
+        this.image = image;
+        this.birthday = birthday;
+        this.sex = sex;
+        this.officialOrTraineeStaff = officialOrTraineeStaff;
+        this.socialSecurityPayment = socialSecurityPayment;
+        this.commercialInsurance = commercialInsurance;
+        this.idNumber = idNumber;
+        this.emergencyContactName = emergencyContactName;
+        this.emergencyContactPhone = emergencyContactPhone;
+        this.permanentResidence = permanentResidence;
+        this.standbyApplication = standbyApplication;
+    }
+
     public SysPersonnel(Integer id, String phone, String placeOfDomicile, String personnelCode, String username, Integer roleId, String password, String name, Integer positionPost, String image, Date birthday, Integer employmentStatus, Integer chiefStewardId, String salary, String sex, String standbyApplication, Integer officialOrTraineeStaff, Integer socialSecurityPayment, Integer commercialInsurance, Date entryTime, String idNumber, String emergencyContactName, String emergencyContactPhone, String permanentResidence, String openId, Date leaveTime) {
         this.id = id;
         this.phone = phone;
