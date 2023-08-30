@@ -16,10 +16,6 @@
             <result column="p_phone" property="phone" />
             <result column="p_employment_status" property="employmentStatus" />
         </association>
-        <association property="approverSysPersonnel" javaType="com.example.manage.entity.SysPersonnel">
-            <result column="s_p_id" property="id" />
-            <result column="s_p_name" property="name" />
-        </association>
         <collection property="sysManagement" ofType="com.example.manage.entity.SysManagement">
             <result column="m_id" property="id" />
             <result column="m_name" property="name" />
@@ -50,8 +46,6 @@
         ,sys_personnel.name as p_name
         ,sys_personnel.phone as p_phone
         ,sys_personnel.employment_status as p_employment_status
-        ,s_p.id as s_p_id
-        ,s_p.name as s_p_name
     </sql>
     <sql id="tableSql">
         manage.manage_dimission
@@ -59,14 +53,23 @@
     <!--  进行关联表  -->
     <sql id="relevanceSql">
         LEFT JOIN sys_personnel on sys_personnel.personnel_code = <include refid="tableSql"/>.personnel_code
-        LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSql" />.personnel_code
-        LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
-        LEFT JOIN sys_personnel as s_p on s_p.personnel_code = management_personnel.personnel_code
+        LEFT JOIN sys_management on sys_management.id = <include refid="tableSql"/>.management_id
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="personnelId != null and personnelId != ''"> and sys_personnel.`id` = #{personnelId}</if>
-        <if test="spId != null and spId != ''"> and s_p.`id` = #{spId}</if>
+        <if test="inManagementId != null and inManagementId != ''">
+            and <include refid="tableSql"/>.`management_id` in
+            <foreach collection="inManagementId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="inRoleId != null and inRoleId != ''">
+            and sys_personnel.role_id in
+            <foreach collection="inRoleId" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
@@ -76,6 +79,7 @@
         </if>
     </sql>
     <sql id="safeOrderBy">
-        order by <include refid="tableSql"/>.id desc
+        order by FIELD(<include refid="tableSql"/>.`applicant_state`,
+        'pending') desc,<include refid="tableSql"/>.id desc
     </sql>
 </mapper>

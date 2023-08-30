@@ -99,7 +99,7 @@ public class SchedulingConfig {
     //每天23点查询离职
     @Scheduled(cron="0 0 23 * * ?")
     public void DimissionOncePerSecond(){
-        //schedulingSysPersonnelService.dimissionInform();
+        schedulingSysPersonnelService.dimissionInform();
         //删除每天的日报文件
         // 获取当前时间
         Calendar cal = Calendar.getInstance();

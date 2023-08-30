@@ -27,6 +27,13 @@ public class WhiteManageDimissionController {
     public ReturnEntity cat(HttpServletRequest request){
         return iWhiteManageDimissionService.methodMaster(request,"cat");
     }
+
+    // 查询离职申请管理
+    @PostMapping(value = "cat_list")
+    public ReturnEntity cat_list(HttpServletRequest request){
+        return iWhiteManageDimissionService.methodMaster(request,"cat_list");
+    }
+
     // 查询离职申请管理
     @PostMapping(value = "cat_leave")
     public ReturnEntity cat_leave(HttpServletRequest request){
@@ -38,6 +45,14 @@ public class WhiteManageDimissionController {
     public ReturnEntity add(HttpServletRequest request){
         synchronized (this.getClass()) {
             return iWhiteManageDimissionService.methodMaster(request, "add");
+        }
+    }
+
+    // 同意离职
+    @PostMapping(value = "edit")
+    public ReturnEntity edit(HttpServletRequest request){
+        synchronized (this.getClass()){
+            return iWhiteManageDimissionService.methodMasterT(request,"edit");
         }
     }
 }

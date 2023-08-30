@@ -151,27 +151,27 @@ public class SchedulingSysPersonnelServiceImpl implements SchedulingSysPersonnel
      */
     @Override
     public void dimissionInform() {
-        try {
-            QueryWrapper wrapper = new QueryWrapper();
-            wrapper.eq("applicant_state","pending");
-            wrapper.apply(true,"DATE_FORMAT(NOW(),\"%Y-%m-%d\") >= DATE_FORMAT(resignation_time,\"%Y-%m-%d\")");
-            List<ManageDimission> list = iManageDimissionMapper.selectList(wrapper);
-            for (int i = 0; i < list.size(); i++) {
-                QueryWrapper queryWrapper = new QueryWrapper();
-                ManageDimission manageDimission = list.get(i);
-                queryWrapper.eq("personnel_code",manageDimission.getPersonnelCode());
-                iSysPersonnelMapper.update(new SysPersonnel(
-                        0,
-                        manageDimission.getResignationTime()
-                ),queryWrapper);
-                iManageDimissionMapper.updateById(new ManageDimission(
-                        manageDimission.getId(),
-                        "agree"
-                ));
-            }
-        }catch (Exception e){
-            log.info("捕获异常：{}",e.getMessage());
-        }
+        //try {
+        //    QueryWrapper wrapper = new QueryWrapper();
+        //    wrapper.eq("applicant_state","pending");
+        //    wrapper.apply(true,"DATE_FORMAT(NOW(),\"%Y-%m-%d\") >= DATE_FORMAT(resignation_time,\"%Y-%m-%d\")");
+        //    List<ManageDimission> list = iManageDimissionMapper.selectList(wrapper);
+        //    for (int i = 0; i < list.size(); i++) {
+        //        QueryWrapper queryWrapper = new QueryWrapper();
+        //        ManageDimission manageDimission = list.get(i);
+        //        queryWrapper.eq("personnel_code",manageDimission.getPersonnelCode());
+        //        iSysPersonnelMapper.update(new SysPersonnel(
+        //                0,
+        //                manageDimission.getResignationTime()
+        //        ),queryWrapper);
+        //        iManageDimissionMapper.updateById(new ManageDimission(
+        //                manageDimission.getId(),
+        //                "agree"
+        //        ));
+        //    }
+        //}catch (Exception e){
+        //    log.info("捕获异常：{}",e.getMessage());
+        //}
 
         try {
             //获取Redis设置的天数

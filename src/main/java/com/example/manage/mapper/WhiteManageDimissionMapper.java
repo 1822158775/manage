@@ -3,6 +3,7 @@ package com.example.manage.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.manage.entity.ManageDimission;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -11,5 +12,5 @@ import java.util.Map;
  */
 
 public interface WhiteManageDimissionMapper extends BaseMapper<ManageDimission> {
-    ManageDimission queryAll(Map map);
+    List<ManageDimission> queryAll(Map map);
 }

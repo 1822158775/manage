@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.*;
 import com.example.manage.entity.is_not_null.ManageDimissionNotNull;
+import com.example.manage.entity.is_not_null.SysPersonnelNotNull;
 import com.example.manage.mapper.*;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.CodeEntity;
@@ -16,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
@@ -37,6 +40,9 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
 
     @Value("${role.manage3}")
     private String manage3;
+
+    @Value("${role.manage2}")
+    private Integer manage2;
 
     @Value("${role.manage}")
     private String manage;
@@ -62,6 +68,12 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
     @Resource
     private ISysManagementMapper iSysManagementMapper;
 
+    @Resource
+    private ISysRoleMapper iSysRoleMapper;
+
+    @Resource
+    private WhiteManageDimissionMapper whiteManageDimissionMapper;
+
     @Override
     public ReturnEntity methodMaster(HttpServletRequest request, String name) {
         try {
@@ -71,12 +83,55 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
                 return add(request);
             }else if (name.equals("cat_leave")){
                 return cat_leave(request);
+            }else if (name.equals("cat_list")){
+                return cat_list(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
+    }
+
+    // 查询该项目组离职人员
+    private ReturnEntity cat_list(HttpServletRequest request) {
+        Map map = PanXiaoZhang.getJsonMap(request);
+        if (ObjectUtils.isEmpty(map.get("personnelId"))){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"用户编码不可为空");
+        }
+        //查询当前登录的人员
+        SysPersonnel personnel = whiteSysPersonnelMapper.selectById(String.valueOf(map.get("personnelId")));
+        //查询当前人员你的角色
+        SysRole sysRole = iSysRoleMapper.selectById(personnel.getRoleId());
+        //删除map中的查询人的信息
+        map.remove("personnelId");
+        //设置小于当前人的人员
+        map.put("gtLevelSorting",sysRole.getLevelSorting());
+        QueryWrapper wrapper = new QueryWrapper();
+        //查询当前人员关联的项目组
+        wrapper.eq("personnel_code",personnel.getPersonnelCode());
+        List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(wrapper);
+        List<Integer> integerList = new ArrayList<>();
+        //进行遍历
+        for (int i = 0; i < managementPersonnels.size(); i++) {
+            ManagementPersonnel managementPersonnel = managementPersonnels.get(i);
+            integerList.add(managementPersonnel.getManagementId());
+        }
+        //查询小于当前角色的人员
+        wrapper = new QueryWrapper();
+        wrapper.gt("level_sorting",sysRole.getLevelSorting());
+        List<SysRole> sysRoles = iSysRoleMapper.selectList(wrapper);
+        List<Integer> integerRole = new ArrayList<>();
+        for (int i = 0; i < sysRoles.size(); i++) {
+            integerRole.add(sysRoles.get(i).getId());
+        }
+
+        Integer[] toArray = integerList.toArray(new Integer[integerList.size()]);
+        Integer[] roleArray = integerRole.toArray(new Integer[integerRole.size()]);
+        map.put("inManagementId",toArray);
+        map.put("inRoleId",roleArray);
+        List<ManageDimission> manageDimissions = whiteManageDimissionMapper.queryAll(map);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,manageDimissions,"");
     }
 
     private ReturnEntity cat_leave(HttpServletRequest request) {
@@ -212,5 +267,67 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         }
         jsonParam.setSysPersonnel(sysPersonnel);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED, jsonParam,"");
+    }
+
+
+
+    //方法总管外加事务
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public ReturnEntity methodMasterT(HttpServletRequest request, String name) {
+        try {
+            if (name.equals("edit")){
+                ReturnEntity returnEntity = edit(request);
+                if (!returnEntity.getCode().equals("0")){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                }
+                return returnEntity;
+            }
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
+        }catch (Exception e){
+            log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+    }
+
+    // 操作离职
+    private ReturnEntity edit(HttpServletRequest request) throws IOException {
+        ManageDimission jsonParam = PanXiaoZhang.getJSONParam(request, ManageDimission.class);
+        ManageDimissionNotNull isNotNullAndIsLengthNot0 = new ManageDimissionNotNull(
+                "isNotNullAndIsLengthNot0"
+        );
+        isNotNullAndIsLengthNot0.setApplicantState("isNotNullAndIsLengthNot0");
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(
+                jsonParam,
+                isNotNullAndIsLengthNot0
+        );
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+        //查询当前填写信息的人
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
+        if (!sysPersonnel.getRoleId().equals(manage2)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"权限不足");
+        }
+        //查询当前数据
+        ManageDimission manageDimission = iManageDimissionMapper.selectById(jsonParam.getId());
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",manageDimission.getPersonnelCode());
+        iSysPersonnelMapper.update(new SysPersonnel(
+                0,
+                manageDimission.getResignationTime()
+        ),wrapper);
+        iManageDimissionMapper.updateById(new ManageDimission(
+                manageDimission.getId(),
+                jsonParam.getApplicantState()
+        ));
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"信息修改成功");
     }
 }

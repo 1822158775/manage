@@ -24,6 +24,7 @@ public class ManageDimissionNotNull implements Serializable {
     public String submissionTime;//提交时间
     public String resignationTime;//离职时间
     public String personnelId;//当前人员的数据编码
+    public String applicantState;//审核状态
 
     public ManageDimissionNotNull(String id) {
         this.id = id;
