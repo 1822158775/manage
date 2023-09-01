@@ -73,6 +73,10 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
     //入职审核
     @Value("${url.employer_list}")
     private String employerList;
+    
+    //离职列表
+    @Value("${url.leave_job_list}")
+    private String leaveJobList;
 
     @Value("${phone.personnel}")
     private String personnelPhone;
@@ -283,7 +287,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                     "",
                     sysManagement.getName() + ":" + sysPersonnel.getName() + "提交了离职申请",
                     "",
-                    ""
+                    urlTransfer + "?from=zn&redirect_url=" + leaveJobList
             );
         }
     }

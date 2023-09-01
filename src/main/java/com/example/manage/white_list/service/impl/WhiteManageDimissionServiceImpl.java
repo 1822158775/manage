@@ -35,6 +35,12 @@ import java.util.*;
 @Service
 public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionService {
 
+    @Value("${url.transfer}")
+    private String urlTransfer;
+
+    @Value("${url.leave_job_list}")
+    private String leaveJobList;
+
     @Value("${phone.personnel}")
     private String phone;
 
@@ -230,7 +236,7 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
                 "",
                 sysManagement.getName() + ":" + sysPersonnel.getName() + "提交了离职申请",
                 "",
-                ""
+                urlTransfer + "?from=zn&redirect_url=" + leaveJobList
         );
         // 如果有上一级
         for (int i = 0; i < sysPersonnels.size(); i++) {
@@ -242,7 +248,7 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
                     "",
                     sysPersonnel.getName() + "提交了离职申请",
                     "",
-                    ""
+                    urlTransfer + "?from=zn&redirect_url=" + leaveJobList
             );
         }
         log.info("entity:{}",entity);

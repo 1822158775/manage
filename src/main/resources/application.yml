@@ -91,6 +91,7 @@ url:
   rest_list: /packageZn/pages/rest_list/rest_list
   achievement_day_list: /packageZn/pages/achievement_day_list/achievement_day_list
   employer_list: /packageZn/pages/employer_list/employer_list?managementId=
+  leave_job_list: /packageZn/pages/leave_job_list/leave_job_list
 card:
   number: 3
 card_type:

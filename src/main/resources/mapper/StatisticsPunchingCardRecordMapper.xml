@@ -232,6 +232,7 @@
     <sql id="whereSqlModelAs">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
+        and (<include refid="tableSqlAs" />.`employment_status` = 1 or <include refid="tableSqlAs" />.`leave_time` >= DATE_SUB(CURDATE(), INTERVAL 2 MONTH))
     </sql>
     <!--  分表排序  -->
     <sql id="safeOrderByAs">

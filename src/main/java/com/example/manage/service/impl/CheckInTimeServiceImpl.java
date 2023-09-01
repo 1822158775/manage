@@ -71,15 +71,15 @@ public class CheckInTimeServiceImpl implements ICheckInTimeService {
         LocalTime localTime = LocalTime.now();
 
         //不让他打卡
-        int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(checkInTime.getStartPunchIn()), localTime);
-        if (time < 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法删除该数据");
-        }
-        //不让他打卡
-        time = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(checkInTime.getEndClockOut()));
-        if (time < 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法删除该数据");
-        }
+        //int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(checkInTime.getStartPunchIn()), localTime);
+        //if (time < 1){
+        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法删除该数据");
+        //}
+        ////不让他打卡
+        //time = PanXiaoZhang.compareTime(localTime, PanXiaoZhang.dateLocalTime(checkInTime.getEndClockOut()));
+        //if (time < 1){
+        //    return new ReturnEntity(CodeEntity.CODE_ERROR,"当前时间无法删除该数据");
+        //}
         int deleteById = iCheckInTimeMapper.deleteById(jsonParam);
         //当返回值不为1的时候判断删除失败
         if (deleteById != 1){
