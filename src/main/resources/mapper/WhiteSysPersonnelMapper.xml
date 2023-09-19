@@ -103,6 +103,10 @@
         and (<include refid="tableSql" />.`employment_status` = 1 or <include refid="tableSql" />.`employment_status` = 2 or <include refid="tableSql" />.`leave_time` >= DATE_SUB(CURDATE(), INTERVAL 2 MONTH))
     </sql>
     <sql id="safeOrderBy">
-        order by <include refid="tableSql"/>.employment_status desc,<include refid="tableSql"/>.id desc
+        order by
+        <if test="safeOrderByState">
+            FIELD(<include refid="tableSql"/>.id,371,372,48,370,35),
+        </if>
+        <include refid="tableSql"/>.employment_status desc,<include refid="tableSql"/>.id desc
     </sql>
 </mapper>

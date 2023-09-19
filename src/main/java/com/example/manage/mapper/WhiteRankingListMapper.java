@@ -16,4 +16,5 @@ public interface WhiteRankingListMapper {
     List<RankingList> queryCount(Map map);
     List<RankingList> queryAllCount(Map map);
     List<RankingList> queryPunchingCount(Map map);
+    List<RankingList> queryAllCountPersonnel(Map map);
 }

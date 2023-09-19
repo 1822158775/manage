@@ -2,6 +2,7 @@ package com.example.manage.util.excel;
 
 import com.example.manage.entity.CardType;
 import com.example.manage.entity.data_statistics.DataStatisticsTodayDay;
+import com.example.manage.entity.ranking_list.RankingList;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.GetExcel;
 import org.apache.commons.collections4.Get;
@@ -646,13 +647,13 @@ public class ExcelExportUtil {
         ));
         return getExcels;
     }
-    public static List<GetExcel> cardType(List<CardType> cardTypes,Map<String, String> map,Integer startRow,Integer endRow,String key,String type){
+    public static List<GetExcel> cardType(List<RankingList> rankingLists,Map<String, String> map,Integer startRow,Integer endRow,String key,String type){
         List<GetExcel> getExcels = new ArrayList<>();
         Integer cell = 0;
-        for (int i = 0; i < cardTypes.size(); i++) {
-            CardType cardType = cardTypes.get(i);
+        for (int i = 0; i < rankingLists.size(); i++) {
+            RankingList rankingList = rankingLists.get(i);
             getExcels.add(new GetExcel(
-                    cardType.getType(),
+                    rankingList.getName(),
                     null,
                     "text",
                     colorRed(),
@@ -686,7 +687,7 @@ public class ExcelExportUtil {
                     true
             ));
             getExcels.add(new GetExcel(
-                    (ObjectUtils.isEmpty(map.get(key + cardType.getId()))) ? "0" : map.get(key + cardType.getId()),
+                    String.valueOf(rankingList.getCountNumber()),
                     null,
                     "text",
                     colorWhite(),
@@ -740,7 +741,7 @@ public class ExcelExportUtil {
                 true
         ));
         List<String> stringList = new ArrayList<>();
-        stringList.add("部门");
+        //stringList.add("部门");
         stringList.add("区域");
         stringList.add("项目类型");
         stringList.add("场景");
@@ -766,7 +767,7 @@ public class ExcelExportUtil {
         return getExcels;
     }
     //日报表
-    public static List<GetExcel> init(Map<String,String> map,String path,List<CardType> cardTypes,String type){
+    public static List<GetExcel> init(Map<String,String> map, String path, List<RankingList> rankingListsMonth,List<RankingList> rankingListsDay, String type){
         List<GetExcel> getExcels = new ArrayList<>();
         getExcels.add(new GetExcel(
                 0,
@@ -778,7 +779,7 @@ public class ExcelExportUtil {
                 2,
                 3,
                 cardType(
-                        cardTypes,
+                        rankingListsDay,
                         map,
                         2,
                         3,
@@ -792,7 +793,7 @@ public class ExcelExportUtil {
                 4,
                 5,
                 cardType(
-                        cardTypes,
+                        rankingListsMonth,
                         map,
                         4,
                         5,
@@ -804,6 +805,7 @@ public class ExcelExportUtil {
         List<String> stringList = new ArrayList<>();
         stringList.add("业务类型");
         stringList.add("项目类别");
+        stringList.add("场景");
         stringList.add("项目主管");
         stringList.add("应出勤");
         stringList.add("实出勤");

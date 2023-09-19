@@ -56,16 +56,40 @@
         <include refid="tableSqlSManagement" />.`name`,
         <include refid="tableSqlSManagement" />.`monthly_indicators`,
         <include refid="returnSql" />,
-        <include refid="tableSqlCardType" />.`id` as card_type_id
+        <include refid="tableSqlCardType" />.`id` as card_type_id,
+        <include refid="tableSqlCardType" />.`name` as card_type_name
         FROM
         <include refid="tableSqlSManagement" />
-        <include refid="relevanceSql" />
         <include refid="relevanceSqlManagementCardType" />
+        <include refid="relevanceSql2" />
         <include refid="whereSqlModel" />
         <include refid="managementState"/>
         <include refid="manageCardTypeId" />
         <include refid="safeGroupByMCT" />
         <include refid="safeOrderBy" />
+    </select>
+    <!--  查询区总数量  -->
+    <select id="queryAllCountPersonnel" resultMap="entity" resultType="hashmap">
+        SELECT
+        <include refid="tableSqlPersonnel" />.id as id,
+        <include refid="tableSqlPersonnel" />.`name`,
+        <include refid="tableSqlSManagement" />.`monthly_indicators`,
+        <include refid="returnSql" />,
+        <include refid="tableSqlCardType" />.`id` as card_type_id,
+        <include refid="tableSqlCardType" />.`name` as card_type_name
+        FROM
+        <include refid="tableSqlPersonnel" />
+        <include refid="relevanceSql3" />
+        <include refid="whereSqlModel" />
+        <if test="roleId != null">
+            AND <include refid="tableSqlPersonnel" />.role_id = #{roleId}
+        </if>
+        AND <include refid="tableSqlPersonnel" />.id != 47
+        AND <include refid="tableSqlPersonnel" />.id != 35
+        <include refid="managementState"/>
+        <include refid="manageCardTypeId" />
+        <include refid="safeGroupPersonnel" />
+        ORDER BY FIELD(<include refid="tableSqlPersonnel"/>.id,371,372,48,370,35)
     </select>
     <!--  查询数量  -->
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
@@ -85,11 +109,11 @@
             </when>
             <otherwise>
                 SELECT
-                <include refid="tableSqlSManagement" />.id as id,
-                <include refid="tableSqlSManagement" />.`name`,
+                <include refid="tableSqlPersonnel" />.id as id,
+                <include refid="tableSqlPersonnel" />.`name`,
                 <include refid="returnSql" />
                 FROM
-                <include refid="tableSqlSManagement" />
+                <include refid="tableSqlPersonnel" />
                 <include refid="relevanceSql" />
                 <include refid="whereSqlModel" />
                 <include refid="managementState"/>
@@ -161,6 +185,57 @@
             and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
         </if>
         LEFT JOIN <include refid="tableSqlCardType" /> ON <include refid="tableSqlCardType" />.id = <include refid="tableSqlPReport" />.card_type_id
+    </sql>
+    <!--  进行关联表项目  -->
+    <sql id="relevanceSql2">
+        LEFT JOIN <include refid="tableSqlPReport" /> ON <include refid="tableSqlSManagement" />.id = <include refid="tableSqlPReport" />.management_id
+        <if test="type == 'day'">
+            <include refid="todayDay" />
+        </if>
+        <if test="type == 'week'">
+            <include refid="todayWeek" />
+        </if>
+        <if test="type == 'month'">
+            <include refid="todayMonth" />
+        </if>
+        <if test="type == '自定义'">
+            <include refid="todayStartCustom" />
+        </if>
+        <include refid="reportApproverState" />
+        <if test="reportStatus != null and reportStatus != ''">
+            and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
+        </if>
+        <if test="manageCardTypeId != null and manageCardTypeId != ''">
+            and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
+        </if>
+        LEFT JOIN <include refid="tableSqlCardType" /> ON <include refid="tableSqlCardType" />.id = <include refid="tableSqlMCType" />.card_type_id
+    </sql>
+    <!--  进行关联表项目  -->
+    <sql id="relevanceSql3">
+        LEFT JOIN <include refid="tableSqlManagementPersonnel" /> ON <include refid="tableSqlPersonnel" />.personnel_code = <include refid="tableSqlManagementPersonnel" />.personnel_code
+        LEFT JOIN <include refid="tableSqlSManagement" /> ON <include refid="tableSqlManagementPersonnel" />.management_id = <include refid="tableSqlSManagement" />.id
+        LEFT JOIN <include refid="tableSqlMCType" /> ON <include refid="tableSqlMCType" />.manage_code = <include refid="tableSqlSManagement" />.management_code
+        LEFT JOIN <include refid="tableSqlPReport" /> ON <include refid="tableSqlSManagement" />.id = <include refid="tableSqlPReport" />.management_id
+        <if test="type == 'day'">
+            <include refid="todayDay" />
+        </if>
+        <if test="type == 'week'">
+            <include refid="todayWeek" />
+        </if>
+        <if test="type == 'month'">
+            <include refid="todayMonth" />
+        </if>
+        <if test="type == '自定义'">
+            <include refid="todayStartCustom" />
+        </if>
+        <include refid="reportApproverState" />
+        <if test="reportStatus != null and reportStatus != ''">
+            and <include refid="tableSqlPReport" />.report_status = #{reportStatus}
+        </if>
+        <if test="manageCardTypeId != null and manageCardTypeId != ''">
+            and <include refid="tableSqlPReport" />.card_type_id = #{manageCardTypeId}
+        </if>
+        LEFT JOIN <include refid="tableSqlCardType" /> ON <include refid="tableSqlCardType" />.id = <include refid="tableSqlMCType" />.card_type_id
     </sql>
     <!--  进行关联人员表 -->
     <sql id="relevanceSqlPpersonnel">
@@ -345,6 +420,10 @@
         GROUP BY <include refid="tableSqlCardType" />.id,<include refid="tableSqlSManagement" />.id
     </sql>
     <!--  分组  -->
+    <sql id="safeGroupPersonnel">
+        GROUP BY <include refid="tableSqlPersonnel" />.id
+    </sql>
+    <!--  分组  -->
     <!--  排序  -->
     <sql id="safeOrderBy">
         ORDER BY
@@ -374,7 +453,13 @@
             12,
             37,
             30,
-            32),
+            32,
+            39,
+            40,
+            41,
+            24,
+            25,
+            22),
             approved DESC,activation DESC,<include refid="tableSqlPReport" />.report_time
     </sql>
     <!--  分页  -->
@@ -383,6 +468,7 @@
             LIMIT #{index},#{pageNum}
         </if>
     </sql>
+
 
     <!--  历史  -->
     <select id="queryAllTwo" resultMap="entity" parameterType="hashmap">

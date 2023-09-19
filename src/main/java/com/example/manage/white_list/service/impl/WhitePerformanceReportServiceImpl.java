@@ -135,6 +135,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
+            e.printStackTrace();
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
@@ -533,22 +534,22 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             stringMap.put("thisEndTime",thisEndTime + " 23:59:59");
         }
         map.put("type",jsonParam.getType());
-        List<PerformanceReportSales> salesList = iPerformanceReportSalesMapper.queryListManagementCardType(map);
-        for (int i = 0; i < salesList.size(); i++) {
-            PerformanceReportSales reportSales = salesList.get(i);
-            String id = reportSales.getType() + "-" + reportSales.getManagementId() + "-" + reportSales.getCardTypeId();
-            if (ObjectUtils.isEmpty(stringMap.get(reportSales.getType()))){
-                stringList.add(reportSales.getType());
-                stringMap.put(reportSales.getType(),reportSales.getType());
-            }
-            Integer integer = integerMap.get(id);
-            if (ObjectUtils.isEmpty(integer)){
-                integerMap.put(id,reportSales.getSales());
-            }else {
-                integer += reportSales.getSales();
-                integerMap.put(id,integer);
-            }
-        }
+        //List<PerformanceReportSales> salesList = iPerformanceReportSalesMapper.queryListManagementCardType(map);
+        //for (int i = 0; i < salesList.size(); i++) {
+        //    PerformanceReportSales reportSales = salesList.get(i);
+        //    String id = reportSales.getType() + "-" + reportSales.getManagementId() + "-" + reportSales.getCardTypeId();
+        //    if (ObjectUtils.isEmpty(stringMap.get(reportSales.getType()))){
+        //        stringList.add(reportSales.getType());
+        //        stringMap.put(reportSales.getType(),reportSales.getType());
+        //    }
+        //    Integer integer = integerMap.get(id);
+        //    if (ObjectUtils.isEmpty(integer)){
+        //        integerMap.put(id,reportSales.getSales());
+        //    }else {
+        //        integer += reportSales.getSales();
+        //        integerMap.put(id,integer);
+        //    }
+        //}
 
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
         //判断当前人员状态
@@ -567,61 +568,62 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         //下标
         int index = 0;
         int row = countRow;
-        for (int i = 0; i < divisionTypes.size(); i++) {
+        //for (int i = 0; i < divisionTypes.size(); i++) {
             List<GetExcel> typeExcels = new ArrayList<>();
-            DivisionType divisionType = divisionTypes.get(i);
-            //查询部门类型关联的部门
+            //DivisionType divisionType = divisionTypes.get(i);
+            ////查询部门类型关联的部门
             QueryWrapper wrapper = new QueryWrapper();
-            wrapper.eq("division_type_id",divisionType.getId());
-            List<DivisionTypeManagement> divisionTypeManagements = iDivisionTypeManagementMapper.selectList(wrapper);
-            arrayList.clear();
-            for (int j = 0; j < divisionTypeManagements.size(); j++) {
-                DivisionTypeManagement divisionTypeManagement = divisionTypeManagements.get(j);
-                arrayList.add(divisionTypeManagement.getDivisionManagementId());
-            }
+            //wrapper.eq("division_type_id",divisionType.getId());
+            //List<DivisionTypeManagement> divisionTypeManagements = iDivisionTypeManagementMapper.selectList(wrapper);
+            //arrayList.clear();
+            //for (int j = 0; j < divisionTypeManagements.size(); j++) {
+            //    DivisionTypeManagement divisionTypeManagement = divisionTypeManagements.get(j);
+            //    arrayList.add(divisionTypeManagement.getDivisionManagementId());
+            //}
             //查询相关部门
-            wrapper = new QueryWrapper();
-            wrapper.in("id",arrayList.toArray(new Integer[arrayList.size()]));
-            List<DivisionManagement> divisionManagements = iDivisionManagementMapper.selectList(wrapper);
-            //进件
-            Integer divisionTypeSumCountNumber = 0;
-            //批核
-            Integer divisionTypeSumApproved = 0;
-            //激活
-            Integer divisionTypeSumActivation = 0;
-            //项目指标
-            Integer divisionTypeSumMonthlyIndicators = 0;
-            //部门关联人员人数
-            Integer personnelNumber = 0;
-            //存储权益总数
-            Map<String,Integer> divisionTypeSumMap = new HashMap<>();
-            for (int j = 0; j < divisionManagements.size(); j++) {
+            //wrapper = new QueryWrapper();
+            //wrapper.in("id",arrayList.toArray(new Integer[arrayList.size()]));
+            //List<DivisionManagement> divisionManagements = iDivisionManagementMapper.selectList(wrapper);
+            ////进件
+            //Integer divisionTypeSumCountNumber = 0;
+            ////批核
+            //Integer divisionTypeSumApproved = 0;
+            ////激活
+            //Integer divisionTypeSumActivation = 0;
+            ////项目指标
+            //Integer divisionTypeSumMonthlyIndicators = 0;
+            ////部门关联人员人数
+            //Integer personnelNumber = 0;
+            ////存储权益总数
+            //Map<String,Integer> divisionTypeSumMap = new HashMap<>();
+            //for (int j = 0; j < divisionManagements.size(); j++) {
                 List<GetExcel> excels = new ArrayList<>();
-                //部门
+            //    //部门
                 int divisionRow = countRow;
-                DivisionManagement divisionManagement = divisionManagements.get(j);
-                wrapper = new QueryWrapper();
-                wrapper.eq("division_management_id",divisionManagement.getId());
-                wrapper.last("order by FIELD(id,3,1,4,2)");
-                List<DivisionManagementPersonnel> personnelList = iDivisionManagementPersonnelMapper.selectList(wrapper);
-                personnelNumber = personnelList.size();
-                //进件
-                Integer divisionSumCountNumber = 0;
-                //批核
-                Integer divisionSumApproved = 0;
-                //激活
-                Integer divisionSumActivation = 0;
-                //项目指标
-                Integer divisionSumMonthlyIndicators = 0;
-                //存储权益总数
-                Map<String,Integer> divisionSumMap = new HashMap<>();
-                //查询部门关联经理
-                for (int k = 0; k < personnelList.size(); k++) {
-                    DivisionManagementPersonnel managementPersonnel = personnelList.get(k);
+            //    DivisionManagement divisionManagement = divisionManagements.get(j);
+            //    wrapper = new QueryWrapper();
+            //    wrapper.eq("division_management_id",divisionManagement.getId());
+            //    wrapper.last("order by FIELD(id,3,1,4,2)");
+            //    List<DivisionManagementPersonnel> personnelList = iDivisionManagementPersonnelMapper.selectList(wrapper);
+            //    personnelNumber = personnelList.size();
+            //    //进件
+            //    Integer divisionSumCountNumber = 0;
+            //    //批核
+            //    Integer divisionSumApproved = 0;
+            //    //激活
+            //    Integer divisionSumActivation = 0;
+            //    //项目指标
+            //    Integer divisionSumMonthlyIndicators = 0;
+            //    //存储权益总数
+            //    Map<String,Integer> divisionSumMap = new HashMap<>();
+            //    //查询部门关联经理
+            //    for (int k = 0; k < personnelList.size(); k++) {
+            //        DivisionManagementPersonnel managementPersonnel = personnelList.get(k);
                     //查询该项目区域经理
                     Map sysPersonnelMap = new HashMap();
                     sysPersonnelMap.put("roleId",manage3);
-                    sysPersonnelMap.put("personnelId",managementPersonnel.getPersonnelId());
+                    sysPersonnelMap.put("safeOrderByState",true);
+                    //sysPersonnelMap.put("personnelId",managementPersonnel.getPersonnelId());
                     List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(sysPersonnelMap);
                     if (sysPersonnels.size() < 1){
                         List<SysManagement> managements = new ArrayList<>();
@@ -633,18 +635,21 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                                     null
                             ));
                         }
-                        SysPersonnel personnel = new SysPersonnel(
-                                null,
-                                divisionManagement.getName(),
-                                null,
-                                null
-                        );
-                        personnel.setSysManagement(managements);
-                        sysPersonnels.add(personnel);
+                        //SysPersonnel personnel = new SysPersonnel(
+                        //        null,
+                        //        divisionManagement.getName(),
+                        //        null,
+                        //        null
+                        //);
+                        //personnel.setSysManagement(managements);
+                        //sysPersonnels.add(personnel);
                     }
 
                     for (int l = 0; l < sysPersonnels.size(); l++) {
                         SysPersonnel personnel = sysPersonnels.get(l);
+                        if (personnel.getId() == 47){
+                            continue;
+                        }
                         List<SysManagement> sysManagement = personnel.getSysManagement();
                         arrayList.clear();
                         for (int m = 0; m < sysManagement.size(); m++) {
@@ -664,32 +669,32 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                         //存储权益总数
                         Map<String,Integer> sumMap = new HashMap<>();
                         for (int m = 0; m < queryAllCount.size(); m++) {
-                            int col = 2;
+                            int col = 1;
                             RankingList rankingList = queryAllCount.get(m);
                             //进件divisionS
                             Integer countNumber = rankingList.getCountNumber();
                             countNumber = ObjectUtils.isEmpty(countNumber) ? 0 : countNumber;
                             sumCountNumber += countNumber;
-                            divisionSumCountNumber += countNumber;
-                            divisionTypeSumCountNumber += countNumber;
+                            //divisionSumCountNumber += countNumber;
+                            //divisionTypeSumCountNumber += countNumber;
                             //批核
                             Integer approved = rankingList.getApproved();
                             approved = ObjectUtils.isEmpty(approved) ? 0 : approved;
                             sumApproved += approved;
-                            divisionSumApproved += approved;
-                            divisionTypeSumApproved += approved;
+                            //divisionSumApproved += approved;
+                            //divisionTypeSumApproved += approved;
                             //激活
                             Integer activation = rankingList.getActivation();
                             activation = ObjectUtils.isEmpty(activation) ? 0 : activation;
                             sumActivation += activation;
-                            divisionSumActivation += activation;
-                            divisionTypeSumActivation += activation;
+                            //divisionSumActivation += activation;
+                            //divisionTypeSumActivation += activation;
                             //项目指标
                             Integer monthlyIndicators = rankingList.getMonthlyIndicators();
                             monthlyIndicators = ObjectUtils.isEmpty(monthlyIndicators) ? 0 : monthlyIndicators;
                             sumMonthlyIndicators += monthlyIndicators;
-                            divisionSumMonthlyIndicators += monthlyIndicators;
-                            divisionTypeSumMonthlyIndicators += monthlyIndicators;
+                            //divisionSumMonthlyIndicators += monthlyIndicators;
+                            //divisionTypeSumMonthlyIndicators += monthlyIndicators;
 
                             excels.add(XlsxLayoutReader.text(rankingList.getName(), countRow, countRow, col, col));
                             col++;
@@ -704,121 +709,125 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                             excels.add(XlsxLayoutReader.text(String.valueOf(monthlyIndicators), countRow, countRow, col, col));
                             col++;
                             excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(activation,monthlyIndicators,1,100)+"%", countRow, countRow, col, col));
-                            for (int n = 0; n < stringList.size(); n++) {
-                                col++;
-                                String s = stringList.get(n);
-                                String id = s + "-" + rankingList.getId() + "-" + rankingList.getCardTypeId();
-                                Integer integer = integerMap.get(id);
-                                if (ObjectUtils.isEmpty(integer)){
-                                    integer = 0;
-                                }
-                                //区域总和
-                                Integer salesNumber = sumMap.get(s);
-                                if (ObjectUtils.isEmpty(salesNumber)){
-                                    sumMap.put(s,integer);
-                                }else {
-                                    salesNumber += integer;
-                                    sumMap.put(s,salesNumber);
-                                }
-                                //部门总和
-                                Integer divisionSalesNumber = divisionSumMap.get(s);
-                                if (ObjectUtils.isEmpty(divisionSalesNumber)){
-                                    divisionSumMap.put(s,integer);
-                                }else {
-                                    divisionSalesNumber += integer;
-                                    divisionSumMap.put(s,divisionSalesNumber);
-                                }
-                                //总部门总和
-                                Integer divisionTypeNumber = divisionTypeSumMap.get(s);
-                                if (ObjectUtils.isEmpty(divisionTypeNumber)){
-                                    divisionTypeSumMap.put(s,integer);
-                                }else {
-                                    divisionTypeNumber += integer;
-                                    divisionTypeSumMap.put(s,divisionTypeNumber);
-                                }
-                                excels.add(XlsxLayoutReader.text(String.valueOf(integer), countRow, countRow, col, col));
-                            }
+                            //for (int n = 0; n < stringList.size(); n++) {
+                                //col++;
+                                //String s = stringList.get(n);
+                                //String id = s + "-" + rankingList.getId() + "-" + rankingList.getCardTypeId();
+                                //Integer integer = integerMap.get(id);
+                                //if (ObjectUtils.isEmpty(integer)){
+                                //    integer = 0;
+                                //}
+                                ////区域总和
+                                //Integer salesNumber = sumMap.get(s);
+                                //if (ObjectUtils.isEmpty(salesNumber)){
+                                //    sumMap.put(s,integer);
+                                //}else {
+                                //    salesNumber += integer;
+                                //    sumMap.put(s,salesNumber);
+                                //}
+                                ////部门总和
+                                //Integer divisionSalesNumber = divisionSumMap.get(s);
+                                //if (ObjectUtils.isEmpty(divisionSalesNumber)){
+                                //    divisionSumMap.put(s,integer);
+                                //}else {
+                                //    divisionSalesNumber += integer;
+                                //    divisionSumMap.put(s,divisionSalesNumber);
+                                //}
+                                ////总部门总和
+                                //Integer divisionTypeNumber = divisionTypeSumMap.get(s);
+                                //if (ObjectUtils.isEmpty(divisionTypeNumber)){
+                                //    divisionTypeSumMap.put(s,integer);
+                                //}else {
+                                //    divisionTypeNumber += integer;
+                                //    divisionTypeSumMap.put(s,divisionTypeNumber);
+                                //}
+                                //excels.add(XlsxLayoutReader.text(String.valueOf(integer), countRow, countRow, col, col));
+                            //}
                             countRow++;
                         }
-                        excels.add(XlsxLayoutReader.text(personnel.getName() + "合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
-                        excels.add(XlsxLayoutReader.text(String.valueOf(sumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
-                        excels.add(XlsxLayoutReader.text(String.valueOf(sumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
-                        excels.add(XlsxLayoutReader.text(String.valueOf(sumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
-                        excels.add(XlsxLayoutReader.text(String.valueOf(sumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
-                        excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(sumActivation,sumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
-
-                        Integer sumCol = 9;
-                        for (int n = 0; n < stringList.size(); n++) {
-                            String s = stringList.get(n);
-                            excels.add(XlsxLayoutReader.text(String.valueOf(sumMap.get(s)), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
-                            sumCol++;
-                        }
-                        if (personnelList.size() > 1 && k+1 == personnelList.size()){
-                            countRow++;
-                        }
-                        if (divisionManagements.size() > 1 && j+1 == divisionManagements.size()){
-                            countRow++;
-                        }
-                        excels.add(XlsxLayoutReader.text(personnel.getName(), row, countRow, 1, 1));
-                        if (personnelList.size() > 1 && k+1 == personnelList.size()){
-                            countRow--;
-                        }
-                        if (divisionManagements.size() > 1 && j+1 == divisionManagements.size()){
-                            countRow--;
-                        }
+                        excels.add(XlsxLayoutReader.text(personnel.getName() + "合计", countRow, countRow, 1, 2,ExcelExportUtil.color249()));
+                        Integer sumCol = 3;
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumCountNumber), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                        sumCol++;
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumApproved), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                        sumCol++;
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumActivation), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                        sumCol++;
+                        excels.add(XlsxLayoutReader.text(String.valueOf(sumMonthlyIndicators), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                        sumCol++;
+                        excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(sumActivation,sumMonthlyIndicators,1,100)+"%", countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                        sumCol++;
+                        //for (int n = 0; n < stringList.size(); n++) {
+                        //    String s = stringList.get(n);
+                        //    excels.add(XlsxLayoutReader.text(String.valueOf(sumMap.get(s)), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+                        //    sumCol++;
+                        //}
+                        //if (personnelList.size() > 1 && k+1 == personnelList.size()){
+                        //    countRow++;
+                        //}
+                        //if (divisionManagements.size() > 1 && j+1 == divisionManagements.size()){
+                        //    countRow++;
+                        //}
+                        excels.add(XlsxLayoutReader.text(personnel.getName(), row, countRow, 0, 0));
+                        //if (personnelList.size() > 1 && k+1 == personnelList.size()){
+                        //    countRow--;
+                        //}
+                        //if (divisionManagements.size() > 1 && j+1 == divisionManagements.size()){
+                        //    countRow--;
+                        //}
                         countRow++;
                         row = countRow;
                     }
-                }
-                //部门
-                excels.add(index, XlsxLayoutReader.text(divisionManagement.getName(), divisionRow, countRow, 0, 0));
-
-                if (personnelNumber > 1){
-                    excels.add(XlsxLayoutReader.text(divisionManagement.getName() + "总合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
-                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
-                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
-                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
-                    excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
-                    excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(divisionSumActivation,divisionSumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
-                    Integer sumCol = 9;
-                    for (int n = 0; n < stringList.size(); n++) {
-                        String s = stringList.get(n);
-                        excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumMap.get(s)), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
-                        sumCol++;
-                    }
-                    countRow++;
-                    row = countRow;
-                }
+                //}
+            //    //部门
+            //    excels.add(index, XlsxLayoutReader.text(divisionManagement.getName(), divisionRow, countRow, 0, 0));
+            //
+            //    if (personnelNumber > 1){
+            //        excels.add(XlsxLayoutReader.text(divisionManagement.getName() + "总合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
+            //        excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
+            //        excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
+            //        excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
+            //        excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
+            //        excels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(divisionSumActivation,divisionSumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
+            //        Integer sumCol = 9;
+            //        for (int n = 0; n < stringList.size(); n++) {
+            //            String s = stringList.get(n);
+            //            excels.add(XlsxLayoutReader.text(String.valueOf(divisionSumMap.get(s)), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+            //            sumCol++;
+            //        }
+            //        countRow++;
+            //        row = countRow;
+            //    }
                 getExcels.add(new GetExcel(
                         divisionRow,
                         countRow,
                         excels,
                         false
                 ));
-            }
-            if (divisionTypeManagements.size() > 1){
-                typeExcels.add(XlsxLayoutReader.text(divisionType.getName() + "总合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
-                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
-                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
-                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
-                typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
-                typeExcels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(divisionTypeSumActivation,divisionTypeSumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
-                Integer sumCol = 9;
-                for (int n = 0; n < stringList.size(); n++) {
-                    String s = stringList.get(n);
-                    typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumMap.get(s)), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
-                    sumCol++;
-                }
-                countRow++;
-                row = countRow;
+            //}
+            //if (divisionTypeManagements.size() > 1){
+            //    typeExcels.add(XlsxLayoutReader.text(divisionType.getName() + "总合计", countRow, countRow, 2, 3,ExcelExportUtil.color249()));
+            //    typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumCountNumber), countRow, countRow, 4, 4,ExcelExportUtil.color249()));
+            //    typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumApproved), countRow, countRow, 5, 5,ExcelExportUtil.color249()));
+            //    typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumActivation), countRow, countRow, 6, 6,ExcelExportUtil.color249()));
+            //    typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumMonthlyIndicators), countRow, countRow, 7, 7,ExcelExportUtil.color249()));
+            //    typeExcels.add(XlsxLayoutReader.text(PanXiaoZhang.percent(divisionTypeSumActivation,divisionTypeSumMonthlyIndicators,1,100)+"%", countRow, countRow, 8, 8,ExcelExportUtil.color249()));
+            //    Integer sumCol = 9;
+            //    for (int n = 0; n < stringList.size(); n++) {
+            //        String s = stringList.get(n);
+            //        typeExcels.add(XlsxLayoutReader.text(String.valueOf(divisionTypeSumMap.get(s)), countRow, countRow, sumCol, sumCol,ExcelExportUtil.color249()));
+            //        sumCol++;
+            //    }
+            //    countRow++;
+            //    row = countRow;
                 getExcels.add(new GetExcel(
                         countRow,
                         countRow,
                         typeExcels,
                         false
                 ));
-            }
-        }
+            //}
+        //}
         String xlsx = exportTool.xlsx(getExcels);
         System.out.println(xlsx + "=================");
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,xlsx,MsgEntity.CODE_SUCCEED);
@@ -856,9 +865,15 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         HashMap<String, Integer> integerMap = new HashMap<>();
         //查询该项目主管
         Map map = new HashMap();
+        map.put("roleId",manage3);
+        map.put("employmentStatus",1);
+        map.put("type","month");
+        List<RankingList> rankingListListMonth = whiteRankingListMapper.queryAllCountPersonnel(map);
+        map.put("type","day");
+        List<RankingList> rankingListListDay = whiteRankingListMapper.queryAllCountPersonnel(map);
+        map.remove("type");
         map.put("inManagementId",toArray);
         map.put("roleId",roleId);
-        map.put("employmentStatus",1);
         List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
         ArrayList<Integer> arrayList = new ArrayList<>();
         for (int i = 0; i < sysPersonnels.size(); i++) {
@@ -873,18 +888,16 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
         map.put("inManagementId",arrayList.toArray(new Integer[arrayList.size()]));
 
-        map.put("type","month");
-
 
         //存储独立项目
-        Map<String,RankingList> manageMap = new HashMap();
-        Integer[] integers = {1, 2};
-        for (int i = 0; i < integers.length; i++) {
-            Integer integer = integers[i];
-            manageMap.put("manageNH" + integer,new RankingList(
-                    integer
-            ));
-        }
+        //Map<String,RankingList> manageMap = new HashMap();
+        //Integer[] integers = {1, 2};
+        //for (int i = 0; i < integers.length; i++) {
+        //    Integer integer = integers[i];
+        //    manageMap.put("manageNH" + integer,new RankingList(
+        //            integer
+        //    ));
+        //}
         //不查询指定的项目
         map.put("noManage","yes");
         //本月数据
@@ -950,9 +963,9 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             integerMap.put("attendance" + rankingList.getId(),rankingList.getAttendance());
             integerMap.put("numberOfPeople" + rankingList.getId(),rankingList.getNumberOfPeople());
         }
-        List<GetExcel> getExcels = ExcelExportUtil.init(stringMap,ap,cardTypes,jsonParam.getRiqiDay());
-        int row = 7;
 
+        List<GetExcel> getExcels = ExcelExportUtil.init(stringMap,ap,rankingListListMonth,rankingListListDay,jsonParam.getRiqiDay());
+        int row = 7;
 
         //总数
         //进件数
@@ -965,10 +978,37 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         Integer sumCountAttendance = 0;
         //应道人数
         Integer sumCountNumberOfPeople = 0;
+
+        //查询该项目区域经理
+        Map sysPersonnelMap = new HashMap();
+        sysPersonnelMap.put("roleId",manage3);
+        sysPersonnelMap.put("safeOrderByState",true);
+        List<SysPersonnel> sysPersonnelList = whiteSysPersonnelMapper.queryAll(sysPersonnelMap);
+        //根据区总
+        if (sysPersonnels.size() < 1){
+            List<SysManagement> managements = new ArrayList<>();
+            List<DirectProject> list = iDirectProjectMapper.selectList(wrapper);
+            for (int l = 0; l < list.size(); l++) {
+                DirectProject directProject = list.get(l);
+                managements.add(new SysManagement(
+                        directProject.getManagementId(),
+                        null
+                ));
+            }
+        }
         //详情数据
-        for (int i = 0; i < cardTypes.size(); i++) {
-            CardType cardType = cardTypes.get(i);
-            map.put("manageCardTypeId",cardType.getId());
+        for (int i = 0; i < sysPersonnelList.size(); i++) {
+            SysPersonnel personnel = sysPersonnelList.get(i);
+            if (personnel.getId() == 47){
+                continue;
+            }
+            List<SysManagement> sysManagement = personnel.getSysManagement();
+            arrayList.clear();
+            for (int m = 0; m < sysManagement.size(); m++) {
+                SysManagement management = sysManagement.get(m);
+                arrayList.add(management.getId());
+            }
+            map.put("inManagementId",arrayList.toArray(new Integer[arrayList.size()]));
             List<RankingList> queryAllCount = whiteRankingListMapper.queryAllCount(map);
             //进件数
             Integer countNumber = 0;
@@ -984,7 +1024,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             Integer rowSum = row;
             for (int j = 0; j < queryAllCount.size(); j++) {
                 RankingList rankingList = queryAllCount.get(j);
-                if (ObjectUtils.isEmpty(manageMap.get("manageNH" + rankingList.getId()))){
+                //if (ObjectUtils.isEmpty(manageMap.get("manageNH" + rankingList.getId()))){
 
                     Integer integerAttendance = integerMap.get("attendance" + rankingList.getId());
                     Integer attendance = (ObjectUtils.isEmpty(integerAttendance)) ? 0 : integerAttendance;
@@ -1008,11 +1048,11 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     if (j + 1 == queryAllCount.size()){
                         getExcels.add(new GetExcel(
                                 row,
-                                row,
+                                row + 1,
                                 XlsxLayoutReader.template1(
-                                        cardType,
+                                        personnel.getName(),
                                         rowSum,
-                                        row,
+                                        row + 1,
                                         queryAllCount,
                                         stringMap,
                                         rankingList,
@@ -1026,7 +1066,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                             row,
                             row,
                             XlsxLayoutReader.template2(
-                                    cardType,
+                                    null,
                                     row,
                                     queryAllCount,
                                     stringMap,
@@ -1037,16 +1077,16 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                             false
                     ));
                     row++;
-                }else {
-                    manageMap.put("manageNH" + rankingList.getId() + "-" + cardType.getId(),rankingList);
-                }
+                //}else {
+                //    manageMap.put("manageNH" + rankingList.getId() + "-" + rankingList.getCardTypeId(),rankingList);
+                //}
             }
             //合计
             getExcels.add(new GetExcel(
                     row,
                     row,
                     XlsxLayoutReader.template3(
-                        cardType,
+                        personnel.getName(),
                         row,
                         countNumber,//当日进件量
                         approved,//当日批核量
@@ -1056,154 +1096,145 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     ),
                     true)
             );
+
             row++;
         }
         //合计
-        getExcels.add(new GetExcel(
-                row,
-                row,
-                XlsxLayoutReader.template3(
-                        new CardType(
-                                null,
-                                "总数",
-                                null,
-                                null
-                        ),
-                        row,
-                        sumCountNumber,//当日进件量
-                        sumApproved,//当日批核量
-                        sumActivation,//有效客户量
-                        sumCountAttendance,//实出勤
-                        sumCountNumberOfPeople//应出勤
-                ),
-                true)
-        );
+        //getExcels.add(new GetExcel(
+        //        row,
+        //        row,
+        //        XlsxLayoutReader.template3(
+        //                "总数",
+        //                row,
+        //                sumCountNumber,//当日进件量
+        //                sumApproved,//当日批核量
+        //                sumActivation,//有效客户量
+        //                sumCountAttendance,//实出勤
+        //                sumCountNumberOfPeople//应出勤
+        //        ),
+        //        true)
+        //);
         row++;
 
 
-        //独立项目
-
-        //总数
-        //进件数
-        sumCountNumber = 0;
-        //批核数
-        sumApproved = 0;
-        //有效
-        sumActivation = 0;
-        //实际签到人数
-        sumCountAttendance = 0;
-        //应道人数
-        sumCountNumberOfPeople = 0;
-        for (int i = 0; i < cardTypes.size(); i++) {
-            CardType cardType = cardTypes.get(i);
-            //进件数
-            Integer countNumber = 0;
-            //批核数
-            Integer approved = 0;
-            //有效
-            Integer activation = 0;
-            //实际签到人数
-            Integer countAttendance = 0;
-            //应道人数
-            Integer countNumberOfPeople = 0;
-            //当前行数
-            Integer rowSum = row;
-            for (int j = 0; j < integers.length; j++) {
-                Integer integer = integers[j];
-                RankingList rankingList = manageMap.get("manageNH" + integer + "-" + cardType.getId());
-
-                if (!ObjectUtils.isEmpty(rankingList)){
-                    Integer integerAttendance = integerMap.get("attendance" + rankingList.getId());
-                    Integer attendance = (ObjectUtils.isEmpty(integerAttendance)) ? 0 : integerAttendance;
-                    Integer integerNumberOfPeople = integerMap.get("numberOfPeople" + rankingList.getId());
-                    Integer numberOfPeople = (ObjectUtils.isEmpty(integerNumberOfPeople)) ? 0 : integerNumberOfPeople;
-                    //卡总数
-                    countNumber += rankingList.getCountNumber();
-                    approved += rankingList.getApproved();
-                    activation += rankingList.getActivation();
-
-                    countAttendance += attendance;
-                    countNumberOfPeople += numberOfPeople;
-                    //所有卡的总数
-                    sumCountNumber += rankingList.getCountNumber();
-                    sumApproved += rankingList.getApproved();
-                    sumActivation += rankingList.getActivation();
-
-                    sumCountAttendance += attendance;
-                    sumCountNumberOfPeople += numberOfPeople;
-
-                    if (j + 1 == integers.length){
-                        getExcels.add(new GetExcel(
-                                row,
-                                row,
-                                XlsxLayoutReader.template1(
-                                        cardType,
-                                        rowSum,
-                                        row,
-                                        null,
-                                        stringMap,
-                                        rankingList,
-                                        numberOfPeople,
-                                        attendance
-                                ),
-                                false
-                        ));
-                    }
-                    getExcels.add(new GetExcel(
-                            row,
-                            row,
-                            XlsxLayoutReader.template2(
-                                    cardType,
-                                    row,
-                                    null,
-                                    stringMap,
-                                    rankingList,
-                                    numberOfPeople,
-                                    attendance
-                            ),
-                            false
-                    ));
-                    row++;
-                }
-            }
-            //合计
-            getExcels.add(new GetExcel(
-                    row,
-                    row,
-                    XlsxLayoutReader.template3(
-                            cardType,
-                            row,
-                            countNumber,//当日进件量
-                            approved,//当日批核量
-                            activation,//有效客户量
-                            countAttendance,//实出勤
-                            countNumberOfPeople//应出勤
-                    ),
-                    true)
-            );
-            row++;
-        }
+        ////独立项目
+        //
+        ////总数
+        ////进件数
+        //sumCountNumber = 0;
+        ////批核数
+        //sumApproved = 0;
+        ////有效
+        //sumActivation = 0;
+        ////实际签到人数
+        //sumCountAttendance = 0;
+        ////应道人数
+        //sumCountNumberOfPeople = 0;
+        //for (int i = 0; i < cardTypes.size(); i++) {
+        //    CardType cardType = cardTypes.get(i);
+        //    //进件数
+        //    Integer countNumber = 0;
+        //    //批核数
+        //    Integer approved = 0;
+        //    //有效
+        //    Integer activation = 0;
+        //    //实际签到人数
+        //    Integer countAttendance = 0;
+        //    //应道人数
+        //    Integer countNumberOfPeople = 0;
+        //    //当前行数
+        //    Integer rowSum = row;
+        //    for (int j = 0; j < integers.length; j++) {
+        //        Integer integer = integers[j];
+        //        RankingList rankingList = manageMap.get("manageNH" + integer + "-" + cardType.getId());
+        //
+        //        if (!ObjectUtils.isEmpty(rankingList)){
+        //            Integer integerAttendance = integerMap.get("attendance" + rankingList.getId());
+        //            Integer attendance = (ObjectUtils.isEmpty(integerAttendance)) ? 0 : integerAttendance;
+        //            Integer integerNumberOfPeople = integerMap.get("numberOfPeople" + rankingList.getId());
+        //            Integer numberOfPeople = (ObjectUtils.isEmpty(integerNumberOfPeople)) ? 0 : integerNumberOfPeople;
+        //            //卡总数
+        //            countNumber += rankingList.getCountNumber();
+        //            approved += rankingList.getApproved();
+        //            activation += rankingList.getActivation();
+        //
+        //            countAttendance += attendance;
+        //            countNumberOfPeople += numberOfPeople;
+        //            //所有卡的总数
+        //            sumCountNumber += rankingList.getCountNumber();
+        //            sumApproved += rankingList.getApproved();
+        //            sumActivation += rankingList.getActivation();
+        //
+        //            sumCountAttendance += attendance;
+        //            sumCountNumberOfPeople += numberOfPeople;
+        //
+        //            if (j + 1 == integers.length){
+        //                getExcels.add(new GetExcel(
+        //                        row,
+        //                        row,
+        //                        XlsxLayoutReader.template1(
+        //                                cardType.getName(),
+        //                                rowSum,
+        //                                row,
+        //                                null,
+        //                                stringMap,
+        //                                rankingList,
+        //                                numberOfPeople,
+        //                                attendance
+        //                        ),
+        //                        false
+        //                ));
+        //            }
+        //            getExcels.add(new GetExcel(
+        //                    row,
+        //                    row,
+        //                    XlsxLayoutReader.template2(
+        //                            cardType,
+        //                            row,
+        //                            null,
+        //                            stringMap,
+        //                            rankingList,
+        //                            numberOfPeople,
+        //                            attendance
+        //                    ),
+        //                    false
+        //            ));
+        //            row++;
+        //        }
+        //    }
+        //    //合计
+        //    //getExcels.add(new GetExcel(
+        //    //        row,
+        //    //        row,
+        //    //        XlsxLayoutReader.template3(
+        //    //                cardType.getName(),
+        //    //                row,
+        //    //                countNumber,//当日进件量
+        //    //                approved,//当日批核量
+        //    //                activation,//有效客户量
+        //    //                countAttendance,//实出勤
+        //    //                countNumberOfPeople//应出勤
+        //    //        ),
+        //    //        true)
+        //    //);
+        //    //row++;
+        //}
 
         //合计
-        getExcels.add(new GetExcel(
-                row,
-                row,
-                XlsxLayoutReader.template3(
-                        new CardType(
-                                null,
-                                "总数",
-                                null,
-                                null
-                        ),
-                        row,
-                        sumCountNumber,//当日进件量
-                        sumApproved,//当日批核量
-                        sumActivation,//有效客户量
-                        sumCountAttendance,//实出勤
-                        sumCountNumberOfPeople//应出勤
-                ),
-                true)
-        );
+        //getExcels.add(new GetExcel(
+        //        row,
+        //        row,
+        //        XlsxLayoutReader.template3(
+        //                "总数",
+        //                row,
+        //                sumCountNumber,//当日进件量
+        //                sumApproved,//当日批核量
+        //                sumActivation,//有效客户量
+        //                sumCountAttendance,//实出勤
+        //                sumCountNumberOfPeople//应出勤
+        //        ),
+        //        true)
+        //);
 
         String xlsx = exportTool.xlsx(getExcels);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,xlsx,MsgEntity.CODE_SUCCEED);

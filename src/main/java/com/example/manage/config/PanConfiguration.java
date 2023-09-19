@@ -45,8 +45,8 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Value("${url.transfer}")
     private String urlTransfer;
 
-    @Value("${phone.birthday}")
-    private String personnelPhone;
+    @Value("${url.leave_job_list}")
+    private String leaveJobList;
 
     @Resource
     private IWhiteSysPersonnelService iWhiteSysPersonnelService;
@@ -64,7 +64,7 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
             //iWhiteSysPersonnelService.ceshi();
-            MythicalCreatures.mythical_creatures_1();
+            //MythicalCreatures.mythical_creatures_1();
             //schedulingSysManagementService.windUpAnAccount();
             //Map<String,Object> map = new HashMap();
             //iWhiteSysPersonnelService.birthdayInform();
