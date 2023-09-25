@@ -109,14 +109,13 @@
             </when>
             <otherwise>
                 SELECT
-                <include refid="tableSqlPersonnel" />.id as id,
-                <include refid="tableSqlPersonnel" />.`name`,
+                <include refid="tableSqlSManagement" />.`id`,
+                <include refid="tableSqlSManagement" />.`name`,
                 <include refid="returnSql" />
                 FROM
-                <include refid="tableSqlPersonnel" />
+                <include refid="tableSqlSManagement" />
                 <include refid="relevanceSql" />
                 <include refid="whereSqlModel" />
-                <include refid="managementState"/>
                 <include refid="safeGroupBy" />
                 <include refid="safeOrderBy" />
                 <include refid="safeLIMIT" />
