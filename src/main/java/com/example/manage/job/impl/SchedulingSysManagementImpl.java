@@ -255,6 +255,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                 ManagementPersonnel managementPersonnel = managementPersonnels.get(j);
                 if (j == 0){
                     SysManagement sysManagement = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+                    wrapper = new QueryWrapper();
                     wrapper.eq("username",personnelPhone);
                     SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
                     PanXiaoZhang.postWechatFer(
@@ -285,7 +286,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                     sysPersonnel.getOpenId(),
                     "",
                     "",
-                    sysManagement.getName() + ":" + sysPersonnel.getName() + "提交了离职申请",
+                    sysManagement.getName() + ":" + manageDimission.getApplicant() + "提交了离职申请",
                     "",
                     urlTransfer + "?from=zn&redirect_url=" + leaveJobList
             );

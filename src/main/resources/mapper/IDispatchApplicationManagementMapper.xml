@@ -79,6 +79,7 @@
         ,sys_m_1.`name` as m_1_name
         ,sys_m_2.`name` as m_2_name
 
+        ,<include refid="tableSqlPersonnel" />.`id` as d_a_r_personnel_id
         ,<include refid="tableSqlPersonnel" />.`name` as d_a_r_personnel_name
 
         ,<include refid="tableSqlDAReimbursement" />.`verifier_remark` as `d_a_r_verifier_remark`
