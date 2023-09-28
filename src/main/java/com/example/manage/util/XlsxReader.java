@@ -7,9 +7,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.ManagementPersonnel;
@@ -179,6 +177,55 @@ public class XlsxReader {
         //    //    }
         //    //}
         //    fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void add2(Integer managemenId,String managemenName){
+        String file_url_1 = "D:\\user\\WeChat Files\\WeChat Files\\wxid_efhc3urrnl0x22\\FileStorage\\File\\2023-09\\20230927103011报表结果.xlsx";
+        String file_url_2 = "C:\\Users\\Administrator\\Desktop\\手机号.xlsx";
+        Map<String,String> stringMap = new HashMap<>();
+        try {
+            File file = new File(file_url_1);
+            FileInputStream fis = new FileInputStream(file);
+            XSSFWorkbook workbook = new XSSFWorkbook(fis);
+            Sheet sheet = workbook.getSheet("Sheet1"); //选择Sheet1
+            int rows = sheet.getLastRowNum() + 1; //获取行数
+            for (int i = 1; i < rows; i++) {
+                Row row = sheet.getRow(i);
+                Cell cell = row.getCell(7);
+                cell.setCellType(CellType.STRING);
+                Cell cell0 = row.getCell(0);
+                cell0.setCellType(CellType.STRING);
+                //System.out.println("\"" + cell + "\",");
+                stringMap.put(String.valueOf(cell),String.valueOf(cell0));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            File file = new File(file_url_2);
+            FileInputStream fis = new FileInputStream(file);
+            XSSFWorkbook workbook = new XSSFWorkbook(fis);
+            Sheet sheet = workbook.getSheet("Sheet1"); //选择Sheet1
+            int rows = sheet.getLastRowNum() + 1; //获取行数
+            for (int i = 1; i < rows; i++) {
+                Row row = sheet.getRow(i);
+                Cell cell = row.getCell(0);
+                cell.setCellType(CellType.STRING);
+                //System.out.println("\"" + cell + "\",");
+                String s = stringMap.get(String.valueOf(cell));
+                if (!ObjectUtils.isEmpty(s)){
+                    //log.info("手机号:{},结果:{}",cell,"y");
+                    System.out.println(s);
+                    //System.out.println(cell + "     y     " +s);
+                }else {
+                    //log.info("手机号:{},结果:{}",cell,"n");
+                    //System.out.println(cell + "     n");
+                    System.out.println(" ");
+                }
+                //System.out.println(cell);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
