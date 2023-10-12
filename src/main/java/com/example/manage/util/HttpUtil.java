@@ -11,7 +11,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -160,8 +165,46 @@ public class HttpUtil {
         }
         return resultString;
     }
-
-    public static String doGet(String url) {
-        return doGet(url, null);
+    /**
+     * 获取Request中的JSON字符串
+     * @param request
+     * @return
+     * @throws IOException
+     */
+    public static String getJsonRequest(HttpServletRequest request) {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = request.getReader();) {
+            char[] buff = new char[1024];
+            int len;
+            while ((len = reader.read(buff)) != -1) {
+                sb.append(buff, 0, len);
+            }
+        } catch (IOException e) {
+            log.error("POST请求参数获取异常", e);
+        }
+        return sb.toString();
     }
+    public static String requestJson() {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        String mode = "";
+        String methodUrl = "";
+        String param = "";
+        if (requestAttributes != null) {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) requestAttributes;
+            HttpServletRequest request = attributes.getRequest();
+            //请求方式
+            mode = request.getMethod();
+            //方法URL
+            methodUrl = request.getRequestURI();
+            if(mode.equals(HttpMethod.GET.name())){
+                param = request.getQueryString();
+            }
+            if(mode.equals(HttpMethod.POST.name())){
+                param = getJsonRequest(request);
+            }
+        }
+        return param;
+    }
+
+
 }
