@@ -14,7 +14,7 @@ public class GetSpringBean implements ApplicationContextAware {
     /**
      * 上下文对象实例
      */
-private static ApplicationContext applicationContext;
+    private static ApplicationContext applicationContext;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

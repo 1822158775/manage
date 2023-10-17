@@ -55,6 +55,7 @@ public class SysTableAuthorityServiceImpl implements ISysTableAuthorityService {
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
     }
+
     // 修改权限表单
     private ReturnEntity edit(HttpServletRequest request, SysTableAuthority jsonParam) {
         ReturnEntity returnEntity = PanXiaoZhang.isNull(

@@ -78,9 +78,13 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
     @Value("${url.leave_job_list}")
     private String leaveJobList;
 
+    //杨谨帆
     @Value("${phone.personnel}")
     private String personnelPhone;
 
+    //郭东敏
+    @Value("${phone.personnel4}")
+    private String personnelPhone4;
     @Override
     public void windUpAnAccount() {
         //查询正在运行的项目
@@ -238,7 +242,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                     "",
                     personnel.getUsername() + "您有：" + entry.getValue() + "条调派待审核数据",
                     "",
-                    urlTransfer + "?from=zn&redirect_url=" + repairCheck + "?fromDispatchVerify=true"
+                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
             );
         }
 
@@ -256,7 +260,11 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                 if (j == 0){
                     SysManagement sysManagement = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
                     wrapper = new QueryWrapper();
-                    wrapper.eq("username",personnelPhone);
+                    if (sysManagement.getId() == 1 || sysManagement.getId() == 2){
+                        wrapper.eq("username",personnelPhone4);
+                    }else {
+                        wrapper.eq("username",personnelPhone);
+                    }
                     SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
                     PanXiaoZhang.postWechatFer(
                             sysPersonnel.getOpenId(),
@@ -277,7 +285,11 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
         List<ManageDimission> manageDimissions = iManageDimissionMapper.selectList(wrapper);
         for (int i = 0; i < manageDimissions.size(); i++) {
             ManageDimission manageDimission = manageDimissions.get(i);
-            wrapper = new QueryWrapper();
+            if (manageDimission.getManagementId() == 1 || manageDimission.getManagementId() == 2){
+                wrapper.eq("username",personnelPhone4);
+            }else {
+                wrapper.eq("username",personnelPhone);
+            }
             wrapper.eq("username",personnelPhone);
             SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
             SysManagement sysManagement = iSysManagementMapper.selectById(manageDimission.getManagementId());

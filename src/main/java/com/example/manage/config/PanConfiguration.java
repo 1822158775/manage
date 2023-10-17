@@ -1,17 +1,11 @@
 package com.example.manage.config;
 
 import com.example.manage.job.SchedulingSysManagementService;
-import com.example.manage.mapper.ICardTypeMapper;
-import com.example.manage.mapper.IPerformanceReportMapper;
 import com.example.manage.service.IPunchingCardRecordService;
-import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.RedisUtil;
 import com.example.manage.util.XlsxReader;
-import com.example.manage.util.entity.ReturnEntity;
-import com.example.manage.util.mythical_creatures.MythicalCreatures;
 import com.example.manage.white_list.service.IWhiteSysPersonnelService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -19,11 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.net.*;
-import java.text.ParseException;
-import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @avthor 潘小章

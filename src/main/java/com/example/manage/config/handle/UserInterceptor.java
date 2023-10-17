@@ -6,19 +6,19 @@ import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.SysTableAuthority;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.mapper.ISysTableAuthorityMapper;
+import com.example.manage.service.IRedisUtilService;
+import com.example.manage.service.ISysPersonnelService;
+import com.example.manage.service.ISysTableAuthorityService;
 import com.example.manage.util.*;
 import com.example.manage.util.entity.TokenEntity;
 import com.example.manage.util.entity.TokenPersonnel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpMethod;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -31,7 +31,6 @@ import java.util.Map;
  */
 @Slf4j
 public class UserInterceptor implements HandlerInterceptor {
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String url = "/api/error/getBack";
@@ -41,31 +40,32 @@ public class UserInterceptor implements HandlerInterceptor {
         log.info("requestURI:{}" + requestURI);
         if (requestURI.length() > white_list.length() && requestURI.substring(0, white_list.length()).contains(white_list)){
             String s = HttpUtil.requestJson();
+            log.info("数据打印:{}",s);
             //进行json数据转化
             TokenPersonnel tokenPersonnel = JSONObject.parseObject(s, TokenPersonnel.class);
             if (ObjectUtils.isEmpty(tokenPersonnel)){
-                log.info("身份异常");
+                log.info("缺少关键数据");
                 request.getRequestDispatcher(token_error).forward(request,response);
                 return false;
             }
             //进行判断关键的数据是否有值
             if (ObjectUtils.isEmpty(tokenPersonnel.getToken_code()) || ObjectUtils.isEmpty(tokenPersonnel.getPersonnelId())){
-                log.info("身份异常");
+                log.info("token_code:{},personnelId:{}",tokenPersonnel.getToken_code(),tokenPersonnel.getPersonnelId());
                 request.getRequestDispatcher(token_error).forward(request,response);
                 return false;
             }
-            //进行连接数据库进行操作
+            ////进行连接数据库进行操作
             ISysPersonnelMapper sysPersonnelMapper = GetSpringBean.getBean(ISysPersonnelMapper.class);
             SysPersonnel personnel = sysPersonnelMapper.selectById(tokenPersonnel.getPersonnelId());
             //如果没有查到此用户
             if (ObjectUtils.isEmpty(personnel)){
-                log.info("身份异常");
+                log.info("没有查到该用户");
                 request.getRequestDispatcher(token_error).forward(request,response);
                 return false;
             }
-            //查询redis身份绑定code
-            RedisUtil redisUtil = GetSpringBean.getBean(RedisUtil.class);
             String token_code = "token_code_personnel" + personnel.getUsername();
+            ////查询redis身份绑定code
+            RedisUtil redisUtil = GetSpringBean.getBean(RedisUtil.class);
             Object token_code_personnel = redisUtil.get(token_code);
             //如果值不存在
             if (ObjectUtils.isEmpty(token_code_personnel)){
@@ -76,7 +76,7 @@ public class UserInterceptor implements HandlerInterceptor {
                 if (equals){
                     return true;
                 }else {
-                    log.info("身份异常");
+                    log.info("redis身份异常");
                     request.getRequestDispatcher(token_error).forward(request,response);
                     return false;
                 }
@@ -101,12 +101,12 @@ public class UserInterceptor implements HandlerInterceptor {
                 request.getRequestDispatcher(url).forward(request,response);
                 return false;
             }
-            ISysTableAuthorityMapper iSysTableAuthorityMapper = GetSpringBean.getBean(ISysTableAuthorityMapper.class);
             String[] split = requestURI.split("/");
             Map<String,String> map = new HashMap<>();
             map.put("authorityState","1");
             map.put("roleId",roleId);
             map.put("tableName",split[2]);
+            ISysTableAuthorityMapper iSysTableAuthorityMapper = GetSpringBean.getBean(ISysTableAuthorityMapper.class);
             List<SysTableAuthority> sysTableAuthorities = iSysTableAuthorityMapper.queryAll(map);
             if (sysTableAuthorities.size() != 1){
                 log.info("没有权限");

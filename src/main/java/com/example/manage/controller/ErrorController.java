@@ -31,7 +31,7 @@ public class ErrorController {
     public ReturnEntity token_error(){
         return new ReturnEntity(
                 CodeEntity.CODE_ERROR,
-                "账号异常，请联系主管"
+                "请用本人的手机和微信登录"
         );
     }
 }

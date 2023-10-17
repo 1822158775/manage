@@ -1,7 +1,10 @@
 package com.example.manage.service;
 
+import com.example.manage.entity.SysTableAuthority;
 import com.example.manage.util.entity.ReturnEntity;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @avthor 潘小章

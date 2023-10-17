@@ -39,6 +39,9 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
     @Value("${phone.personnel}")
     private String personnelPhone;
 
+    @Value("${phone.personnel4}")
+    private String personnelPhone4;
+
     @Value("${role.manage5}")
     private Integer manage5;
 
@@ -396,8 +399,13 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
             return new ReturnEntity(CodeEntity.CODE_ERROR,"员工录入失败");
         }
         wrapper = new QueryWrapper();
-        String[] strings = {personnelPhone};
-        wrapper.in("username",strings);
+        if (jsonParam.getMId() == 1 || jsonParam.getMId() == 2){
+            wrapper.eq("username",personnelPhone4);
+        }else {
+            wrapper.eq("username",personnelPhone);
+        }
+        //String[] strings = {personnelPhone};
+        //wrapper.in("username",strings);
         List<SysPersonnel> list = iSysPersonnelMapper.selectList(wrapper);
         for (int i = 0; i < list.size(); i++) {
             SysPersonnel selectOne = list.get(i);

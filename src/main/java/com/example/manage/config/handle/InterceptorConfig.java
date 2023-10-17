@@ -1,6 +1,7 @@
 package com.example.manage.config.handle;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -8,6 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @avthor 潘小章
  * @date 2022/4/14
  */
+@Component
 @Configuration//定义此类为配置类
 public class InterceptorConfig  implements WebMvcConfigurer {
     @Override
@@ -18,7 +20,7 @@ public class InterceptorConfig  implements WebMvcConfigurer {
         };
         //excludePathPatterns排除的路径
         String[] excludePathPatterns = {
-                "/api/login/sign","/api/websocket","/api/error/**","/wx/cp/**","/api/file/**"
+                "/api/login/sign","/api/websocket","/api/error/**","/wx/cp/**","/api/file/**","/api/white_list/login/sign"
         };
         //创建用户拦截器对象并指定其拦截的路径和排除的路径
         registry.addInterceptor(new UserInterceptor()).addPathPatterns(addPathPatterns).excludePathPatterns(excludePathPatterns);

@@ -229,15 +229,18 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
         //查询项目
         SysManagement sysManagement = iSysManagementMapper.selectById(jsonParam.getManagementId());
-        // 发送人事
-        ReturnEntity entity = PanXiaoZhang.postWechatFer(
-                personnel.getOpenId(),
-                "",
-                "",
-                sysManagement.getName() + ":" + sysPersonnel.getName() + "提交了离职申请",
-                "",
-                urlTransfer + "?from=zn&redirect_url=" + leaveJobList
-        );
+        ReturnEntity entity = new ReturnEntity();
+        if (sysManagement.getId() != 1 && sysManagement.getId() != 2){
+            // 发送人事
+            entity = PanXiaoZhang.postWechatFer(
+                    personnel.getOpenId(),
+                    "",
+                    "",
+                    sysManagement.getName() + ":" + sysPersonnel.getName() + "提交了离职申请",
+                    "",
+                    urlTransfer + "?from=zn&redirect_url=" + leaveJobList
+            );
+        }
         // 如果有上一级
         for (int i = 0; i < sysPersonnels.size(); i++) {
             SysPersonnel sysP = sysPersonnels.get(i);
