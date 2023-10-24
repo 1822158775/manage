@@ -182,23 +182,23 @@ public class XlsxReader {
         }
     }
     public void add2(Integer managemenId,String managemenName){
-        String file_url_1 = "D:\\user\\WeChat Files\\WeChat Files\\wxid_efhc3urrnl0x22\\FileStorage\\File\\2023-09\\20230927103011报表结果.xlsx";
-        String file_url_2 = "C:\\Users\\Administrator\\Desktop\\手机号.xlsx";
+        String file_url_1 = "D:\\user\\WeChat Files\\WeChat Files\\wxid_efhc3urrnl0x22\\FileStorage\\File\\2023-10\\20231018025603兑换码明细(2).xlsx";
+        String file_url_2 = "C:\\Users\\Administrator\\Documents\\手机号.xlsx";
         Map<String,String> stringMap = new HashMap<>();
         try {
             File file = new File(file_url_1);
             FileInputStream fis = new FileInputStream(file);
             XSSFWorkbook workbook = new XSSFWorkbook(fis);
-            Sheet sheet = workbook.getSheet("Sheet1"); //选择Sheet1
+            Sheet sheet = workbook.getSheet("0"); //选择Sheet1
             int rows = sheet.getLastRowNum() + 1; //获取行数
             for (int i = 1; i < rows; i++) {
                 Row row = sheet.getRow(i);
-                Cell cell = row.getCell(7);
+                Cell cell = row.getCell(3);
                 cell.setCellType(CellType.STRING);
                 Cell cell0 = row.getCell(0);
                 cell0.setCellType(CellType.STRING);
                 //System.out.println("\"" + cell + "\",");
-                stringMap.put(String.valueOf(cell),String.valueOf(cell0));
+                stringMap.put(String.valueOf(cell),String.valueOf(cell));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -217,12 +217,14 @@ public class XlsxReader {
                 String s = stringMap.get(String.valueOf(cell));
                 if (!ObjectUtils.isEmpty(s)){
                     //log.info("手机号:{},结果:{}",cell,"y");
-                    System.out.println(s);
-                    //System.out.println(cell + "     y     " +s);
+                    //System.out.println(s);
+                    System.out.println(cell + "     y     " +s);
+                    //System.out.println("     y     ");
                 }else {
                     //log.info("手机号:{},结果:{}",cell,"n");
-                    //System.out.println(cell + "     n");
-                    System.out.println(" ");
+                    System.out.println(cell + "     n");
+                    //System.out.println(" ");
+                    //System.out.println("     n");
                 }
                 //System.out.println(cell);
             }

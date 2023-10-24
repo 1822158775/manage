@@ -79,6 +79,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public ReturnEntity fileUpload(MultipartFile[] file, String originFile, String from, HttpServletRequest request) {
+        System.out.println("================");
         try {
             String originFilePath = uploadFilePathConfig.originFilePath(originFile);
             String realPath = uploadFilePathConfig.getUploadDiskFolder()+ originFilePath ;

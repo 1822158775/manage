@@ -35,14 +35,17 @@ public class UserInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String url = "/api/error/getBack";
         String token_error = "/api/error/token_error";
+        String token_error2 = "/api/error/token_error2";
         String white_list = "/api/white_list/";
         String requestURI = request.getRequestURI();
         log.info("requestURI:{}" + requestURI);
         if (requestURI.length() > white_list.length() && requestURI.substring(0, white_list.length()).contains(white_list)){
-            String s = HttpUtil.requestJson();
-            log.info("数据打印:{}",s);
             //进行json数据转化
-            TokenPersonnel tokenPersonnel = JSONObject.parseObject(s, TokenPersonnel.class);
+            TokenPersonnel tokenPersonnel = new TokenPersonnel(
+                    String.valueOf(request.getHeader("personnelId")),
+                    String.valueOf(request.getHeader("token_code"))
+            );
+            log.info("数据打印:{}",tokenPersonnel);
             if (ObjectUtils.isEmpty(tokenPersonnel)){
                 log.info("缺少关键数据");
                 request.getRequestDispatcher(token_error).forward(request,response);
@@ -51,10 +54,10 @@ public class UserInterceptor implements HandlerInterceptor {
             //进行判断关键的数据是否有值
             if (ObjectUtils.isEmpty(tokenPersonnel.getToken_code()) || ObjectUtils.isEmpty(tokenPersonnel.getPersonnelId())){
                 log.info("token_code:{},personnelId:{}",tokenPersonnel.getToken_code(),tokenPersonnel.getPersonnelId());
-                request.getRequestDispatcher(token_error).forward(request,response);
+                request.getRequestDispatcher(token_error2).forward(request,response);
                 return false;
             }
-            ////进行连接数据库进行操作
+            //进行连接数据库进行操作
             ISysPersonnelMapper sysPersonnelMapper = GetSpringBean.getBean(ISysPersonnelMapper.class);
             SysPersonnel personnel = sysPersonnelMapper.selectById(tokenPersonnel.getPersonnelId());
             //如果没有查到此用户
@@ -70,6 +73,7 @@ public class UserInterceptor implements HandlerInterceptor {
             //如果值不存在
             if (ObjectUtils.isEmpty(token_code_personnel)){
                 redisUtil.set(token_code,tokenPersonnel.getToken_code());
+                redisUtil.set(tokenPersonnel.getToken_code(),token_code);
                 return true;
             }else {//如果值存在
                 boolean equals = String.valueOf(token_code_personnel).equals(tokenPersonnel.getToken_code());//进行身份对比

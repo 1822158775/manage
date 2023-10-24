@@ -132,6 +132,9 @@ public class SysPersonnel implements Serializable {
     @TableField(exist = false)
     public WorkingAgoOpenNumber workingAgoOpenNumber;//几个不同的微信号
 
+    @TableField(exist = false)
+    public String token_code;//手机秘钥
+
     public SysPersonnel() {
     }
 

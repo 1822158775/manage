@@ -34,4 +34,11 @@ public class ErrorController {
                 "请用本人的手机和微信登录"
         );
     }
+    @RequestMapping(value = "token_error2")
+    public ReturnEntity token_error2(){
+        return new ReturnEntity(
+                CodeEntity.CODE_ERROR,
+                "版本更新，请重新进入小程序"
+        );
+    }
 }

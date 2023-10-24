@@ -9,9 +9,7 @@ import com.example.manage.entity.is_not_null.SysPersonnelNotNull;
 import com.example.manage.mapper.ILoginRecordMapper;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.service.ILoginService;
-import com.example.manage.util.HttpUtil;
-import com.example.manage.util.PanXiaoZhang;
-import com.example.manage.util.TokenUtil;
+import com.example.manage.util.*;
 import com.example.manage.util.entity.CodeEntity;
 import com.example.manage.util.entity.MsgEntity;
 import com.example.manage.util.entity.ReturnEntity;
@@ -42,6 +40,10 @@ public class ILoginServiceImpl implements ILoginService {
      */
     @Resource
     private ISysPersonnelMapper iSysPersonnelMapper;
+
+    @Resource
+    private RedisUtil redisUtil;
+
     @Override
     public ReturnEntity login(HttpServletRequest request) {
         try {
@@ -112,6 +114,19 @@ public class ILoginServiceImpl implements ILoginService {
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号不存在");
             }
             SysPersonnel sysPersonnel = sysPersonnels.get(0);
+            String token_code = "token_code_personnel" + sysPersonnel.getUsername();
+            redisUtil.get(token_code);
+            ////查询redis身份绑定code
+            RedisUtil redisUtil = GetSpringBean.getBean(RedisUtil.class);
+            Object token_code_personnel = redisUtil.get(token_code);
+            //如果值不存在
+            if (!ObjectUtils.isEmpty(token_code_personnel)){//如果值存在
+                boolean equals = String.valueOf(token_code_personnel).equals(sysPersonnel.getToken_code());//进行身份对比
+                if (!equals){
+                    log.info("redis身份异常");
+                    return new ReturnEntity(CodeEntity.CODE_ERROR, "请用原手机和微信进行登录");
+                }
+            }
             //判断密码是否正确
             if (sysPersonnel.equals(PanXiaoZhang.getPassword(jsonParam.getPassword()))){
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "密码错误");
@@ -155,7 +170,7 @@ public class ILoginServiceImpl implements ILoginService {
                 null,
                 jsonParam.getUsername(),
                 DateFormatUtils.format(new Date(),PanXiaoZhang.yMdHms()),
-                openid,
+                jsonParam.getOpenId(),
                 jsonParam.getModel(),
                 "",
                 sysPersonnel.getPersonnelCode()

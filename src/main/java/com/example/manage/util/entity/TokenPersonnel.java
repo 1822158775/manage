@@ -12,4 +12,12 @@ import lombok.ToString;
 public class TokenPersonnel {
     public String personnelId;
     public String token_code;
+
+    public TokenPersonnel() {
+    }
+
+    public TokenPersonnel(String personnelId, String token_code) {
+        this.personnelId = personnelId;
+        this.token_code = token_code;
+    }
 }
