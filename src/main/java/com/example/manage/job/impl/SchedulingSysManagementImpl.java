@@ -283,6 +283,7 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
         wrapper = new QueryWrapper();
         wrapper.eq("applicant_state","pending");
         List<ManageDimission> manageDimissions = iManageDimissionMapper.selectList(wrapper);
+        wrapper = new QueryWrapper();
         for (int i = 0; i < manageDimissions.size(); i++) {
             ManageDimission manageDimission = manageDimissions.get(i);
             if (manageDimission.getManagementId() == 1 || manageDimission.getManagementId() == 2){
@@ -290,7 +291,6 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
             }else {
                 wrapper.eq("username",personnelPhone);
             }
-            wrapper.eq("username",personnelPhone);
             SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
             SysManagement sysManagement = iSysManagementMapper.selectById(manageDimission.getManagementId());
             // 发送人事

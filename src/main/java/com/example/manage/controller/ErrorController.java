@@ -30,7 +30,7 @@ public class ErrorController {
     @RequestMapping(value = "token_error")
     public ReturnEntity token_error(){
         return new ReturnEntity(
-                CodeEntity.CODE_ERROR,
+                "403",
                 "请用本人的手机和微信登录"
         );
     }

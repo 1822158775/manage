@@ -55,6 +55,9 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
     @Value("${url.transfer}")
     private String urlTransfer;
 
+    @Value("${url.dispatch_list}")
+    public String dispatch_list;
+
     @Resource
     private IDispatchApplicationManagementMapper iDispatchApplicationManagementMapper;
 
@@ -346,7 +349,7 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                         "",
                         personnel.getName() + "已调派到" + management.getName(),
                         "",
-                        ""
+                        urlTransfer + "?from=zn&redirect_url=" + dispatch_list
                 );
             }
         }else if (jsonParam.getVerifierState().equals("refuse")){//如果拒绝审核

@@ -510,7 +510,7 @@ public class CodeGeneration {
     }
     public static void main(String[] args) {
         try {
-            methodMaster("反馈记录表","feedback_record_sheet","FeedbackRecordSheet");
+            methodMaster("解绑记录表","unbind_record","UnbindRecord");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

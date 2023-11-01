@@ -114,21 +114,8 @@ public class ILoginServiceImpl implements ILoginService {
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "账号不存在");
             }
             SysPersonnel sysPersonnel = sysPersonnels.get(0);
-            String token_code = "token_code_personnel" + sysPersonnel.getUsername();
-            redisUtil.get(token_code);
-            ////查询redis身份绑定code
-            RedisUtil redisUtil = GetSpringBean.getBean(RedisUtil.class);
-            Object token_code_personnel = redisUtil.get(token_code);
-            //如果值不存在
-            if (!ObjectUtils.isEmpty(token_code_personnel)){//如果值存在
-                boolean equals = String.valueOf(token_code_personnel).equals(sysPersonnel.getToken_code());//进行身份对比
-                if (!equals){
-                    log.info("redis身份异常");
-                    return new ReturnEntity(CodeEntity.CODE_ERROR, "请用原手机和微信进行登录");
-                }
-            }
             //判断密码是否正确
-            if (sysPersonnel.equals(PanXiaoZhang.getPassword(jsonParam.getPassword()))){
+            if (!sysPersonnel.getPassword().equals(PanXiaoZhang.getPassword(jsonParam.getPassword()))){
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "密码错误");
             }
             //判断当前账户的状态
@@ -139,7 +126,22 @@ public class ILoginServiceImpl implements ILoginService {
             if(sysPersonnel.getEmploymentStatus().equals(2)){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"待审核");
             }
-            String openid = sysPersonnel.getOpenId();
+            String token_code = "token_code_personnel" + sysPersonnel.getUsername();
+            Object token_code_personnel = redisUtil.get(token_code);
+            //如果值不存在
+            if (!ObjectUtils.isEmpty(token_code_personnel)){//如果值存在
+                boolean equals = String.valueOf(token_code_personnel).equals(jsonParam.getToken_code());//进行身份对比
+                log.info("比对：{}",equals);
+                log.info("token1：{}",token_code_personnel);
+                log.info("token2：{}",jsonParam.getToken_code());
+                if (!equals){
+                    log.info("redis身份异常");
+                    return new ReturnEntity("405", "请用上传本人视频，进行解绑");
+                }
+            }
+            if (!ObjectUtils.isEmpty(sysPersonnel.getToken_code())){
+                redisUtil.set(token_code,sysPersonnel.getToken_code());
+            }
             //判断该用户是否有openID
             if (ObjectUtils.isEmpty(sysPersonnel.getOpenId())){
                 String token = request.getHeader("Http-X-User-Access-Token");
@@ -147,7 +149,7 @@ public class ILoginServiceImpl implements ILoginService {
                 if (!parseObject.getSuccess()){
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"请关注常旅通公众号");
                 }
-                openid = parseObject.getResponse().getOpenid();
+                String openid = parseObject.getResponse().getOpenid();
                 QueryWrapper wrapper = new QueryWrapper();
                 wrapper.eq("open_id",openid);
                 SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);

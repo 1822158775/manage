@@ -166,6 +166,7 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getId());
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("personnel_code",sysPersonnel.getPersonnelCode());
+        wrapper.eq("applicant_state","pending");
         ManageDimission manageDimission = iManageDimissionMapper.selectOne(wrapper);
         if (!ObjectUtils.isEmpty(manageDimission)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"不可重复提交");

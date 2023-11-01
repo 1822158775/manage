@@ -125,7 +125,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
         }
         //查询是否有当天的打卡记录
         QueryWrapper wrapper = new QueryWrapper();
-        wrapper.between("reissue_time", LocalDate.now().withDayOfMonth(1), LocalDate.now());
+        wrapper.between("applicant_time", LocalDate.now().withDayOfMonth(1) + " 00:00:00", LocalDate.now() + " 23:59:59");
         wrapper.eq("personnel_id",jsonMap.get("personnelId"));
         List<CardReplacementRecord> recordList = iCardReplacementRecordMapper.selectList(wrapper);
         int i = cardNumber - recordList.size();
@@ -474,7 +474,7 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
         }
         //设置补卡类型1：补卡上班，2；补卡下班
-        wrapper.between("reissue_time", LocalDate.now().withDayOfMonth(1), LocalDate.now());
+        wrapper.between("applicant_time", LocalDate.now().withDayOfMonth(1) + " 00:00:00", LocalDate.now() + " 23:59:59");
         wrapper.eq("personnel_id",sysPersonnel.getId());
         List<CardReplacementRecord> recordList = iCardReplacementRecordMapper.selectList(wrapper);
         int number = cardNumber - recordList.size() ;
