@@ -330,10 +330,12 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         ManageDimission manageDimission = iManageDimissionMapper.selectById(jsonParam.getId());
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("personnel_code",manageDimission.getPersonnelCode());
-        iSysPersonnelMapper.update(new SysPersonnel(
-                0,
-                manageDimission.getResignationTime()
-        ),wrapper);
+        if(jsonParam.getApplicantState().equals("agree")){
+            iSysPersonnelMapper.update(new SysPersonnel(
+                    0,
+                    manageDimission.getResignationTime()
+            ),wrapper);
+        }
         iManageDimissionMapper.updateById(new ManageDimission(
                 manageDimission.getId(),
                 jsonParam.getApplicantState()
