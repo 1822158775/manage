@@ -18,9 +18,26 @@ public class NumberOfProjects implements Serializable {
     public Integer realQuantity;//实际数量
     public Integer businessNumber;//业务数量
     public Integer guideNumber;//引导数量
-    public Double rateOfFullCapacity;//实际数量
-    public Double guideRateOfFullCapacity;//服务实际数量
-    public Double businessRateOfFullCapacity;//业务实际数量
+    public String rateOfFullCapacity;//实际数量
+    public String guideRateOfFullCapacity;//服务实际数量
+    public String businessRateOfFullCapacity;//业务实际数量
     public String name;//项目名称
     public Integer id;//项目id
+
+    public NumberOfProjects() {
+    }
+
+    public NumberOfProjects(Integer numberOfPeople, Integer guideNumberOfPeople, Integer numberPersonnel, Integer realQuantity, Integer businessNumber, Integer guideNumber, String rateOfFullCapacity, String guideRateOfFullCapacity, String businessRateOfFullCapacity, String name, Integer id) {
+        this.numberOfPeople = numberOfPeople;
+        this.guideNumberOfPeople = guideNumberOfPeople;
+        this.numberPersonnel = numberPersonnel;
+        this.realQuantity = realQuantity;
+        this.businessNumber = businessNumber;
+        this.guideNumber = guideNumber;
+        this.rateOfFullCapacity = rateOfFullCapacity;
+        this.guideRateOfFullCapacity = guideRateOfFullCapacity;
+        this.businessRateOfFullCapacity = businessRateOfFullCapacity;
+        this.name = name;
+        this.id = id;
+    }
 }
