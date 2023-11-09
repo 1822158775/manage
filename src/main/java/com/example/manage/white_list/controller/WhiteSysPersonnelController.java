@@ -62,4 +62,10 @@ public class WhiteSysPersonnelController {
             return iWhiteSysPersonnelService.methodMasterT(request, "edit_password");
         }
     }
+
+    // 账号捞回
+    @PostMapping(value = "salvaged")
+    public ReturnEntity salvaged(HttpServletRequest request){
+        return iWhiteSysPersonnelService.methodMasterT(request,"salvaged");
+    }
 }

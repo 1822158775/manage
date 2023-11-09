@@ -106,6 +106,76 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         }
     }
 
+    //捞回
+    private ReturnEntity salvaged(HttpServletRequest request) throws IOException {
+        SysPersonnel jsonParam = PanXiaoZhang.getJSONParam(request, SysPersonnel.class);
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(jsonParam, new SysPersonnelNotNull(
+            "isNotNullAndIsLengthNot0",
+            ""
+        ));
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("username",jsonParam.getUsername());
+        //查询人员信息
+        SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
+        if (ObjectUtils.isEmpty(personnel)){
+            return new ReturnEntity("3","查无此用户，请前往遍历入职");
+        }
+        if (!jsonParam.getEmploymentStatus().equals("0")){
+            return new ReturnEntity("3","不符合复职条件");
+        }
+        //查询该项目
+        SysManagement sysManagement = iSysManagementMapper.selectById(jsonParam.getMId());
+        if (ObjectUtils.isEmpty(sysManagement)){
+            return new ReturnEntity("3","该项目不存在");
+        }
+        if (!sysManagement.getManagementState().equals("1")){
+            return new ReturnEntity("3","该项目已停止运行");
+        }
+        wrapper.eq("personnel_code",personnel.getPersonnelCode());
+        List<ManagementPersonnel> managementPersonnels = iManagementPersonnelMapper.selectList(wrapper);
+        for (int i = 0; i < managementPersonnels.size(); i++) {
+            ManagementPersonnel managementPersonnel = managementPersonnels.get(i);
+            iManagementPersonnelMapper.deleteById(managementPersonnel.getId());
+        }
+        iManagementPersonnelMapper.insert(new ManagementPersonnel(
+                jsonParam.getMId(),
+                personnel.getPersonnelCode()
+        ));
+        //修改为待入职状态
+        personnel.setEmploymentStatus(2);
+        //入职时间修改
+        personnel.setEntryTime(new Date());
+        iSysPersonnelMapper.updateById(personnel);
+        wrapper = new QueryWrapper();
+        if (jsonParam.getMId() == 1 || jsonParam.getMId() == 2){
+            wrapper.eq("username",personnelPhone4);
+        }else {
+            wrapper.eq("username",personnelPhone);
+        }
+        //String[] strings = {personnelPhone};
+        //wrapper.in("username",strings);
+        List<SysPersonnel> list = iSysPersonnelMapper.selectList(wrapper);
+        for (int i = 0; i < list.size(); i++) {
+            SysPersonnel selectOne = list.get(i);
+            String openId = "o_QtX5g0Eem4D41v6pR-LRXleSO4";
+            if (!ObjectUtils.isEmpty(selectOne)){
+                openId = selectOne.getOpenId();
+            }
+            PanXiaoZhang.postWechatFer(
+                    openId,
+                    "",
+                    "",
+                    sysManagement.getName() + ":" + jsonParam.getName() + "提交了入职申请",
+                    "",
+                    urlTransfer + "?from=zn&redirect_url=" + employerList + jsonParam.getMId()
+            );
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,jsonParam,"提交成功");
+    }
+
     //方法总管外加事务
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -125,6 +195,8 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
                 return returnEntity;
             }else if (name.equals("edit_password")){
                 return edit_password(request);
+            }else if (name.equals("salvaged")){
+                return salvaged(request);
             }
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
