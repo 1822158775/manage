@@ -139,7 +139,6 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
             //遍历人员
             for (int i = 0; i < personnels.size(); i++) {
                 SysPersonnel personnel = personnels.get(i);
-
                 //获取请假记录
                 List<FurloughRecord> furloughRecords = personnel.getFurloughRecords();
                 for (int j = 0; j < furloughRecords.size(); j++) {

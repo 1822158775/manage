@@ -139,8 +139,8 @@ public class ILoginServiceImpl implements ILoginService {
                     return new ReturnEntity("405", "请用上传本人视频，进行解绑");
                 }
             }
-            if (!ObjectUtils.isEmpty(sysPersonnel.getToken_code())){
-                redisUtil.set(token_code,sysPersonnel.getToken_code());
+            if (!ObjectUtils.isEmpty(jsonParam.getToken_code())){
+                redisUtil.set(token_code,jsonParam.getToken_code());
             }
             //判断该用户是否有openID
             if (ObjectUtils.isEmpty(sysPersonnel.getOpenId())){

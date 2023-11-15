@@ -277,6 +277,7 @@
                 #{item}
             </foreach>
         </if>
+        and (<include refid="tableSql" />.`employment_status` = 1 or <include refid="tableSql" />.`leave_time` >= #{startTime})
     </sql>
     <!--  主表排序  -->
     <sql id="safeOrderBy">
