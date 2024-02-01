@@ -92,7 +92,7 @@
     <!--  进行关联表  -->
     <sql id="relevanceSqlAs">
         LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSqlAs" />.personnel_code
-        LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
+        LEFT JOIN sys_management on sys_management.id = <include refid="tableSqlAs" />.management_id
         LEFT JOIN <include refid="tableSqlRI" /> on <include refid="tableSqlRI" />.path_code = <include refid="tableSqlAs" />.punching_card_record_code
 <!--        LEFT JOIN <include refid="tableSqlRI" /> as <include refid="tableSqlRIAs" />  on <include refid="tableSqlRIAs" />.path_code = <include refid="tableSqlAs" />.punching_card_record_code-->
     </sql>

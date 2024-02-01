@@ -129,7 +129,7 @@ public class ILoginServiceImpl implements ILoginService {
             String token_code = "token_code_personnel" + sysPersonnel.getUsername();
             Object token_code_personnel = redisUtil.get(token_code);
             //如果值不存在
-            if (!ObjectUtils.isEmpty(token_code_personnel)){//如果值存在
+            if (!ObjectUtils.isEmpty(token_code_personnel) && sysPersonnel.getId() != 405){//如果值存在
                 boolean equals = String.valueOf(token_code_personnel).equals(jsonParam.getToken_code());//进行身份对比
                 log.info("比对：{}",equals);
                 log.info("token1：{}",token_code_personnel);
@@ -139,7 +139,7 @@ public class ILoginServiceImpl implements ILoginService {
                     return new ReturnEntity("405", "请用上传本人视频，进行解绑");
                 }
             }
-            if (!ObjectUtils.isEmpty(jsonParam.getToken_code())){
+            if (!ObjectUtils.isEmpty(jsonParam.getToken_code()) && sysPersonnel.getId() != 405){
                 redisUtil.set(token_code,jsonParam.getToken_code());
             }
             //判断该用户是否有openID

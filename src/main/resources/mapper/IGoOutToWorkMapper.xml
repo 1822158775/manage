@@ -13,6 +13,12 @@
         <result column="applicant_time" property="applicantTime" />
         <result column="verifier_remark" property="verifierRemark" />
         <result column="end_time" property="endTime" />
+
+        <result column="set_out" property="setOut" />
+        <result column="traffic" property="traffic" />
+        <result column="reach" property="reach" />
+        <result column="estimated_cost" property="estimatedCost" />
+        <result column="on_business" property="onBusiness" />
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from

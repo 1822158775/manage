@@ -21,7 +21,9 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -511,21 +513,90 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         return iSysPersonnelMapper.queryAll(map);
     }
 
+    public static List<LocalDate> getDatesBetween(LocalDate startDate, LocalDate endDate) {
+        List<LocalDate> dates = new ArrayList<>();
+        long numOfDaysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+        for (int i = 0; i <= numOfDaysBetween; i++) {
+            LocalDate date = startDate.plusDays(i);
+            dates.add(date);
+        }
+        return dates;
+    }
+
     @Override
     public void ceshi() {
-        QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("working_clock_in_state","补卡");
-        List<PunchingCardRecord> selectList = iPunchingCardRecordMapper.selectList(wrapper);
-        for (int i = 0; i < selectList.size(); i++) {
-            PunchingCardRecord cardRecord = selectList.get(i);
-            CheckInTime checkInTime = iCheckInTimeMapper.selectById(cardRecord.getCheckInTimeId());
-            if (ObjectUtils.isEmpty(checkInTime)){
-                log.info("cardRecord:{}",cardRecord);
-                //cardRecord.setWorkingAttendanceTime(checkInTime.getEndPunchIn());
-                //cardRecord.setManagementStartTime(checkInTime.getEndPunchIn());
-                //iPunchingCardRecordMapper.updateById(cardRecord);
-            }
+        //QueryWrapper wrapper = new QueryWrapper();
+        //wrapper.eq("working_clock_in_state","补卡");
+        //List<PunchingCardRecord> selectList = iPunchingCardRecordMapper.selectList(wrapper);
+        //for (int i = 0; i < selectList.size(); i++) {
+        //    PunchingCardRecord cardRecord = selectList.get(i);
+        //    CheckInTime checkInTime = iCheckInTimeMapper.selectById(cardRecord.getCheckInTimeId());
+        //    if (ObjectUtils.isEmpty(checkInTime)){
+        //        log.info("cardRecord:{}",cardRecord);
+        //        //cardRecord.setWorkingAttendanceTime(checkInTime.getEndPunchIn());
+        //        //cardRecord.setManagementStartTime(checkInTime.getEndPunchIn());
+        //        //iPunchingCardRecordMapper.updateById(cardRecord);
+        //    }
+        //}
+        // 创建Random对象
+        Random random = new Random();
+        LocalDate startDate = LocalDate.of(2023, 12, 17);
+        LocalDate endDate = LocalDate.of(2023, 12, 27);
+        List<LocalDate> dates = getDatesBetween(startDate, endDate);
+        //String[] str = {"2023-12-28"};
+        SysPersonnel personnel = iSysPersonnelMapper.selectById(848);
+        //for (int i = 0; i < str.length; i++) {
+        //    iPunchingCardRecordMapper.insert(new PunchingCardRecord(
+        //            null,
+        //            personnel.getName(),
+        //            personnel.getPersonnelCode(),
+        //            null,
+        //            34,
+        //            personnel.getOpenId(),
+        //            personnel.getOpenId(),
+        //            "打卡成功",
+        //            "14:20:44",
+        //            personnel.getOpenId(),
+        //            personnel.getOpenId(),
+        //            "打卡成功",
+        //            "20:33:30",
+        //            str[i],
+        //            "14:30:00",
+        //            "20:30:00",
+        //            137,
+        //            "下午"
+        //    ));
+        //}
+        for (int i = 0; i < dates.size(); i++) {
+            // 生成0到29之间的随机数
+            int randomNum = random.nextInt(30);
+
+            System.out.println("随机数为：" + randomNum);
+            System.out.println(dates);
+            iPunchingCardRecordMapper.insert(new PunchingCardRecord(
+                    null,
+                    personnel.getName(),
+                    personnel.getPersonnelCode(),
+                    null,
+                    34,
+                    personnel.getOpenId(),
+                    personnel.getOpenId(),
+                    "打卡成功",
+                    "08:" + randomNum + ":44",
+                    personnel.getOpenId(),
+                    personnel.getOpenId(),
+                    "打卡成功",
+                    "14:30:" +randomNum,
+                    dates.get(i).toString(),
+                    "08:30:00",
+                    "14:30:00",
+                    136,
+                    "上午"
+            ));
         }
+
+
+
     }
 
     //根据人员查询当下的卡种

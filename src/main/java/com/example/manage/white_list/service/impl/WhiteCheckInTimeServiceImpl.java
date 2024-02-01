@@ -2,6 +2,7 @@ package com.example.manage.white_list.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.CheckInTime;
+import com.example.manage.entity.SysPersonnel;
 import com.example.manage.mapper.ICheckInTimeMapper;
 import com.example.manage.util.PanXiaoZhang;
 import com.example.manage.util.entity.CodeEntity;
@@ -10,6 +11,7 @@ import com.example.manage.util.entity.ReturnEntity;
 import com.example.manage.white_list.service.IWhiteCheckInTimeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;

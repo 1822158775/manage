@@ -66,6 +66,9 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
     @Value("${role.manage4}")
     private Integer manage4;
 
+    @Value("${role.manage2}")
+    private Integer manage2;
+
     @Value("${role.dageid}")
     private Integer dageid;
 
@@ -376,7 +379,7 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
         //从最大的开始审核
         jsonParam.setMaxNumber(0);
         //区域经理层出差
-        if (role.getId().equals(manage3) || role.getId().equals(manage4)){
+        if (role.getId().equals(manage3) || role.getId().equals(manage4) || role.getId().equals(manage2)){
             wrapper = new QueryWrapper();
             wrapper.eq("personnel_id",jsonParam.getPersonnelId());
             List<DivisionManagementPersonnel> selectList = iDivisionManagementPersonnelMapper.selectList(wrapper);

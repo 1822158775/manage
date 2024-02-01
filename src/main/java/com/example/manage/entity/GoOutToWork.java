@@ -56,6 +56,17 @@ public class GoOutToWork implements Serializable {
     @TableField(value = "end_time")
     public Date endTime;//请假结束时间
 
+    @TableField(value = "set_out")
+    public String setOut;/*出发地*/
+    @TableField(value = "traffic")
+    public String traffic;/*交通方式*/
+    @TableField(value = "reach")
+    public String reach;/*到达*/
+    @TableField(value = "estimated_cost")
+    public String estimatedCost;/*预计费用*/
+    @TableField(value = "on_business")
+    public String onBusiness;/*出差办事*/
+
     @TableField(exist = false)
     public List<ReimbursementImage> reimbursementImages;//附件
 

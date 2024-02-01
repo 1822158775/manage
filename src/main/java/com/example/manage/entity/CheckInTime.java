@@ -55,4 +55,7 @@ public class CheckInTime implements Serializable {
 
     @TableField(value = "management_id")
     public Integer managementId;//项目编码
+
+    @TableField(exist = false)
+    public Integer personnelId;
 }

@@ -96,6 +96,6 @@ url:
   leave_job_list: /packageZn/pages/leave_job_list/leave_job_list
   dispatch_list: /packageZn/pages/dispatch_list/dispatch_list
 card:
-  number: 3
+  number: 5
 card_type:
   id: 4
