@@ -37,6 +37,7 @@
         <if test="reissueCode != null "> and `reissue_code` = #{reissueCode}</if>
         <if test="reissueState != null "> and `reissue_state` = #{reissueState}</if>
         <if test="nePersonnelId != null "> and `personnel_id` != #{nePersonnelId}</if>
+        <if test="neReissueState != null "> and `reissue_state` != #{neReissueState}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

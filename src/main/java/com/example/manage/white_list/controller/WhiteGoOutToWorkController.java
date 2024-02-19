@@ -54,4 +54,17 @@ public class WhiteGoOutToWorkController {
             return iWhiteGoOutToWorkService.methodMasterT(request, "edit");
         }
     }
+
+    /*撤销出差记录*/
+    @PostMapping(value = "close")
+    public ReturnEntity close(HttpServletRequest request){
+        return iWhiteGoOutToWorkService.methodMasterT(request, "close");
+
+    }
+
+    /* 查询所有出差信息*/
+    @PostMapping(value = "cat_all")
+    public ReturnEntity cat_all(HttpServletRequest request){
+        return iWhiteGoOutToWorkService.methodMaster(request,"cat_all");
+    }
 }

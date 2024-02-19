@@ -94,6 +94,7 @@ public class UserInterceptor implements HandlerInterceptor {
                 }
             }
         }
+
         log.info("后台");
         if (!StringUtils.isEmpty(request.getHeader("token"))) {
             log.info("会话请求地址:{},token:{}",requestURI,request.getHeader("token"));

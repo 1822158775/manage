@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.manage.mapper.WhiteGoOutToWorkMapper">
+<mapper namespace="com.example.manage.mapper.WhiteGoOutToWorkTwoMapper">
     <resultMap id="entity" type="com.example.manage.entity.GoOutToWork">
         <result column="id" property="id" />
         <result column="personnel_name" property="personnelName" />
@@ -52,7 +52,6 @@
         as
         <include refid="tableSql"/>
         <include refid="relevanceSql" />
-        <include refid="whereSqlModel" />
         <include refid="safeOrderBy"/>
     </select>
     <sql id="tableSql">
@@ -76,6 +75,8 @@
         <include refid="tableSqlFR"/>.*
         from
         <include refid="tableSqlFR"/>
+        <include refid="relevanceSqlFR" />
+        <include refid="whereSqlModel" />
         <include refid="safeOrderByFR"/>
         <include refid="safeLIMIT"/>
     </sql>
@@ -97,6 +98,14 @@
         ,<include refid="tableSqlRI" />.`path_code`
 
     </sql>
+
+    <!--  进行关联表  -->
+    <sql id="relevanceSqlFR">
+        LEFT JOIN <include refid="tableSqlReimbursement" /> on <include refid="tableSqlReimbursement" />.reissue_code = <include refid="tableSqlFR" />.reissue_code
+        LEFT JOIN <include refid="tableSqlPersonnel" /> on <include refid="tableSqlPersonnel" />.id = <include refid="tableSqlReimbursement" />.personnel_id
+        LEFT JOIN <include refid="tableSqlRI" /> on <include refid="tableSqlRI" />.path_code = <include refid="tableSqlFR" />.reissue_code
+    </sql>
+
     <!--  进行关联表  -->
     <sql id="relevanceSql">
         LEFT JOIN <include refid="tableSqlReimbursement" /> on <include refid="tableSqlReimbursement" />.reissue_code = <include refid="tableSql" />.reissue_code
@@ -105,9 +114,9 @@
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
-        <if test="id != null "> and <include refid="tableSql"/>.`id` = #{id}</if>
-        <if test="personnelId != null "> and <include refid="tableSql"/>.`personnel_id` = #{personnelId}</if>
-        <if test="reissueState != null "> and <include refid="tableSql"/>.`reissue_state` = #{reissueState}</if>
+        <if test="id != null "> and <include refid="tableSqlFR"/>.`id` = #{id}</if>
+        <if test="personnelId != null "> and <include refid="tableSqlFR"/>.`personnel_id` = #{personnelId}</if>
+        <if test="reissueState != null "> and <include refid="tableSqlFR"/>.`reissue_state` = #{reissueState}</if>
         <if test="auditorPersonnelId != null">
             and <include refid="tableSqlReimbursement"/>.`personnel_id` = #{auditorPersonnelId}
         </if>

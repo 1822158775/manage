@@ -21,6 +21,8 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -538,14 +540,43 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         //        //iPunchingCardRecordMapper.updateById(cardRecord);
         //    }
         //}
-        // 创建Random对象
-        Random random = new Random();
-        LocalDate startDate = LocalDate.of(2023, 12, 17);
-        LocalDate endDate = LocalDate.of(2023, 12, 27);
-        List<LocalDate> dates = getDatesBetween(startDate, endDate);
-        //String[] str = {"2023-12-28"};
-        SysPersonnel personnel = iSysPersonnelMapper.selectById(848);
-        //for (int i = 0; i < str.length; i++) {
+
+        /*签到补充*/
+        //// 创建Random对象
+        //Random random = new Random();
+        //LocalDate startDate = LocalDate.of(2023, 12, 17);
+        //LocalDate endDate = LocalDate.of(2023, 12, 27);
+        //List<LocalDate> dates = getDatesBetween(startDate, endDate);
+        ////String[] str = {"2023-12-28"};
+        //SysPersonnel personnel = iSysPersonnelMapper.selectById(848);
+        ////for (int i = 0; i < str.length; i++) {
+        ////    iPunchingCardRecordMapper.insert(new PunchingCardRecord(
+        ////            null,
+        ////            personnel.getName(),
+        ////            personnel.getPersonnelCode(),
+        ////            null,
+        ////            34,
+        ////            personnel.getOpenId(),
+        ////            personnel.getOpenId(),
+        ////            "打卡成功",
+        ////            "14:20:44",
+        ////            personnel.getOpenId(),
+        ////            personnel.getOpenId(),
+        ////            "打卡成功",
+        ////            "20:33:30",
+        ////            str[i],
+        ////            "14:30:00",
+        ////            "20:30:00",
+        ////            137,
+        ////            "下午"
+        ////    ));
+        ////}
+        //for (int i = 0; i < dates.size(); i++) {
+        //    // 生成0到29之间的随机数
+        //    int randomNum = random.nextInt(30);
+        //
+        //    System.out.println("随机数为：" + randomNum);
+        //    System.out.println(dates);
         //    iPunchingCardRecordMapper.insert(new PunchingCardRecord(
         //            null,
         //            personnel.getName(),
@@ -555,48 +586,140 @@ public class WhiteSysPersonnelServiceImpl implements IWhiteSysPersonnelService {
         //            personnel.getOpenId(),
         //            personnel.getOpenId(),
         //            "打卡成功",
-        //            "14:20:44",
+        //            "08:" + randomNum + ":44",
         //            personnel.getOpenId(),
         //            personnel.getOpenId(),
         //            "打卡成功",
-        //            "20:33:30",
-        //            str[i],
+        //            "14:30:" +randomNum,
+        //            dates.get(i).toString(),
+        //            "08:30:00",
         //            "14:30:00",
-        //            "20:30:00",
-        //            137,
-        //            "下午"
+        //            136,
+        //            "上午"
         //    ));
         //}
-        for (int i = 0; i < dates.size(); i++) {
-            // 生成0到29之间的随机数
-            int randomNum = random.nextInt(30);
 
-            System.out.println("随机数为：" + randomNum);
-            System.out.println(dates);
-            iPunchingCardRecordMapper.insert(new PunchingCardRecord(
-                    null,
-                    personnel.getName(),
-                    personnel.getPersonnelCode(),
-                    null,
-                    34,
-                    personnel.getOpenId(),
-                    personnel.getOpenId(),
-                    "打卡成功",
-                    "08:" + randomNum + ":44",
-                    personnel.getOpenId(),
-                    personnel.getOpenId(),
-                    "打卡成功",
-                    "14:30:" +randomNum,
-                    dates.get(i).toString(),
-                    "08:30:00",
-                    "14:30:00",
-                    136,
-                    "上午"
-            ));
+        /*离职群批*/
+        QueryWrapper wrapper = new QueryWrapper();
+        String[] strings = {
+                "胡邓邓",
+                "陈黛凝",
+                "云彩霞",
+                "吴宜",
+                "于璇",
+                "赵文慧",
+                "保斐",
+                "火亮",
+                "刘丽雯",
+                "张改萍",
+                "鞠恩泽",
+                "甘俊荣",
+                "陈利平",
+                "毕焕",
+                "王岭云",
+                "管璐璐",
+                "张静雅",
+                "陆秀宁",
+                "武娜",
+                "郑丽芳",
+                "尧桂玲",
+                "梁芳菲",
+                "郁彦川",
+                "黄亮波",
+                "古丽米热·玉苏普艾买提",
+                "陈雨涵",
+                "谭雪燕",
+                "罗武湘",
+                "韦宇英",
+                "张建华",
+                "张丽丽",
+                "邓雪玲",
+                "谢祖丽",
+                "李培铭",
+                "谢佳希",
+                "韦鹏艳",
+                "肖艳",
+                "王茜茜",
+                "王妗妙",
+                "吴柯曼",
+                "翁佩珊",
+                "祁文佳",
+                "陈园妮",
+                "林欢欢",
+                "杨一星",
+                "李华侦",
+                "刘小莉",
+                "李家美",
+                "林漫丽",
+                "谢玉英",
+                "王红娟",
+                "庞璐璐",
+                "夏紫莺",
+                "吴佳颖",
+                "林佳婵",
+                "胡碧颖",
+                "金依儒",
+                "何诗佳",
+                "魏姣姣",
+                "林金宇",
+                "潘小霜",
+                "陈梦诗",
+                "罗首春",
+                "杨光媛",
+                "蔡莹莹",
+                "罗玺",
+                "苏琦",
+                "彭容",
+                "谢兰香",
+                "杨洪磊",
+                "林小环",
+                "周隆贵",
+                "李秋柔",
+                "宋瑶",
+                "尹婷",
+                "马艳圳",
+                "关宁静",
+                "姚想",
+                "马子航",
+                "梁列艳",
+                "葛耘孜",
+                "段怡馨",
+                "杨静雅",
+                "杨常雪",
+                "叶一帆"
+        };
+        wrapper.in("name",strings);
+        List<SysPersonnel> sysPersonnelList = iSysPersonnelMapper.selectList(wrapper);
+        Map map = new HashMap();
+        String dateStr = "2023-12-01"; // 要转换的日期字符串
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // 定义日期格式
+        Date date = null; // 进行转换
+        try {
+            date = sdf.parse(dateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
 
+        System.out.println(date); // 输出结果
+        for (int i = 0; i < sysPersonnelList.size(); i++) {
+            SysPersonnel personnel = sysPersonnelList.get(i);
+            log.info("名称:{},职位:{}",personnel.getName(),personnel.getRoleId());
+            personnel.setEmploymentStatus(1);
+            //personnel.setLeaveTime(date);
+            iSysPersonnelMapper.updateById(personnel);
+            //if (!ObjectUtils.isEmpty(map.get(personnel.getName()))){
+            //    log.info("重复:{}",personnel.getName());
+            //}else {
+            //    map.put(personnel.getName(),personnel);
+            //}
+        }
 
-
+        for (int i = 0; i < strings.length; i++) {
+            if (ObjectUtils.isEmpty(map.get(strings[i]))){
+                log.info(strings[i]);
+            }
+        }
     }
 
     //根据人员查询当下的卡种

@@ -117,7 +117,6 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         "",
                         "",
                         "",
-                        "isNotNullAndIsLengthNot0",
                         "",
                         "",
                         "",
@@ -127,10 +126,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         "",
                         "",
                         "",
-                        "isNotNullAndIsLengthNot0",
                         "",
                         "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0",
+                        "",
+                        "",
+                        "",
                         "isNotNullAndIsLengthNot0"
                 ));
         if (returnEntity.getState()){
@@ -169,40 +169,60 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (selectList.size() < 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该人员未关联项目组");
         }
-        SysManagement management = iSysManagementMapper.selectById(jsonParam.getManagementId());
+        SysManagement management = null;
+        if (ObjectUtils.isEmpty(jsonParam.getManagementId())){/*如果没有传值项目id*/
+            for (int i = 0; i < selectList.size(); i++) {
+                ManagementPersonnel managementPersonnel = selectList.get(i);
+                SysManagement sysManagement = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+                /*如果状态值为运营中*/
+                if (sysManagement.getManagementState().equals(1)){
+                    management = sysManagement;
+                    break;
+                }
+            }
+        }else {/*如果传值项目id*/
+            management = iSysManagementMapper.selectById(jsonParam.getManagementId());
+        }
+
+        if (ObjectUtils.isEmpty(management)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
+        }
+
         //判断项目是否停止运营
         if (!management.getManagementState().equals(1)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
         }
-        //获取项目打卡坐标
-        String[] splitSouthLatitude = management.getSouthLatitude().replaceAll("，",",").split(",");
-        String[] splitNorthernLatitude = management.getNorthernLatitude().replaceAll("，",",").split(",");
-        String[] splitEastLongitude = management.getEastLongitude().replaceAll("，",",").split(",");
-        String[] splitWestLongitude = management.getWestLongitude().replaceAll("，",",").split(",");
-        //判断项目的坐标是否有误
-        if (
-                splitEastLongitude.length < 2 ||
-                        splitNorthernLatitude.length < 2 ||
-                        splitSouthLatitude.length < 2 ||
-                        splitWestLongitude.length < 2
-        ){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"项目坐标有误");
-        }
-        //获取当前用户的地址
-        List<JqPoint> ps = new ArrayList<>();
-        JqPoint jqPoint1 = new JqPoint(PanXiaoZhang.stringDouble(splitEastLongitude[0]),PanXiaoZhang.stringDouble(splitEastLongitude[1]));
-        JqPoint jqPoint2 = new JqPoint(PanXiaoZhang.stringDouble(splitSouthLatitude[0]),PanXiaoZhang.stringDouble(splitSouthLatitude[1]));
-        JqPoint jqPoint3 = new JqPoint(PanXiaoZhang.stringDouble(splitNorthernLatitude[0]),PanXiaoZhang.stringDouble(splitNorthernLatitude[1]));
-        JqPoint jqPoint4 = new JqPoint(PanXiaoZhang.stringDouble(splitWestLongitude[0]),PanXiaoZhang.stringDouble(splitWestLongitude[1]));
-        ps.add(jqPoint1);
-        ps.add(jqPoint2);
-        ps.add(jqPoint3);
-        ps.add(jqPoint4);
-        //判断是否在范围内
-        boolean locationInRange = PanXiaoZhang.isPtInPoly(jsonParam.getX(), jsonParam.getY(), ps);
+        if (!ObjectUtils.isEmpty(jsonParam.getX()) && !ObjectUtils.isEmpty(jsonParam.getY())){
+            //获取项目打卡坐标
+            String[] splitSouthLatitude = management.getSouthLatitude().replaceAll("，",",").split(",");
+            String[] splitNorthernLatitude = management.getNorthernLatitude().replaceAll("，",",").split(",");
+            String[] splitEastLongitude = management.getEastLongitude().replaceAll("，",",").split(",");
+            String[] splitWestLongitude = management.getWestLongitude().replaceAll("，",",").split(",");
+            //判断项目的坐标是否有误
+            if (
+                    splitEastLongitude.length < 2 ||
+                            splitNorthernLatitude.length < 2 ||
+                            splitSouthLatitude.length < 2 ||
+                            splitWestLongitude.length < 2
+            ){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"项目坐标有误");
+            }
+            //获取当前用户的地址
+            List<JqPoint> ps = new ArrayList<>();
+            JqPoint jqPoint1 = new JqPoint(PanXiaoZhang.stringDouble(splitEastLongitude[0]),PanXiaoZhang.stringDouble(splitEastLongitude[1]));
+            JqPoint jqPoint2 = new JqPoint(PanXiaoZhang.stringDouble(splitSouthLatitude[0]),PanXiaoZhang.stringDouble(splitSouthLatitude[1]));
+            JqPoint jqPoint3 = new JqPoint(PanXiaoZhang.stringDouble(splitNorthernLatitude[0]),PanXiaoZhang.stringDouble(splitNorthernLatitude[1]));
+            JqPoint jqPoint4 = new JqPoint(PanXiaoZhang.stringDouble(splitWestLongitude[0]),PanXiaoZhang.stringDouble(splitWestLongitude[1]));
+            ps.add(jqPoint1);
+            ps.add(jqPoint2);
+            ps.add(jqPoint3);
+            ps.add(jqPoint4);
+            //判断是否在范围内
+            boolean locationInRange = PanXiaoZhang.isPtInPoly(jsonParam.getX(), jsonParam.getY(), ps);
 
-        if (locationInRange){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"在服务范围内，请前往定位打卡");
+            if (locationInRange){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"在服务范围内，请前往定位打卡");
+            }
         }
         //存储项目信息
         jsonParam.setManagement(management);
@@ -884,7 +904,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         "",
                         "",
                         "",
-                        "isNotNullAndIsLengthNot0",
+                        "",
                         "",
                         "",
                         "",
@@ -935,7 +955,26 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (selectList.size() < 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该人员未关联项目组");
         }
-        SysManagement management = iSysManagementMapper.selectById(jsonParam.getManagementId());
+
+        SysManagement management = null;
+        if (ObjectUtils.isEmpty(jsonParam.getManagementId())){/*如果没有传值项目id*/
+            for (int i = 0; i < selectList.size(); i++) {
+                ManagementPersonnel managementPersonnel = selectList.get(i);
+                SysManagement sysManagement = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+                /*如果状态值为运营中*/
+                if (sysManagement.getManagementState().equals(1)){
+                    management = sysManagement;
+                    break;
+                }
+            }
+        }else {/*如果传值项目id*/
+            management = iSysManagementMapper.selectById(jsonParam.getManagementId());
+        }
+
+        if (ObjectUtils.isEmpty(management)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
+        }
+
         //判断项目是否停止运营
         if (!management.getManagementState().equals(1)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");

@@ -60,6 +60,9 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
     @Resource
     private WhiteGoOutToWorkMapper whiteGoOutToWorkMapper;
 
+    @Resource
+    private WhiteGoOutToWorkTwoMapper whiteGoOutToWorkTwoMapper;
+
     @Value("${role.manage3}")
     private Integer manage3;
 
@@ -88,12 +91,30 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
                 return cat_past_records(request);
             }else if (name.equals("cat_collate_past_records")){
                 return cat_collate_past_records(request);
+            }else if (name.equals("cat_all")){
+                return cat_all(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
             log.info("捕获异常方法{},捕获异常{}",name,e.getMessage());
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
+    }
+
+    /*查询全部出差信息*/
+    private ReturnEntity cat_all(HttpServletRequest request) {
+        Map jsonMap = PanXiaoZhang.getJsonMap(request);
+        if (ObjectUtils.isEmpty(jsonMap.get("personnelId"))){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+        SysPersonnel personnel = iSysPersonnelMapper.selectById(String.valueOf(jsonMap.get("personnelId")));
+        /*判断角色的职位*/
+        if (!personnel.getRoleId().equals(manage2)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"职位不符");
+        }
+        jsonMap.remove("personnelId");
+        List<FurloughRecord> furloughRecords = whiteGoOutToWorkTwoMapper.queryAll(jsonMap);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,furloughRecords,"");
     }
 
     //查询历史审核的数据
@@ -140,6 +161,12 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 }
                 return returnEntity;
+            }else if (name.equals("close")){
+                ReturnEntity returnEntity = close(request);
+                if (!returnEntity.getCode().equals("0")){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                }
+                return returnEntity;
             }
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
@@ -148,6 +175,80 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
         }
+    }
+    /*
+    * 撤回出差申请
+    * */
+    private ReturnEntity close(HttpServletRequest request) throws IOException {
+        GoOutToWork jsonParam = PanXiaoZhang.getJSONParam(request, GoOutToWork.class);
+        GoOutToWorkReimbursement goOutToWorkReimbursement = new GoOutToWorkReimbursement(
+                jsonParam.getId(),
+                jsonParam.getPersonnelId(),
+                jsonParam.getVerifierRemark(),
+                jsonParam.getReissueState()
+        );
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(
+                goOutToWorkReimbursement,
+                new GoOutToWorkReimbursementNotNull(
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        ""
+                ));
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+        //查询该人员信息
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
+        //判断当前人员状态
+        ReturnEntity estimateState = PanXiaoZhang.estimateState(sysPersonnel);
+        if (estimateState.getState()){
+            return estimateState;
+        }
+        //查询当前该条信息
+        GoOutToWork goOutToWork = iGoOutToWorkMapper.selectById(jsonParam.getId());
+        /*判断是否为自己的数据*/
+        if (!jsonParam.getPersonnelId().equals(goOutToWork.getPersonnelId())){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"数据不符");
+        }
+        //判断数据是否存在
+        if (ObjectUtils.isEmpty(goOutToWork)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该数据不存在");
+        }
+        //判断该数据总状态
+        if (!goOutToWork.getReissueState().equals("pending")){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该状态下不可撤回");
+        }
+        //查询除了当前用户其他是否还有未审核的
+        Map map = new HashMap();
+        map.put("reissueCode",goOutToWork.getReissueCode());
+        map.put("nePersonnelId",jsonParam.getPersonnelId());
+        map.put("neReissueState","pending");
+        List<GoOutToWorkReimbursement> reimbursements = whiteGoOutToWorkReimbursementMapper.queryAll(map);
+        if (reimbursements.size() > 0){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"审核中，不可撤回");
+        }
+        int updateById = iGoOutToWorkMapper.updateById(new GoOutToWork(
+                goOutToWork.getId(),
+                null,
+                null,
+                "close",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        ));
+        if (updateById != 1) {
+            return new ReturnEntity(CodeEntity.CODE_ERROR, "审核数据更改失败");
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"撤销成功");
     }
 
     //审核
@@ -331,7 +432,12 @@ public class WhiteGoOutToWorkServiceImpl implements IWhiteGoOutToWorkService {
                         "isNotNullAndIsLengthNot0",
                         "",
                         "",
-                        "isNotNullAndIsLengthNot0"
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
+                        "isNotNullAndIsLengthNot0",
+                        ""
                 )
         );
         if (returnEntity.getState()){

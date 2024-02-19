@@ -19,6 +19,7 @@
         <result column="reach" property="reach" />
         <result column="estimated_cost" property="estimatedCost" />
         <result column="on_business" property="onBusiness" />
+
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
