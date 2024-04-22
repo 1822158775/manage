@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>manage</artifactId>
-    <version>1.7.4</version>
+    <version>1.7.4.3</version>
     <name>manage</name>
     <description>管理系统</description>
     <properties>
@@ -124,6 +124,18 @@
             <artifactId>jxl</artifactId>
             <version>2.6.12</version>
         </dependency>
+
+<!--        &lt;!&ndash; OpenCV Java bindings &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.openpnp</groupId>-->
+<!--            <artifactId>opencv</artifactId>-->
+<!--            <version>4.5.5-1</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework</groupId>-->
+<!--            <artifactId>spring-test</artifactId>-->
+<!--            <version>5.3.18</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

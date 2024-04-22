@@ -56,6 +56,9 @@
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
         <if test="personnelCode != null "> and <include refid="tableSql" />.`personnel_code` = #{personnelCode}</if>
+        <if test="date_type_month != null">
+            AND MONTH(<include refid="tableSql" />.clocking_day_time) = MONTH(CURRENT_DATE())
+        </if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

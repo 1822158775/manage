@@ -192,36 +192,39 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (!management.getManagementState().equals(1)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
         }
-        if (!ObjectUtils.isEmpty(jsonParam.getX()) && !ObjectUtils.isEmpty(jsonParam.getY())){
-            //获取项目打卡坐标
-            String[] splitSouthLatitude = management.getSouthLatitude().replaceAll("，",",").split(",");
-            String[] splitNorthernLatitude = management.getNorthernLatitude().replaceAll("，",",").split(",");
-            String[] splitEastLongitude = management.getEastLongitude().replaceAll("，",",").split(",");
-            String[] splitWestLongitude = management.getWestLongitude().replaceAll("，",",").split(",");
-            //判断项目的坐标是否有误
-            if (
-                    splitEastLongitude.length < 2 ||
-                            splitNorthernLatitude.length < 2 ||
-                            splitSouthLatitude.length < 2 ||
-                            splitWestLongitude.length < 2
-            ){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"项目坐标有误");
-            }
-            //获取当前用户的地址
-            List<JqPoint> ps = new ArrayList<>();
-            JqPoint jqPoint1 = new JqPoint(PanXiaoZhang.stringDouble(splitEastLongitude[0]),PanXiaoZhang.stringDouble(splitEastLongitude[1]));
-            JqPoint jqPoint2 = new JqPoint(PanXiaoZhang.stringDouble(splitSouthLatitude[0]),PanXiaoZhang.stringDouble(splitSouthLatitude[1]));
-            JqPoint jqPoint3 = new JqPoint(PanXiaoZhang.stringDouble(splitNorthernLatitude[0]),PanXiaoZhang.stringDouble(splitNorthernLatitude[1]));
-            JqPoint jqPoint4 = new JqPoint(PanXiaoZhang.stringDouble(splitWestLongitude[0]),PanXiaoZhang.stringDouble(splitWestLongitude[1]));
-            ps.add(jqPoint1);
-            ps.add(jqPoint2);
-            ps.add(jqPoint3);
-            ps.add(jqPoint4);
-            //判断是否在范围内
-            boolean locationInRange = PanXiaoZhang.isPtInPoly(jsonParam.getX(), jsonParam.getY(), ps);
+        /*是否需要视频打卡*/
+        if (ObjectUtils.isEmpty(management.getClockInType()) || !management.getClockInType().equals("video")){
+            if (!ObjectUtils.isEmpty(jsonParam.getX()) && !ObjectUtils.isEmpty(jsonParam.getY())){
+                //获取项目打卡坐标
+                String[] splitSouthLatitude = management.getSouthLatitude().replaceAll("，",",").split(",");
+                String[] splitNorthernLatitude = management.getNorthernLatitude().replaceAll("，",",").split(",");
+                String[] splitEastLongitude = management.getEastLongitude().replaceAll("，",",").split(",");
+                String[] splitWestLongitude = management.getWestLongitude().replaceAll("，",",").split(",");
+                //判断项目的坐标是否有误
+                if (
+                        splitEastLongitude.length < 2 ||
+                                splitNorthernLatitude.length < 2 ||
+                                splitSouthLatitude.length < 2 ||
+                                splitWestLongitude.length < 2
+                ){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"项目坐标有误");
+                }
+                //获取当前用户的地址
+                List<JqPoint> ps = new ArrayList<>();
+                JqPoint jqPoint1 = new JqPoint(PanXiaoZhang.stringDouble(splitEastLongitude[0]),PanXiaoZhang.stringDouble(splitEastLongitude[1]));
+                JqPoint jqPoint2 = new JqPoint(PanXiaoZhang.stringDouble(splitSouthLatitude[0]),PanXiaoZhang.stringDouble(splitSouthLatitude[1]));
+                JqPoint jqPoint3 = new JqPoint(PanXiaoZhang.stringDouble(splitNorthernLatitude[0]),PanXiaoZhang.stringDouble(splitNorthernLatitude[1]));
+                JqPoint jqPoint4 = new JqPoint(PanXiaoZhang.stringDouble(splitWestLongitude[0]),PanXiaoZhang.stringDouble(splitWestLongitude[1]));
+                ps.add(jqPoint1);
+                ps.add(jqPoint2);
+                ps.add(jqPoint3);
+                ps.add(jqPoint4);
+                //判断是否在范围内
+                boolean locationInRange = PanXiaoZhang.isPtInPoly(jsonParam.getX(), jsonParam.getY(), ps);
 
-            if (locationInRange){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"在服务范围内，请前往定位打卡");
+                if (locationInRange){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"在服务范围内，请前往定位打卡");
+                }
             }
         }
         //存储项目信息
@@ -722,6 +725,9 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         Map jsonMap = PanXiaoZhang.getJsonMap(request);
         SysPersonnel personnel = iSysPersonnelMapper.selectById(String.valueOf(jsonMap.get("personnelId")));
         jsonMap.put("personnelCode",personnel.getPersonnelCode());
+        if (personnel.getId() == 125 || personnel.getId() == 124 || personnel.getId() == 5){
+            jsonMap.put("date_type_month","month");
+        }
         List<PunchingCardRecord> punchingCardRecords = iWhitePunchingCardRecordMapper.queryAll(jsonMap);
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,punchingCardRecords,"");
     }
@@ -974,7 +980,6 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (ObjectUtils.isEmpty(management)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
         }
-
         //判断项目是否停止运营
         if (!management.getManagementState().equals(1)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
@@ -1065,6 +1070,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             if (compareTime > 0){
                 workingClockInState = "迟到";
             }
+            //获取编码
+            String uuid = PanXiaoZhang.getID();
             PunchingCardRecord cardRecord = new PunchingCardRecord(
                     null,
                     personnel.getName(),
@@ -1088,7 +1095,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     null,
                     jsonParam.getModel(),
                     null,
-                    null,
+                    uuid,
                     null,
                     null,
                     jsonParam.getRemark(),

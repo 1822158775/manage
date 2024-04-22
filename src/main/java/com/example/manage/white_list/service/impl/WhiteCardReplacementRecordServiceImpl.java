@@ -554,6 +554,10 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
         jsonParam.setMaxNumber(0);
         //设置审核职位
         Integer[] integers = {1};
+        /*判断是否需要更高审核等级*/
+        if (!ObjectUtils.isEmpty(management.getProjectAddress()) && management.getProjectAddress().contains("上海")){
+            integers = new Integer[]{1,3};
+        }
         //存储map
         Map<Integer, SysRole> mapRole = new HashMap();
         //存储通知的人
@@ -637,15 +641,9 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
     }
 
     public static void main(String[] args) {
+        String str = "aaaa金地";
+        System.out.println(str.contains("上海"));
 
-        PanXiaoZhang.postWechatFer(
-                "o_QtX5qJzKGc3YmCG2eUb-v5ZEm81234567",
-                "日的补卡申请通过了",
-                "",
-                "日的补卡申请通过了",
-                "",
-                ""
-        );
     }
 }
 

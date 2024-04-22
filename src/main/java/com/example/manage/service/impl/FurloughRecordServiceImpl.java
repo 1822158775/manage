@@ -87,6 +87,7 @@ public class FurloughRecordServiceImpl implements IFurloughRecordService {
         if (!ObjectUtils.isEmpty(map.get("endTime"))){
             map.put("endTime",map.get("endTime") + " 23:59:59");
         }
+        System.out.println(map.get("keyWord") + "=================");
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,iFurloughRecordMapper.queryAll(map),request,MsgEntity.CODE_SUCCEED,iFurloughRecordMapper.queryCount(map));
     }
 }

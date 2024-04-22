@@ -21,6 +21,8 @@
         <result column="start_clock_out" property="startClockOut" />
         <result column="end_clock_out" property="endClockOut" />
 
+        <result column="clock_in_type" property="clockInType" />
+
         <collection property="cardTypeS" ofType="com.example.manage.entity.CardType">
             <result column="c_id" property="id" />
             <result column="c_name" property="name" />

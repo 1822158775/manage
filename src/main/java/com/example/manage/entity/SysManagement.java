@@ -75,6 +75,8 @@ public class SysManagement implements Serializable {
     @TableField(value = "end_clock_out")
     public String endClockOut;//下班打卡时间结束时间
 
+    @TableField(value = "clock_in_type")
+    public String clockInType;/*打卡类型*/
 
     @TableField(exist = false)
     public List<CardType> cardTypeS;//卡种管理

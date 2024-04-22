@@ -89,9 +89,17 @@
         <include refid="tableSql"/>.*
         from
         <include refid="tableSql"/>
+        <include refid="relevanceSqlAs" />
         <include refid="whereSqlModel" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
+    </sql>
+
+    <!--  进行关联表  -->
+    <sql id="relevanceSqlAs">
+        LEFT JOIN <include refid="tableSqlFurloughReimbursement" /> on <include refid="tableSql" />.reissue_code = <include refid="tableSqlFurloughReimbursement" />.reissue_code
+        LEFT JOIN <include refid="tableSqlSysManagement" /> on <include refid="tableSql" />.management_id = <include refid="tableSqlSysManagement" />.id
+        LEFT JOIN <include refid="tableSqlSysPersonnel" /> on <include refid="tableSqlFurloughReimbursement" />.personnel_id = <include refid="tableSqlSysPersonnel" />.id
     </sql>
 
     <!--  进行关联表  -->
@@ -110,7 +118,7 @@
         <if test="id != null "> and `id` = #{id}</if>
         <if test="personnelId != null "> and `personnel_id` = #{personnelId}</if>
         <if test="reissueState != null "> and <include refid="tableSql" />.`reissue_state` = #{reissueState}</if>
-        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`personnel_name` like concat('%',#{personnelName},'%')</if>
+        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`personnel_name` like concat('%',#{keyWord},'%')</if>
         <if test="startTime != null and endTime != ''"> and (<include refid="tableSql" />.`start_time` BETWEEN #{startTime} AND #{endTime} or <include refid="tableSql" />.`end_time` BETWEEN #{startTime} AND #{endTime})</if>
     </sql>
     <sql id="safeLIMIT">
