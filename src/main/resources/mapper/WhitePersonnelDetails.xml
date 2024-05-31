@@ -23,6 +23,11 @@
             <result column="f_start_time" property="startTime" />
             <result column="f_end_time" property="endTime" />
         </collection>
+        <collection property="reimbursementImages" ofType="com.example.manage.entity.ReimbursementImage">
+            <result column="path_code" property="pathCode" />
+            <result column="path_url" property="pathUrl" />
+            <result column="http_url" property="httpUrl" />
+        </collection>
     </resultMap>
 
     <!--  查询数量  -->
@@ -40,6 +45,11 @@
             <include refid="tableSqlPunchingCardRecord" />.clocking_day_time,
             <include refid="tableSqlFurloughRecord" />.start_time as f_start_time,
             <include refid="tableSqlFurloughRecord" />.end_time as f_end_time
+            <if test="video == 'yes'">
+                ,<include refid="tableSqlRI" />.`path_url`
+                ,<include refid="tableSqlRI" />.`path_code`
+                ,<include refid="tableSqlRI" />.`http_url`
+            </if>
         FROM
         <include refid="tableSqlSysPersonnel" />
         <include refid="relevanceSql" />
@@ -68,6 +78,10 @@
     <sql id="tableSqlFurloughRecord">
         manage.furlough_record
     </sql>
+    <!--  文件地址  -->
+    <sql id="tableSqlRI">
+        manage.reimbursement_image
+    </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
         LEFT JOIN <include refid="tableSqlManagementPersonnel" /> ON <include refid="tableSqlManagementPersonnel" />.personnel_code = <include refid="tableSqlSysPersonnel" />.personnel_code
@@ -77,6 +91,9 @@
         LEFT JOIN <include refid="tableSqlFurloughRecord" /> ON <include refid="tableSqlFurloughRecord" />.personnel_id = <include refid="tableSqlSysPersonnel" />.id
         <include refid="furloughRecordStartCustom" />
         <include refid="furloughRecordState" />
+        <if test="video == 'yes'">
+            LEFT JOIN <include refid="tableSqlRI" /> on <include refid="tableSqlRI" />.path_code = <include refid="tableSqlPunchingCardRecord" />.punching_card_record_code
+        </if>
     </sql>
     <!--  自定义日期  -->
     <sql id="todayStartCustom">

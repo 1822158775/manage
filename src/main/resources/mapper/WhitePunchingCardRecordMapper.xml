@@ -35,6 +35,14 @@
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
     </select>
+    <!--  查询异常打卡数量  -->
+    <select id="queryCount" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel" />
+    </select>
     <sql id="tableSql">
         manage.punching_card_record
     </sql><!--  返回  -->
@@ -58,6 +66,13 @@
         <if test="personnelCode != null "> and <include refid="tableSql" />.`personnel_code` = #{personnelCode}</if>
         <if test="date_type_month != null">
             AND MONTH(<include refid="tableSql" />.clocking_day_time) = MONTH(CURRENT_DATE())
+        </if>
+        <if test="ne_working_clock_in_state != null and ne_closed_clock_in_state != null">
+            AND (
+            <include refid="tableSql" />.working_clock_in_state != #{ne_working_clock_in_state}
+            or
+            <include refid="tableSql" />.closed_clock_in_state != #{ne_closed_clock_in_state}
+            )
         </if>
     </sql>
     <sql id="safeLIMIT">

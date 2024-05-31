@@ -270,6 +270,15 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (ObjectUtils.isEmpty(loginRecord)){
             loginRecord = new LoginRecord();
         }
+        //进行查询迟到和早退记录
+        HashMap<Object, Object> hashMap = new HashMap<>();
+        hashMap.put("personnelCode",personnel.getPersonnelCode());
+        hashMap.put("date_type_month","yes");
+        hashMap.put("ne_working_clock_in_state","打卡成功");
+        hashMap.put("ne_closed_clock_in_state","打卡成功");
+        List<PunchingCardRecord> recordList = iWhitePunchingCardRecordMapper.queryCount(hashMap);
+        int size = recordList.size();
+        /*----------------------------------*/
         if (ObjectUtils.isEmpty(punchingCardRecord)){//如果不存在则判定为上班打卡
             //不让他打卡
             int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(startPunchIn), localTime);
@@ -282,6 +291,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             String workingClockInState = "打卡成功";
             if (compareTime > 0){
                 workingClockInState = "迟到";
+                size++;
             }
             //获取编码
             String uuid = PanXiaoZhang.getID();
@@ -327,14 +337,26 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         MsgEntity.CODE_ERROR
                 );
             }
-            PanXiaoZhang.postWechatFer(
-                    personnel.getOpenId(),
-                    "",
-                    "",
-                    personnel.getName() + ":上班打卡时间" + format + "，状态:" + workingClockInState +"",
-                    "",
-                    ""
-            );
+            //进行判定是否已经达到出现的次数了
+            if (size == 4){
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
+                        "",
+                        "",
+                        "通知内容：" + personnel.getPersonnelName() + "本月考勤需补卡次数已到四次，请注意按时打卡！",
+                        "",
+                        ""
+                );
+            }else {
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
+                        "",
+                        "",
+                        personnel.getName() + ":上班打卡时间" + format + "，状态:" + workingClockInState +"",
+                        "",
+                        ""
+                );
+            }
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
         }else {//如果存在则判定为下班打卡
             //不让他打卡
@@ -348,6 +370,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             String workingClockInState = "打卡成功";
             if (compareTime > 0){
                 workingClockInState = "早退";
+                size++;
             }
             //进行下班打卡
             PunchingCardRecord cardRecord = new PunchingCardRecord(
@@ -392,14 +415,26 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         MsgEntity.CODE_ERROR
                 );
             }
-            PanXiaoZhang.postWechatFer(
-                    personnel.getOpenId(),
-                    "",
-                    "",
-                    personnel.getName() + ":下班打卡时间" + format + "，状态:" + workingClockInState +"",
-                    "",
-                    ""
-            );
+            //进行判定是否已经达到出现的次数了
+            if (size == 4){
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
+                        "",
+                        "",
+                        "通知内容：" + personnel.getPersonnelName() + "本月考勤需补卡次数已到四次，请注意按时打卡！",
+                        "",
+                        ""
+                );
+            }else {
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
+                        "",
+                        "",
+                        personnel.getName() + ":下班打卡时间" + format + "，状态:" + workingClockInState +"",
+                        "",
+                        ""
+                );
+            }
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
         }
     }
@@ -427,7 +462,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
     }
-    
+    /*---------------------------*/
     //关联项目组打卡情况
     private ReturnEntity clocking_situation_particulars(HttpServletRequest request) throws IOException {
         PunchingCardRecord jsonParam = PanXiaoZhang.getJSONParam(request, PunchingCardRecord.class);
@@ -494,6 +529,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         map.put("managementId",jsonParam.getManagementId());
         map.put("inRoleId",new Integer[]{1,5});
         map.put("sysPersonnelId",jsonParam.getSysPersonnelId());
+
+        if (sysRole.getLevelSorting() < 3){
+            map.put("video","yes");
+        }
+
         List<PunchingCardRecord> recordList = whitePersonnelDetails.queryAll(map);
         if (!ObjectUtils.isEmpty(jsonParam.getSysPersonnelId())){
             List<String> days = PanXiaoZhang.getDays(thisStartTime, thisEndTime);
@@ -728,7 +768,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (personnel.getId() == 125 || personnel.getId() == 124 || personnel.getId() == 5){
             jsonMap.put("date_type_month","month");
         }
-        List<PunchingCardRecord> punchingCardRecords = iWhitePunchingCardRecordMapper.queryAll(jsonMap);
+        jsonMap.put("personnelCode",personnel.getPersonnelCode());
+        List<PunchingCardRecord> punchingCardRecords = new ArrayList<>();
+        if (personnel.getId() != 466 && personnel.getId() != 669){
+            punchingCardRecords  = iWhitePunchingCardRecordMapper.queryAll(jsonMap);
+        }
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,punchingCardRecords,"");
     }
 
@@ -1057,6 +1101,15 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (ObjectUtils.isEmpty(loginRecord)){
             loginRecord = new LoginRecord();
         }
+        //进行查询迟到和早退记录
+        HashMap<Object, Object> hashMap = new HashMap<>();
+        hashMap.put("personnelCode",personnel.getPersonnelCode());
+        hashMap.put("date_type_month","yes");
+        hashMap.put("ne_working_clock_in_state","打卡成功");
+        hashMap.put("ne_closed_clock_in_state","打卡成功");
+        List<PunchingCardRecord> recordList = iWhitePunchingCardRecordMapper.queryCount(hashMap);
+        int size = recordList.size();
+        /*----------------------------------*/
         if (ObjectUtils.isEmpty(punchingCardRecord)){//如果不存在则判定为上班打卡
             //不让他打卡
             int time = PanXiaoZhang.compareTime(PanXiaoZhang.dateLocalTime(startPunchIn), localTime);
@@ -1069,6 +1122,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             String workingClockInState = "打卡成功";
             if (compareTime > 0){
                 workingClockInState = "迟到";
+                size++;
             }
             //获取编码
             String uuid = PanXiaoZhang.getID();
@@ -1109,14 +1163,26 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         MsgEntity.CODE_ERROR
                 );
             }
-            PanXiaoZhang.postWechatFer(
-                    personnel.getOpenId(),
-                    "",
-                    "",
-                    personnel.getName() + ":上班打卡时间" + format + "，状态:" + workingClockInState +"",
-                    "",
-                    ""
-            );
+            //进行判定是否已经达到出现的次数了
+            if (size == 4){
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
+                        "",
+                        "",
+                        "通知内容：" + personnel.getPersonnelName() + "本月考勤需补卡次数已到四次，请注意按时打卡！",
+                        "",
+                        ""
+                );
+            }else {
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
+                        "",
+                        "",
+                        personnel.getName() + ":上班打卡时间" + format + "，状态:" + workingClockInState +"",
+                        "",
+                        ""
+                );
+            }
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
         }else {//如果存在则判定为下班打卡
             //不让他打卡
@@ -1130,6 +1196,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             String workingClockInState = "打卡成功";
             if (compareTime > 0){
                 workingClockInState = "早退";
+                size++;
             }
             //进行下班打卡
             PunchingCardRecord cardRecord = new PunchingCardRecord(
@@ -1169,14 +1236,26 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         MsgEntity.CODE_ERROR
                 );
             }
-            PanXiaoZhang.postWechatFer(
-                    personnel.getOpenId(),
-                    "",
-                    "",
-                    personnel.getName() + ":下班打卡时间" + format + "，状态:" + workingClockInState +"",
-                    "",
-                    ""
-            );
+            //进行判定是否已经达到出现的次数了
+            if (size == 4){
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
+                        "",
+                        "",
+                        "通知内容：" + personnel.getPersonnelName() + "本月考勤需补卡次数已到四次，请注意按时打卡！",
+                        "",
+                        ""
+                );
+            }else {
+                PanXiaoZhang.postWechatFer(
+                        personnel.getOpenId(),
+                        "",
+                        "",
+                        personnel.getName() + ":下班打卡时间" + format + "，状态:" + workingClockInState +"",
+                        "",
+                        ""
+                );
+            }
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
         }
     }
