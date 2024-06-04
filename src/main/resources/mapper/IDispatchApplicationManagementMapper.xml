@@ -51,6 +51,19 @@
         <include refid="whereSqlModel"/>
         <include refid="safeOrderBy"/>
     </select>
+
+    <select id="queryById" resultMap="entity" parameterType="hashmap">
+        select
+        <include refid="returnSql"/>
+        from
+        (<include refid="tableReturn" /> )
+        as
+        <include refid="tableSql"/>
+        <include refid="relevanceSql" />
+        <include refid="whereSqlModel"/>
+        <include refid="safeOrderBy"/>
+    </select>
+
     <sql id="tableSql">
         d_a_m
     </sql>

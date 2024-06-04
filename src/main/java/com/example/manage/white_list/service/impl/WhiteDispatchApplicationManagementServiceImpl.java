@@ -93,6 +93,8 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 return cat_past_records(request);
             }else if (name.equals("cat_collate_past_records")){
                 return cat_collate_past_records(request);
+            }else if (name.equals("cat_by_id")){
+                return cat_by_id(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
@@ -409,6 +411,16 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,dispatchApplicationManagements,"");
     }
 
+    /*查询项目id*/
+    private ReturnEntity cat_by_id(HttpServletRequest request) {
+        Map jsonMap = PanXiaoZhang.getJsonMap(request);
+        if (ObjectUtils.isEmpty(jsonMap.get("id"))){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,MsgEntity.CODE_ERROR);
+        }
+        jsonMap.remove("personnelId");
+        DispatchApplicationManagement dispatchApplicationManagements = iDispatchApplicationManagementMapper.queryById(jsonMap);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,dispatchApplicationManagements,"");
+    }
 
     //查看历史提交的数据
     private ReturnEntity cat_past_records(HttpServletRequest request) {

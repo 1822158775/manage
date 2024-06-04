@@ -12,5 +12,5 @@ import java.util.Map;
 
 public interface IWhitePunchingCardRecordMapper {
     List<PunchingCardRecord> queryAll(Map map);
-    List<PunchingCardRecord> queryCount(Map map);
+    Integer queryCount(Map map);
 }

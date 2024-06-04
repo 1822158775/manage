@@ -12,5 +12,6 @@ import java.util.Map;
 
 public interface IDispatchApplicationManagementMapper extends BaseMapper<DispatchApplicationManagement> {
     List<DispatchApplicationManagement> queryAll(Map map);
+    DispatchApplicationManagement queryById(Map map);
     Integer queryCount(Map map);
 }

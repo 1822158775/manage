@@ -1,5 +1,6 @@
 package com.example.manage.config;
 
+import com.example.manage.entity.PunchingCardRecord;
 import com.example.manage.job.SchedulingSysManagementService;
 import com.example.manage.service.IPunchingCardRecordService;
 import com.example.manage.util.RedisUtil;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.net.*;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * @avthor 潘小章
@@ -53,6 +56,7 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
+
             //iWhiteSysPersonnelService.ceshi();
             //MythicalCreatures.mythical_creatures_1();
             //schedulingSysManagementService.windUpAnAccount();

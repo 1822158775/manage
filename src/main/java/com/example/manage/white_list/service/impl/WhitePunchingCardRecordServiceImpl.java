@@ -275,9 +275,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         hashMap.put("personnelCode",personnel.getPersonnelCode());
         hashMap.put("date_type_month","yes");
         hashMap.put("ne_working_clock_in_state","打卡成功");
+        Integer queryCount = iWhitePunchingCardRecordMapper.queryCount(hashMap);
+        hashMap.remove("ne_working_clock_in_state");
         hashMap.put("ne_closed_clock_in_state","打卡成功");
-        List<PunchingCardRecord> recordList = iWhitePunchingCardRecordMapper.queryCount(hashMap);
-        int size = recordList.size();
+        queryCount = queryCount + iWhitePunchingCardRecordMapper.queryCount(hashMap);
+        int size = queryCount;
         /*----------------------------------*/
         if (ObjectUtils.isEmpty(punchingCardRecord)){//如果不存在则判定为上班打卡
             //不让他打卡
@@ -343,7 +345,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         personnel.getOpenId(),
                         "",
                         "",
-                        "通知内容：" + personnel.getPersonnelName() + "本月考勤需补卡次数已到四次，请注意按时打卡！",
+                        personnel.getName() + "本月需补卡已到四次,请注意按时打卡!",
                         "",
                         ""
                 );
@@ -421,7 +423,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         personnel.getOpenId(),
                         "",
                         "",
-                        "通知内容：" + personnel.getPersonnelName() + "本月考勤需补卡次数已到四次，请注意按时打卡！",
+                        personnel.getName() + "本月需补卡已到四次,请注意按时打卡!",
                         "",
                         ""
                 );
@@ -1106,9 +1108,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         hashMap.put("personnelCode",personnel.getPersonnelCode());
         hashMap.put("date_type_month","yes");
         hashMap.put("ne_working_clock_in_state","打卡成功");
+        Integer queryCount = iWhitePunchingCardRecordMapper.queryCount(hashMap);
+        hashMap.remove("ne_working_clock_in_state");
         hashMap.put("ne_closed_clock_in_state","打卡成功");
-        List<PunchingCardRecord> recordList = iWhitePunchingCardRecordMapper.queryCount(hashMap);
-        int size = recordList.size();
+        queryCount = queryCount + iWhitePunchingCardRecordMapper.queryCount(hashMap);
+        int size = queryCount;
         /*----------------------------------*/
         if (ObjectUtils.isEmpty(punchingCardRecord)){//如果不存在则判定为上班打卡
             //不让他打卡
@@ -1169,7 +1173,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         personnel.getOpenId(),
                         "",
                         "",
-                        "通知内容：" + personnel.getPersonnelName() + "本月考勤需补卡次数已到四次，请注意按时打卡！",
+                        personnel.getName() + "本月需补卡已到四次,请注意按时打卡!",
                         "",
                         ""
                 );
@@ -1242,7 +1246,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         personnel.getOpenId(),
                         "",
                         "",
-                        "通知内容：" + personnel.getPersonnelName() + "本月考勤需补卡次数已到四次，请注意按时打卡！",
+                        personnel.getName() + "本月需补卡已到四次,请注意按时打卡!",
                         "",
                         ""
                 );
@@ -1262,5 +1266,16 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
 
     private ReturnEntity edit(HttpServletRequest request) {
         return null;
+    }
+
+    public static void main(String[] args) {
+        PanXiaoZhang.postWechatFer(
+                "o_QtX5m2Zb6wAt_xqtr1gen-Jghk",
+                "",
+                "",
+                "王测试本月需补卡已到四次,请注意按时打卡!",
+                "",
+                ""
+        );
     }
 }

@@ -60,4 +60,10 @@ public class WhiteDispatchApplicationManagementController {
     public ReturnEntity cat_collate_past_records(HttpServletRequest request){
         return iWhiteDispatchApplicationManagementService.methodMaster(request,"cat_collate_past_records");
     }
+
+    //通过id进行查询该条数据
+    @PostMapping(value = "cat_by_id")
+    public ReturnEntity cat_by_id(HttpServletRequest request){
+        return iWhiteDispatchApplicationManagementService.methodMaster(request,"cat_by_id");
+    }
 }
