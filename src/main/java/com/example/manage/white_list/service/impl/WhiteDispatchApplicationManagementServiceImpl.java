@@ -619,24 +619,26 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
         if (appNumber < 1){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"暂无审核人");
         }
-        String[] strings = {phone3};
-        for (int i = 0; i < strings.length; i++) {
-            String string = strings[i];
-            QueryWrapper wrapper = new QueryWrapper();
-            wrapper.eq("username",string);
-            SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
-            SysRole sysRole = iSysRoleMapper.selectById(personnel.getRoleId());
-            //添加制定审核人
-            int insert = iDispatchApplicationReimbursementMapper.insert(new DispatchApplicationReimbursement(
-                    null,
-                    personnel.getId(),
-                    null,
-                    "pending",
-                    null,
-                    jsonParam.getDispatchCode(),
-                    "调派总审核人",
-                    sysRole.getLevelSorting()
-            ));
+        if (jsonParam.getAgoManagementId() > 2 || jsonParam.getLaterManagementId() > 2){
+            String[] strings = {phone3};
+            for (int i = 0; i < strings.length; i++) {
+                String string = strings[i];
+                QueryWrapper wrapper = new QueryWrapper();
+                wrapper.eq("username",string);
+                SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
+                SysRole sysRole = iSysRoleMapper.selectById(personnel.getRoleId());
+                //添加制定审核人
+                int insert = iDispatchApplicationReimbursementMapper.insert(new DispatchApplicationReimbursement(
+                        null,
+                        personnel.getId(),
+                        null,
+                        "pending",
+                        null,
+                        jsonParam.getDispatchCode(),
+                        "调派总审核人",
+                        sysRole.getLevelSorting()
+                ));
+            }
         }
         //添加申请时间
         jsonParam.setApplicantTime(new Date());
