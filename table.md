@@ -35,6 +35,8 @@
 # reimbursement_copy 报销记录抄送人
 # reimbursement_image 关联上传文件路径
 # reimbursement_project 报销记录关联项目
+# sign_in_review 视频签到申请表
+# sign_in_review_reimbursement 视频签到审核表
 # sys_audit_management 审批人管理
 # sys_cc_management 抄送人管理
 # sys_management 项目管理

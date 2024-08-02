@@ -60,6 +60,7 @@
         <include refid="tableSql"/>
         <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
+        <include refid="safeGroupBy" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
     </sql>
@@ -90,6 +91,9 @@
                 LIMIT #{index},#{pageNum}
             </if>
         </if>
+    </sql>
+    <sql id="safeGroupBy">
+        group by <include refid="tableSql"/>.id
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc

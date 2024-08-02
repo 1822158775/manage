@@ -1,5 +1,7 @@
 package com.example.manage.util.leetc;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +14,12 @@ public class Leetc {
     public static void main(String[] args) {
 
 
-        System.out.println(15 % 2);
+        QueryWrapper queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("name", "John");
+        queryWrapper.gt("age", 18);
+
+        // 打印出移除条件后的结果
+        System.out.println("Conditions after clearing: " + queryWrapper.getSqlSegment());
     }
     /**
      * 第三题

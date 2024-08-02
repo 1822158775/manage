@@ -32,7 +32,7 @@ public class DbConfig {
      */
     public static Connection getConnection() throws SQLException, ClassNotFoundException {
         Class.forName("com.mysql.jdbc.Driver");
-        Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/saas?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false", "root", "znrlsp123");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://106.15.56.132:3306/manage?useUnicode=true&charactemerchantfullnamerEncoding=utf8&useSSL=false", "manage", "manage");
         return conn;
     }
 

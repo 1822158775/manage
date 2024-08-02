@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.manage.mapper.ISignInReviewMapper">
+    <resultMap id="entity" type="com.example.manage.entity.SignInReview">
+        <result column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="personnel_code" property="personnelCode" />
+        <result column="clock_in_time" property="clockInTime" />
+        <result column="management_id" property="managementId" />
+        <result column="ago_open_id" property="agoOpenId" />
+        <result column="later_open_id" property="laterOpenId" />
+        <result column="clock_in_state" property="clockInState" />
+        <result column="attendance_time" property="attendanceTime" />
+        <result column="clocking_day_time" property="clockingDayTime" />
+        <result column="check_in_time_id" property="checkInTimeId" />
+        <result column="check_in_time_name" property="checkInTimeName" />
+        <result column="ago_state" property="agoState" />
+        <result column="model" property="model" />
+        <result column="punching_card_record_code" property="punchingCardRecordCode" />
+        <result column="check_in_type" property="checkInType" />
+        <result column="check_remark" property="remark" />
+        <result column="sign_in_type" property="signInType" />
+        <result column="dispatch_code" property="dispatchCode" />
+        <result column="verifier_state" property="verifierState" />
+        <result column="max_number" property="maxNumber" />
+    </resultMap>
+    <select id="queryCount" resultType="int" parameterType="hashmap">
+        select count(<include refid="tableSql"/>.id) as id from
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel"/>
+    </select>
+    <select id="queryAll" resultMap="entity" parameterType="hashmap">
+        select <include refid="tableSql"/>.*
+        from
+        <include refid="tableSql"/>
+        <include refid="whereSqlModel" />
+        <include refid="safeOrderBy"/>
+        <include refid="safeLIMIT"/>
+    </select>
+    <sql id="tableSql">
+        manage.sign_in_review
+    </sql>
+    <sql id="whereSqlModel">
+        where 1 = 1
+        <if test="id != null "> and `id` = #{id}</if>
+    </sql>
+    <sql id="safeLIMIT">
+        <if test="queryAll != 'yes'">
+            <if test="pageNum != null and pageNum != ''">
+                LIMIT #{index},#{pageNum}
+            </if>
+        </if>
+    </sql>
+    <sql id="safeOrderBy">
+        order by <include refid="tableSql"/>.id desc
+    </sql>
+</mapper>
