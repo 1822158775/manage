@@ -92,6 +92,12 @@ public class SignInReview implements Serializable {
     @TableField(exist = false)
     public List<ReimbursementImage> reimbursementImages;//附件
 
+    @TableField(exist = false)
+    public List<SignInReviewReimbursement> signInReviewReimbursements;//审核人集合
+
+    @TableField(exist = false)
+    public SysManagement sysManagement;//项目组信息
+
     public SignInReview() {
     }
 
@@ -110,7 +116,7 @@ public class SignInReview implements Serializable {
         this.verifierState = verifierState;
     }
 
-    public SignInReview(Integer id, String name, String personnelCode, String clockInTime, Integer managementId, String agoOpenId, String laterOpenId, String clockInState, String attendanceTime, String clockingDayTime, Integer checkInTimeId, String checkInTimeName, String agoState, String model, String punchingCardRecordCode, String checkInType, String remark, String signInType, String dispatchCode, String verifierState) {
+    public SignInReview(Integer id, String name, String personnelCode, String clockInTime, Integer managementId, String agoOpenId, String laterOpenId, String clockInState, String attendanceTime, String clockingDayTime, Integer checkInTimeId, String checkInTimeName, String agoState, String model, String punchingCardRecordCode, String checkInType, String remark, String signInType, String dispatchCode, String verifierState, Integer maxNumber) {
         this.id = id;
         this.name = name;
         this.personnelCode = personnelCode;
@@ -131,5 +137,6 @@ public class SignInReview implements Serializable {
         this.signInType = signInType;
         this.dispatchCode = dispatchCode;
         this.verifierState = verifierState;
+        this.maxNumber = maxNumber;
     }
 }

@@ -23,26 +23,92 @@
         <result column="dispatch_code" property="dispatchCode" />
         <result column="verifier_state" property="verifierState" />
         <result column="max_number" property="maxNumber" />
+
+        <association property="sysManagement" javaType="com.example.manage.entity.SysManagement">
+            <result column="s_id" property="id" />
+            <result column="s_name" property="name" />
+        </association>
+        <collection property="signInReviewReimbursements" ofType="com.example.manage.entity.SignInReviewReimbursement">
+            <result column="s_id" property="id" />
+            <result column="s_personnel_id" property="personnelId" />
+            <result column="s_verifier_remark" property="verifierRemark" />
+            <result column="s_verifier_state" property="verifierState" />
+            <result column="s_verifier_time" property="verifierTime" />
+            <result column="s_dispatch_code" property="dispatchCode" />
+            <result column="s_dispatch_state" property="dispatchState" />
+            <result column="s_number" property="number" />
+        </collection>
+
     </resultMap>
     <select id="queryCount" resultType="int" parameterType="hashmap">
         select count(<include refid="tableSql"/>.id) as id from
         <include refid="tableSql"/>
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel"/>
     </select>
+    <sql id="tableSqlAs">
+        s_i_review
+    </sql>
     <select id="queryAll" resultMap="entity" parameterType="hashmap">
-        select <include refid="tableSql"/>.*
+        select
+        <include refid="returnSql"/>
+        from
+        (<include refid="tableReturn" />)
+        as
+        <include refid="tableSqlAs" />
+        <include refid="relevanceSqlAs" />
+    </select>
+    <!--  返回  -->
+    <sql id="returnSql">
+        <include refid="tableSqlAs"/>.*
+
+        ,<include refid="tableSqlSignInReviewReimbursement" />.name as s_id
+        ,<include refid="tableSqlSignInReviewReimbursement" />.id as s_personnel_id
+        ,<include refid="tableSqlSignInReviewReimbursement" />.verifier_remark as s_verifier_remark
+        ,<include refid="tableSqlSignInReviewReimbursement" />.verifier_state as s_verifier_state
+        ,<include refid="tableSqlSignInReviewReimbursement" />.verifier_time as s_verifier_time
+        ,<include refid="tableSqlSignInReviewReimbursement" />.dispatch_code as s_dispatch_code
+        ,<include refid="tableSqlSignInReviewReimbursement" />.dispatch_state as s_dispatch_state
+        ,<include refid="tableSqlSignInReviewReimbursement" />.number as s_number
+
+        ,<include refid="tableSqlSysManagement" />.id as s_id
+        ,<include refid="tableSqlSysManagement" />.name as s_name
+    </sql>
+    <!--  子表  -->
+    <sql id="tableReturn">
+        select
+        <include refid="tableSql"/>.*
         from
         <include refid="tableSql"/>
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
+        <include refid="safeGroupBy" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
-    </select>
+    </sql>
     <sql id="tableSql">
         manage.sign_in_review
+    </sql>
+    <sql id="tableSqlSignInReviewReimbursement">
+        manage.sign_in_review_reimbursement
+    </sql>
+    <sql id="tableSqlSysManagement">
+        manage.sys_management
+    </sql>
+    <sql id="relevanceSql">
+        LEFT JOIN <include refid="tableSqlSignInReviewReimbursement" /> on <include refid="tableSqlSignInReviewReimbursement" />.dispatch_code = <include refid="tableSql"/>.dispatch_code
+        LEFT JOIN <include refid="tableSqlSysManagement" /> on <include refid="tableSqlSysManagement" />.id = <include refid="tableSql"/>.management_id
+    </sql>
+    <sql id="relevanceSqlAs">
+        LEFT JOIN <include refid="tableSqlSignInReviewReimbursement" /> on <include refid="tableSqlSignInReviewReimbursement" />.dispatch_code = <include refid="tableSqlAs"/>.dispatch_code
+        LEFT JOIN <include refid="tableSqlSysManagement" /> on <include refid="tableSqlSysManagement" />.id = <include refid="tableSqlAs"/>.management_id
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
         <if test="id != null "> and `id` = #{id}</if>
+        <if test="personnelId != null"> and <include refid="tableSqlSignInReviewReimbursement" />.personnel_id = #{personnelId}</if>
+        <if test="startTime != null and endTime!= null"> and <include refid="tableSql" />.clocking_day_time BETWEEN #{startTime} AND #{endTime}</if>
+        <if test="verifierState != null"> and <include refid="tableSql" />.verifier_state = #{verifierState}</if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">
@@ -52,6 +118,10 @@
         </if>
     </sql>
     <sql id="safeOrderBy">
-        order by <include refid="tableSql"/>.id desc
+        order by FIELD(<include refid="tableSql"/>.`verifier_state`,
+        'pending') desc,<include refid="tableSql"/>.id desc
+    </sql>
+    <sql id="safeGroupBy">
+        GROUP BY <include refid="tableSql"/>.id
     </sql>
 </mapper>

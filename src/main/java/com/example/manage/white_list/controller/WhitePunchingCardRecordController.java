@@ -83,9 +83,16 @@ public class WhitePunchingCardRecordController {
     public ReturnEntity video_check_in_add(HttpServletRequest request){
         return iWhitePunchingCardRecordService.methodMasterT(request,"video_check_in_add");
     }
+
+    // 查询视频签到申请列表
+    @PostMapping(value = "video_check_in_cat")
+    public ReturnEntity video_check_in_cat(HttpServletRequest request){
+        return iWhitePunchingCardRecordService.methodMasterT(request,"video_check_in_cat");
+    }
+
     // 审核视频签到
     @PostMapping(value = "video_check_in_edit")
-    public ReturnEntity video_check_in_cat(HttpServletRequest request) {
+    public ReturnEntity video_check_in_edit(HttpServletRequest request) {
         return iWhitePunchingCardRecordService.methodMasterT(request, "video_check_in_edit");
     }
     public static void main(String[] args) {

@@ -3,7 +3,6 @@ package com.example.manage.white_list.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.*;
-import com.example.manage.entity.is_not_null.DispatchApplicationManagementNotNull;
 import com.example.manage.entity.is_not_null.PunchingCardRecordNotNull;
 import com.example.manage.entity.is_not_null.SignInReviewNotNull;
 import com.example.manage.entity.number.ManagementPunching;
@@ -221,11 +220,14 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         }
         //判断当前是上班打卡还是下班打卡
         QueryWrapper wrapper = new QueryWrapper();
-        wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(clocking_day_time) = 0");
+        wrapper.eq("clocking_day_time", signInReview.getClockingDayTime());
         wrapper.eq("personnel_code",personnel.getPersonnelCode());
         PunchingCardRecord punchingCardRecord = iPunchingCardRecordMapper.selectOne(wrapper);
         //至此拦截机制结束
         if (jsonParam.getVerifierState().equals("agree")){
+            wrapper = new QueryWrapper();
+            wrapper.eq("path_code",signInReview.getDispatchCode());
+            ReimbursementImage reimbursementImage = iReimbursementImageMapper.selectOne(wrapper);
             Map map = new HashMap();
             map.put("reimbursementRecordCode",signInReview.getDispatchCode());
             map.put("approvalState","pending");
@@ -280,7 +282,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     null,
                     null,
                     null,
-                    "agree"
+                    "agree",
+                    null
             ));
             if (updateById != 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"修改数据失败");
@@ -288,6 +291,12 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             CheckInTime checkInTime = iCheckInTimeMapper.selectById(signInReview.getCheckInTimeId());
             int insert = 0;
             if (signInReview.getSignInType().equals("上班")){
+                String uuid = PanXiaoZhang.getID();
+                iReimbursementImageMapper.insert(new ReimbursementImage(
+                    reimbursementImage.getPathUrl(),
+                    uuid,
+                    reimbursementImage.getHttpUrl()
+                ));
                 PunchingCardRecord cardRecord = new PunchingCardRecord(
                         null,
                         signInReview.getName(),
@@ -311,14 +320,20 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         null,
                         signInReview.getModel(),
                         null,
-                        signInReview.getDispatchCode(),
+                        uuid,
                         signInReview.getCheckInType(),
                         null,
                         signInReview.getRemark(),
                         null
                 );
+
                 insert = iPunchingCardRecordMapper.insert(cardRecord);
             }else {
+                iReimbursementImageMapper.insert(new ReimbursementImage(
+                        reimbursementImage.getPathUrl(),
+                        punchingCardRecord.getPunchingCardRecordCode(),
+                        reimbursementImage.getHttpUrl()
+                ));
                 //进行下班打卡
                 PunchingCardRecord cardRecord = new PunchingCardRecord(
                         punchingCardRecord.getId(),
@@ -412,7 +427,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     null,
                     null,
                     null,
-                    "refuse"
+                    "refuse",
+                    null
             ));
             if (updateById != 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"修改数据失败");
@@ -586,36 +602,14 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             if (compareTime > 0){
                 workingClockInState = "迟到";
             }
-            //获取编码
-            String uuid = PanXiaoZhang.getID();
-            SignInReview signInReview = new SignInReview(
-                    null,
-                    personnel.getName(),
-                    personnel.getPersonnelCode(),
-                    null,
-                    jsonParam.getManagement().getId(),
-                    personnel.getOpenId(),
-                    jsonParam.getOpenId(),
-                    workingClockInState,
-                    format,
-                    DateFormatUtils.format(date, PanXiaoZhang.yMd()),
-                    checkInTimeId,
-                    checkInTimeName,
-                    loginRecord.getLoginTime(),
-                    jsonParam.getModel(),
-                    uuid,
-                    "上班视频签到",
-                    jsonParam.getRemark(),
-                    "上班",
-                    uuid,
-                    "pending"
-            );
             //存储map
             Map<Integer, SysRole> mapRole = new HashMap();
             //存储通知的人
             Map<Integer, SysPersonnel> mapPersonnel = new HashMap();
             //是否有审核人
             Integer appNumber = 0;
+            //获取编码
+            String uuid = PanXiaoZhang.getID();
             //进行判断，如果是员工
             if (personnel.getRoleId().equals(manage5)){
                 //设置审核职位
@@ -624,6 +618,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                 wrapper = new QueryWrapper();
                 wrapper.in("id",integers);
                 List<SysRole> sysRoles = iSysRoleMapper.selectList(wrapper);
+                jsonParam.setMaxNumber(4);
                 for (int i = 0; i < sysRoles.size(); i++) {
                     SysRole sysRole = sysRoles.get(i);
                     mapRole.put(sysRole.getId(),sysRole);
@@ -644,7 +639,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                                     null,
                                     "pending",
                                     null,
-                                    jsonParam.getDispatchCode(),
+                                    uuid,
                                     "视频签到审核人",
                                     sysRole.getLevelSorting()
                             ));
@@ -654,6 +649,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     }
                 }
             }else {
+                appNumber++;
+                jsonParam.setMaxNumber(0);
                 SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(405);
                 //记录审核人审核人
                 mapPersonnel.put(sysPersonnel.getId(),sysPersonnel);
@@ -663,8 +660,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         null,
                         "pending",
                         null,
-                        jsonParam.getDispatchCode(),
-                        "调派前审核人",
+                        uuid,
+                        "审核人",
                         0
                 ));
                 //如果返回值不能鱼1则判断失败
@@ -672,8 +669,45 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             }
             //判断是否有审核人
             if (appNumber < 1){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"暂无审核人");
+                SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(405);
+                //记录审核人审核人
+                mapPersonnel.put(sysPersonnel.getId(),sysPersonnel);
+                int insertReimbursement = iSignInReviewReimbursementMapper.insert(new SignInReviewReimbursement(
+                        null,
+                        sysPersonnel.getId(),
+                        null,
+                        "pending",
+                        null,
+                        uuid,
+                        "审核人",
+                        0
+                ));
+                //如果返回值不能鱼1则判断失败
+                if (insertReimbursement != 1){return new ReturnEntity(CodeEntity.CODE_ERROR,"审核人失败");}
             }
+            SignInReview signInReview = new SignInReview(
+                    null,
+                    personnel.getName(),
+                    personnel.getPersonnelCode(),
+                    null,
+                    jsonParam.getManagement().getId(),
+                    personnel.getOpenId(),
+                    jsonParam.getOpenId(),
+                    workingClockInState,
+                    format,
+                    DateFormatUtils.format(date, PanXiaoZhang.yMd()),
+                    checkInTimeId,
+                    checkInTimeName,
+                    loginRecord.getLoginTime(),
+                    jsonParam.getModel(),
+                    uuid,
+                    "上班视频签到",
+                    jsonParam.getRemark(),
+                    "上班",
+                    uuid,
+                    "pending",
+                    jsonParam.getMaxNumber()
+            );
             int insert = iSignInReviewMapper.insert(signInReview);
             int insertImage = iReimbursementImageMapper.insert(new ReimbursementImage(
                     jsonParam.getVideoPath(),
@@ -725,29 +759,6 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             }
             //获取编码
             String uuid = PanXiaoZhang.getID();
-            SignInReview signInReview = new SignInReview(
-                    null,
-                    personnel.getName(),
-                    personnel.getPersonnelCode(),
-                    null,
-                    jsonParam.getManagement().getId(),
-                    personnel.getOpenId(),
-                    jsonParam.getOpenId(),
-                    workingClockInState,
-                    format,
-                    DateFormatUtils.format(date, PanXiaoZhang.yMd()),
-                    checkInTimeId,
-                    checkInTimeName,
-                    loginRecord.getLoginTime(),
-                    jsonParam.getModel(),
-                    uuid,
-                    "下班视频收工",
-                    jsonParam.getRemark(),
-                    "下班",
-                    uuid,
-                    "pending"
-            );
-
             //存储map
             Map<Integer, SysRole> mapRole = new HashMap();
             //存储通知的人
@@ -758,6 +769,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             if (personnel.getRoleId().equals(manage5)){
                 //设置审核职位
                 Integer[] integers = {1};
+                jsonParam.setMaxNumber(4);
                 //查询职位名
                 wrapper = new QueryWrapper();
                 wrapper.in("id",integers);
@@ -782,7 +794,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                                     null,
                                     "pending",
                                     null,
-                                    jsonParam.getDispatchCode(),
+                                    uuid,
                                     "视频签到审核人",
                                     sysRole.getLevelSorting()
                             ));
@@ -792,6 +804,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     }
                 }
             }else {
+                appNumber++;
+                jsonParam.setMaxNumber(0);
                 SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(405);
                 //记录审核人审核人
                 mapPersonnel.put(sysPersonnel.getId(),sysPersonnel);
@@ -801,13 +815,36 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         null,
                         "pending",
                         null,
-                        jsonParam.getDispatchCode(),
-                        "调派前审核人",
+                        uuid,
+                        "下班视频审核人",
                         0
                 ));
                 //如果返回值不能鱼1则判断失败
                 if (insertReimbursement != 1){return new ReturnEntity(CodeEntity.CODE_ERROR,"审核人失败");}
             }
+            SignInReview signInReview = new SignInReview(
+                    null,
+                    personnel.getName(),
+                    personnel.getPersonnelCode(),
+                    null,
+                    jsonParam.getManagement().getId(),
+                    personnel.getOpenId(),
+                    jsonParam.getOpenId(),
+                    workingClockInState,
+                    format,
+                    DateFormatUtils.format(date, PanXiaoZhang.yMd()),
+                    checkInTimeId,
+                    checkInTimeName,
+                    loginRecord.getLoginTime(),
+                    jsonParam.getModel(),
+                    uuid,
+                    "下班视频收工",
+                    jsonParam.getRemark(),
+                    "下班",
+                    uuid,
+                    "pending",
+                    jsonParam.getMaxNumber()
+            );
             //判断是否有审核人
             if (appNumber < 1){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"暂无审核人");
@@ -1189,6 +1226,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                 return clocking_situation(request);
             }else if (name.equals("clocking_situation_particulars")){
                 return clocking_situation_particulars(request);
+            }else if (name.equals("video_check_in_cat")){
+                return video_check_in_cat(request);
             }
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }catch (Exception e){
@@ -1196,6 +1235,13 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
     }
+
+    private ReturnEntity video_check_in_cat(HttpServletRequest request){
+        Map jsonMap = PanXiaoZhang.getJsonMap(request);
+        List<SignInReview> signInReviews = iSignInReviewMapper.queryAll(jsonMap);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED, signInReviews,"");
+    }
+
     /*---------------------------*/
     //关联项目组打卡情况
     private ReturnEntity clocking_situation_particulars(HttpServletRequest request) throws IOException {
@@ -1669,11 +1715,47 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         //上班打卡时间
         if (!ObjectUtils.isEmpty(punchingCardRecord.getWorkingAttendanceTime())){
             punchingCardRecord.setWorkingAttendanceTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMd()) + " " + punchingCardRecord.getWorkingAttendanceTime());
+        }else {
+            wrapper = new QueryWrapper();
+            //查询重复提交
+            wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(clocking_day_time) = 0");
+            wrapper.eq("personnel_code",personnel.getPersonnelCode());
+            wrapper.eq("sign_in_type","上班");
+            wrapper.orderByDesc("id");
+            wrapper.last("LIMIT 1");
+            SignInReview signInReview = iSignInReviewMapper.selectOne(wrapper);
+            if (!ObjectUtils.isEmpty(signInReview)){
+                punchingCardRecord.setWorkingAttendanceTime(signInReview.getClockingDayTime() + " " + signInReview.getAttendanceTime());
+                if (signInReview.getVerifierState().equals("pending")){
+                    punchingCardRecord.setWorkingAttendanceState("待审核");
+                }else {
+                    punchingCardRecord.setWorkingAttendanceState("视频签到被拒，请重新提交");
+                }
+
+            }
         }
 
         //下班
         if (!ObjectUtils.isEmpty(punchingCardRecord.getClosedAttendanceTime())){
             punchingCardRecord.setClosedAttendanceTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMd()) + " " + punchingCardRecord.getClosedAttendanceTime());
+        }else {
+            wrapper = new QueryWrapper();
+            //查询重复提交
+            wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(clocking_day_time) = 0");
+            wrapper.eq("personnel_code",personnel.getPersonnelCode());
+            wrapper.eq("sign_in_type","下班");
+            wrapper.orderByDesc("id");
+            wrapper.last("LIMIT 1");
+            SignInReview signInReview = iSignInReviewMapper.selectOne(wrapper);
+            if (!ObjectUtils.isEmpty(signInReview)){
+                punchingCardRecord.setClosedAttendanceTime(signInReview.getClockingDayTime() + " " + signInReview.getAttendanceTime());
+                punchingCardRecord.setClosedAttendanceState(signInReview.getVerifierState());
+                if (signInReview.getVerifierState().equals("pending")){
+                    punchingCardRecord.setWorkingAttendanceState("待审核");
+                }else {
+                    punchingCardRecord.setWorkingAttendanceState("视频签到被拒，请重新提交");
+                }
+            }
         }
 
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,punchingCardRecord,"");
