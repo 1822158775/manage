@@ -21,6 +21,12 @@
         <result column="working_check_in_type" property="workingCheckInType" />
         <result column="closed_check_in_type" property="closedCheckInType" />
 
+        <collection property="punchingCardRecordReimbursement" ofType="com.example.manage.entity.PunchingCardRecordReimbursement">
+            <result column="p_id" property="id" />
+            <result column="p_verifier_state" property="verifierState" />
+            <result column="p_name" property="personnelName" />
+        </collection>
+
         <collection property="sysManagement" ofType="com.example.manage.entity.SysManagement">
             <result column="m_id" property="id" />
             <result column="m_name" property="name" />
@@ -50,7 +56,6 @@
         as
         <include refid="tableSqlAs" />
         <include refid="relevanceSqlAs" />
-        <include refid="whereSqlModelAs" />
         <include refid="safeOrderByAs"/>
     </select>
     <sql id="tableSqlAs">
@@ -62,7 +67,9 @@
         <include refid="tableSql"/>.*
         from
         <include refid="tableSql"/>
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
+        <include refid="safeGroupBy" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
     </sql>
@@ -74,6 +81,12 @@
     </sql>
     <sql id="tableSqlRIAs">
         reimbursementImageAs
+    </sql>
+    <sql id="tableSqlPunchingCardRecordReimbursement">
+        manage.punching_card_record_reimbursement
+    </sql>
+    <sql id="tableSqlSysPersonnel">
+        manage.sys_personnel
     </sql>
     <!--  返回  -->
     <sql id="returnSql">
@@ -88,18 +101,28 @@
         ,<include refid="tableSqlRI" />.`path_url`
         ,<include refid="tableSqlRI" />.`path_code`
         ,<include refid="tableSqlRI" />.`http_url`
+
+        ,<include refid="tableSqlPunchingCardRecordReimbursement" />.verifier_state as p_verifier_state
+        ,<include refid="tableSqlPunchingCardRecordReimbursement" />.id as p_id
+
+        ,<include refid="tableSqlSysPersonnel" />.name as p_name
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSqlAs">
         LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSqlAs" />.personnel_code
         LEFT JOIN sys_management on sys_management.id = <include refid="tableSqlAs" />.management_id
         LEFT JOIN <include refid="tableSqlRI" /> on <include refid="tableSqlRI" />.path_code = <include refid="tableSqlAs" />.punching_card_record_code
+        LEFT JOIN <include refid="tableSqlPunchingCardRecordReimbursement" /> on <include refid="tableSqlPunchingCardRecordReimbursement" />.dispatch_code = <include refid="tableSqlAs" />.punching_card_record_code
+        LEFT JOIN <include refid="tableSqlSysPersonnel" /> on <include refid="tableSqlSysPersonnel" />.id = <include refid="tableSqlPunchingCardRecordReimbursement" />.personnel_id
 <!--        LEFT JOIN <include refid="tableSqlRI" /> as <include refid="tableSqlRIAs" />  on <include refid="tableSqlRIAs" />.path_code = <include refid="tableSqlAs" />.punching_card_record_code-->
     </sql>
     <!--  进行关联表  -->
     <sql id="relevanceSql">
         LEFT JOIN management_personnel on management_personnel.personnel_code = <include refid="tableSql" />.personnel_code
-        LEFT JOIN sys_management on sys_management.id = management_personnel.management_id
+        LEFT JOIN sys_management on sys_management.id = <include refid="tableSql" />.management_id
+        LEFT JOIN <include refid="tableSqlRI" /> on <include refid="tableSqlRI" />.path_code = <include refid="tableSql" />.punching_card_record_code
+        LEFT JOIN <include refid="tableSqlPunchingCardRecordReimbursement" /> on <include refid="tableSqlPunchingCardRecordReimbursement" />.dispatch_code = <include refid="tableSql" />.punching_card_record_code
+        LEFT JOIN <include refid="tableSqlSysPersonnel" /> on <include refid="tableSqlSysPersonnel" />.id = <include refid="tableSqlPunchingCardRecordReimbursement" />.personnel_id
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
@@ -107,6 +130,11 @@
         <if test="dateFormat == 'start' "> and DATE_FORMAT(<include refid="tableSql" />.clocking_day_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
         <if test="checkInType != null and checkInType != ''"> and (<include refid="tableSql" />.`working_check_in_type` like concat('%',#{checkInType},'%') or <include refid="tableSql" />.`closed_check_in_type` like concat('%',#{checkInType},'%'))</if>
+        <if test="personnelId != null"> and <include refid="tableSqlPunchingCardRecordReimbursement" />.personnel_id = #{personnelId}</if>
+        <if test="startTime != null and endTime!= null"> and <include refid="tableSql" />.clocking_day_time BETWEEN #{startTime} AND #{endTime}</if>
+        <if test="verifierState != null"> and <include refid="tableSqlPunchingCardRecordReimbursement" />.verifier_state = #{verifierState}</if>
+        <if test="personnelCode != null"> and <include refid="tableSql" />.personnel_code = #{personnelCode}</if>
+        <if test="noVerifierState != null"> and <include refid="tableSqlPunchingCardRecordReimbursement" />.verifier_state != #{verifierState}</if>
     </sql>
     <sql id="whereSqlModelAs">
         where 1 = 1
@@ -121,6 +149,9 @@
                 LIMIT #{index},#{pageNum}
             </if>
         </if>
+    </sql>
+    <sql id="safeGroupBy">
+        GROUP BY <include refid="tableSql"/>.id
     </sql>
     <sql id="safeOrderBy">
         order by <include refid="tableSql"/>.id desc

@@ -25,9 +25,16 @@
         <result column="max_number" property="maxNumber" />
 
         <association property="sysManagement" javaType="com.example.manage.entity.SysManagement">
-            <result column="s_id" property="id" />
-            <result column="s_name" property="name" />
+            <result column="s_m_id" property="id" />
+            <result column="s_m_name" property="name" />
         </association>
+
+        <collection property="reimbursementImages" ofType="com.example.manage.entity.ReimbursementImage">
+            <result column="r_path_code" property="pathCode" />
+            <result column="r_path_url" property="pathUrl" />
+            <result column="r_http_url" property="httpUrl" />
+        </collection>
+
         <collection property="signInReviewReimbursements" ofType="com.example.manage.entity.SignInReviewReimbursement">
             <result column="s_id" property="id" />
             <result column="s_personnel_id" property="personnelId" />
@@ -37,6 +44,7 @@
             <result column="s_dispatch_code" property="dispatchCode" />
             <result column="s_dispatch_state" property="dispatchState" />
             <result column="s_number" property="number" />
+            <result column="p_name" property="personnelName" />
         </collection>
 
     </resultMap>
@@ -62,8 +70,8 @@
     <sql id="returnSql">
         <include refid="tableSqlAs"/>.*
 
-        ,<include refid="tableSqlSignInReviewReimbursement" />.name as s_id
-        ,<include refid="tableSqlSignInReviewReimbursement" />.id as s_personnel_id
+        ,<include refid="tableSqlSignInReviewReimbursement" />.id as s_id
+        ,<include refid="tableSqlSignInReviewReimbursement" />.personnel_id as s_personnel_id
         ,<include refid="tableSqlSignInReviewReimbursement" />.verifier_remark as s_verifier_remark
         ,<include refid="tableSqlSignInReviewReimbursement" />.verifier_state as s_verifier_state
         ,<include refid="tableSqlSignInReviewReimbursement" />.verifier_time as s_verifier_time
@@ -71,8 +79,15 @@
         ,<include refid="tableSqlSignInReviewReimbursement" />.dispatch_state as s_dispatch_state
         ,<include refid="tableSqlSignInReviewReimbursement" />.number as s_number
 
-        ,<include refid="tableSqlSysManagement" />.id as s_id
-        ,<include refid="tableSqlSysManagement" />.name as s_name
+        ,<include refid="tableSqlSysManagement" />.id as s_m_id
+        ,<include refid="tableSqlSysManagement" />.name as s_m_name
+
+
+        ,<include refid="tableSqlReimbursementImage" />.path_url as r_path_url
+        ,<include refid="tableSqlReimbursementImage" />.path_code as p_path_code
+        ,<include refid="tableSqlReimbursementImage" />.http_url as p_http_url
+
+        ,<include refid="tableSqlSysPersonnel" />.name as p_name
     </sql>
     <!--  子表  -->
     <sql id="tableReturn">
@@ -95,13 +110,23 @@
     <sql id="tableSqlSysManagement">
         manage.sys_management
     </sql>
+    <sql id="tableSqlReimbursementImage">
+        manage.reimbursement_image
+    </sql>
+    <sql id="tableSqlSysPersonnel">
+        manage.sys_personnel
+    </sql>
     <sql id="relevanceSql">
         LEFT JOIN <include refid="tableSqlSignInReviewReimbursement" /> on <include refid="tableSqlSignInReviewReimbursement" />.dispatch_code = <include refid="tableSql"/>.dispatch_code
         LEFT JOIN <include refid="tableSqlSysManagement" /> on <include refid="tableSqlSysManagement" />.id = <include refid="tableSql"/>.management_id
+        LEFT JOIN <include refid="tableSqlReimbursementImage" /> on <include refid="tableSqlReimbursementImage" />.path_code = <include refid="tableSql"/>.dispatch_code
+        LEFT JOIN <include refid="tableSqlSysPersonnel" /> on <include refid="tableSqlSysPersonnel" />.id = <include refid="tableSqlSignInReviewReimbursement" />.personnel_id
     </sql>
     <sql id="relevanceSqlAs">
         LEFT JOIN <include refid="tableSqlSignInReviewReimbursement" /> on <include refid="tableSqlSignInReviewReimbursement" />.dispatch_code = <include refid="tableSqlAs"/>.dispatch_code
         LEFT JOIN <include refid="tableSqlSysManagement" /> on <include refid="tableSqlSysManagement" />.id = <include refid="tableSqlAs"/>.management_id
+        LEFT JOIN <include refid="tableSqlReimbursementImage" /> on <include refid="tableSqlReimbursementImage" />.path_code = <include refid="tableSqlAs"/>.dispatch_code
+        LEFT JOIN <include refid="tableSqlSysPersonnel" /> on <include refid="tableSqlSysPersonnel" />.id = <include refid="tableSqlSignInReviewReimbursement" />.personnel_id
     </sql>
     <sql id="whereSqlModel">
         where 1 = 1
@@ -119,7 +144,7 @@
     </sql>
     <sql id="safeOrderBy">
         order by FIELD(<include refid="tableSql"/>.`verifier_state`,
-        'pending') desc,<include refid="tableSql"/>.id desc
+        'pending') desc,<include refid="tableSql"/>.id desc,<include refid="tableSqlSignInReviewReimbursement" />.`number` desc
     </sql>
     <sql id="safeGroupBy">
         GROUP BY <include refid="tableSql"/>.id

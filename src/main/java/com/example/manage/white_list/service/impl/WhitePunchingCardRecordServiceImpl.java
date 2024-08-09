@@ -26,6 +26,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -44,11 +45,14 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
     @Value("${role.manage}")
     private Integer manage;
 
-    @Value("${url.dispatch}")
-    private String urlDispatch;
+    @Value("${url.video_check_list}")
+    private String video_check_list;
 
     @Value("${url.transfer}")
     private String urlTransfer;
+
+    @Value("${card.number}")
+    private Integer cardNumber;
 
     @Resource
     private IPunchingCardRecordMapper iPunchingCardRecordMapper;
@@ -95,6 +99,12 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
     @Resource
     private IWhiteSysPersonnelService iWhiteSysPersonnelService;
 
+    @Resource
+    private IPunchingCardRecordReimbursementMapper iPunchingCardRecordReimbursementMapper;
+
+    @Resource
+    private ICardReplacementRecordMapper iCardReplacementRecordMapper;
+
     //方法总管外加事务
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -126,6 +136,12 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 }
                 return returnEntity;
+            }else if (name.equals("video_check_in_update")){
+                ReturnEntity returnEntity = video_check_in_update(request);
+                if (!returnEntity.getCode().equals("0")){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                }
+                return returnEntity;
             }
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
@@ -134,6 +150,88 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ReturnEntity(CodeEntity.CODE_ERROR, MsgEntity.CODE_ERROR);
         }
+    }
+
+    private ReturnEntity video_check_in_update(HttpServletRequest request) throws IOException {
+        PunchingCardRecord jsonParam = PanXiaoZhang.getJSONParam(request, PunchingCardRecord.class);
+        ReturnEntity returnEntity = PanXiaoZhang.isNull(jsonParam,
+                new PunchingCardRecordNotNull(
+                        "isNotNullAndIsLengthNot0",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "isNotNullAndIsLengthNot0",
+                        "",
+                        "",
+                        "",
+                        ""
+                ));
+        if (returnEntity.getState()){
+            return returnEntity;
+        }
+        //查询签到记录
+        PunchingCardRecord cardRecord = iPunchingCardRecordMapper.selectById(jsonParam.getId());
+        //判断记录
+        if (ObjectUtils.isEmpty(cardRecord)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"该数据不存在");
+        }
+        //查询当前数据状态
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("dispatch_code",cardRecord.getPunchingCardRecordCode());
+        PunchingCardRecordReimbursement cardRecordReimbursement = iPunchingCardRecordReimbursementMapper.selectOne(wrapper);
+        //判断当前数据是否具备审核
+        if (ObjectUtils.isEmpty(cardRecordReimbursement)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"数据不具备审核条件");
+        }
+        //判断当前数据是否可审核状态
+        if (!cardRecordReimbursement.getVerifierState().equals("agree")){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"数据不具备审核条件");
+        }
+        //如果是无效
+        if (jsonParam.getVerifierState().equals("invalid")){
+            cardRecordReimbursement.setVerifierState(jsonParam.getVerifierState());
+            int updateById = iPunchingCardRecordReimbursementMapper.updateById(cardRecordReimbursement);
+            if (updateById != 1) {
+                return new ReturnEntity(CodeEntity.CODE_ERROR, "审核数据更改失败");
+            }
+            return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
+        }
+        //查询签到人员信息
+        wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",cardRecord.getPersonnelCode());
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
+        //查询是否有当天的打卡记录
+        wrapper = new QueryWrapper();
+        wrapper.between("applicant_time", LocalDate.now().withDayOfMonth(1) + " 00:00:00", LocalDate.now() + " 23:59:59");
+        wrapper.eq("personnel_id",sysPersonnel.getId());
+        List<CardReplacementRecord> recordList = iCardReplacementRecordMapper.selectList(wrapper);
+        //查询次数
+        Map map = new HashMap();
+        map.put("verifierState","warning");
+        map.put("personnelCode",sysPersonnel.getPersonnelCode());
+        map.put("startTime",LocalDate.now().withDayOfMonth(1));
+        map.put("endTime",LocalDate.now());
+
+        int i = cardNumber - (recordList.size() + iPunchingCardRecordMapper.queryCount(map));
+        if (i < 1){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"补卡次数不足");
+        }
+        cardRecordReimbursement.setVerifierState(jsonParam.getVerifierState());
+        int updateById = iPunchingCardRecordReimbursementMapper.updateById(cardRecordReimbursement);
+        if (updateById != 1) {
+            return new ReturnEntity(CodeEntity.CODE_ERROR, "审核数据更改失败");
+        }
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
     }
 
     // 视频签到审核
@@ -255,7 +353,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                                     "",
                                     personnel.getName() + "提交了视频签到申请",
                                     "",
-                                    urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
+                                    urlTransfer + "?from=zn&redirect_url=" + video_check_list + "?fromDispatchVerify=true"
                             );
                         }
                     }
@@ -729,7 +827,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         "",
                         personnel.getName() + "提交了视频签到申请",
                         "",
-                        urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
+                        urlTransfer + "?from=zn&redirect_url=" + video_check_list + "?fromDispatchVerify=true"
                 );
             });
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
@@ -870,7 +968,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                         "",
                         personnel.getName() + "提交了视频签到申请",
                         "",
-                        urlTransfer + "?from=zn&redirect_url=" + urlDispatch + "?fromDispatchVerify=true"
+                        urlTransfer + "?from=zn&redirect_url=" + video_check_list + "?fromDispatchVerify=true"
                 );
             });
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,workingClockInState);
@@ -1095,6 +1193,84 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     jsonParam.getRemark(),
                     null
             );
+
+
+            //存储map
+            Map<Integer, SysRole> mapRole = new HashMap();
+            //存储通知的人
+            Map<Integer, SysPersonnel> mapPersonnel = new HashMap();
+            //是否有审核人
+            Integer appNumber = 0;
+            //进行判断，如果是员工
+            if (personnel.getRoleId().equals(manage5)){
+                //设置审核职位
+                Integer[] integers = {1};
+                //查询职位名
+                wrapper = new QueryWrapper();
+                wrapper.in("id",integers);
+                List<SysRole> sysRoles = iSysRoleMapper.selectList(wrapper);
+                for (int i = 0; i < sysRoles.size(); i++) {
+                    SysRole sysRole = sysRoles.get(i);
+                    mapRole.put(sysRole.getId(),sysRole);
+                    appNumber++;
+                    List<SysPersonnel> sysPersonnels = iWhiteSysPersonnelService.myLeader(sysRole.getId(), jsonParam.getManagement().getId());
+                    for (int j = 0; j < sysPersonnels.size(); j++) {
+                        SysPersonnel sysPersonnel = sysPersonnels.get(j);
+                        if (ObjectUtils.isEmpty(mapPersonnel.get(sysPersonnel.getId()))){
+                            //记录审核人审核人
+                            mapPersonnel.put(sysPersonnel.getId(),sysPersonnel);
+                            int insertReimbursement = iPunchingCardRecordReimbursementMapper.insert(new PunchingCardRecordReimbursement(
+                                    null,
+                                    sysPersonnel.getId(),
+                                    null,
+                                    "agree",
+                                    null,
+                                    uuid,
+                                    "视频签到审核人",
+                                    sysRole.getLevelSorting()
+                            ));
+                            //如果返回值不能鱼1则判断失败
+                            if (insertReimbursement != 1){return new ReturnEntity(CodeEntity.CODE_ERROR,"审核人失败");}
+                            break;
+                        }
+                    }
+                }
+            }else {
+                appNumber++;
+                SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(405);
+                //记录审核人审核人
+                mapPersonnel.put(sysPersonnel.getId(),sysPersonnel);
+                int insertReimbursement = iPunchingCardRecordReimbursementMapper.insert(new PunchingCardRecordReimbursement(
+                        null,
+                        sysPersonnel.getId(),
+                        null,
+                        "agree",
+                        null,
+                        uuid,
+                        "视频签到审核人",
+                        0
+                ));
+                //如果返回值不能鱼1则判断失败
+                if (insertReimbursement != 1){return new ReturnEntity(CodeEntity.CODE_ERROR,"审核人失败");}
+            }
+            //判断是否有审核人
+            if (appNumber < 1){
+                SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(405);
+                //记录审核人审核人
+                mapPersonnel.put(sysPersonnel.getId(),sysPersonnel);
+                int insertReimbursement = iPunchingCardRecordReimbursementMapper.insert(new PunchingCardRecordReimbursement(
+                        null,
+                        sysPersonnel.getId(),
+                        null,
+                        "agree",
+                        null,
+                        uuid,
+                        "视频签到审核人",
+                        0
+                ));
+                //如果返回值不能鱼1则判断失败
+                if (insertReimbursement != 1){return new ReturnEntity(CodeEntity.CODE_ERROR,"审核人失败");}
+            }
             int insert = iPunchingCardRecordMapper.insert(cardRecord);
             int insertImage = iReimbursementImageMapper.insert(new ReimbursementImage(
                     jsonParam.getVideoPath(),
@@ -1238,8 +1414,8 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
 
     private ReturnEntity video_check_in_cat(HttpServletRequest request){
         Map jsonMap = PanXiaoZhang.getJsonMap(request);
-        List<SignInReview> signInReviews = iSignInReviewMapper.queryAll(jsonMap);
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED, signInReviews,"");
+        List<PunchingCardRecord> recordList = iPunchingCardRecordMapper.queryAll(jsonMap);
+        return new ReturnEntity(CodeEntity.CODE_SUCCEED, recordList,"");
     }
 
     /*---------------------------*/
@@ -1715,47 +1891,11 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         //上班打卡时间
         if (!ObjectUtils.isEmpty(punchingCardRecord.getWorkingAttendanceTime())){
             punchingCardRecord.setWorkingAttendanceTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMd()) + " " + punchingCardRecord.getWorkingAttendanceTime());
-        }else {
-            wrapper = new QueryWrapper();
-            //查询重复提交
-            wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(clocking_day_time) = 0");
-            wrapper.eq("personnel_code",personnel.getPersonnelCode());
-            wrapper.eq("sign_in_type","上班");
-            wrapper.orderByDesc("id");
-            wrapper.last("LIMIT 1");
-            SignInReview signInReview = iSignInReviewMapper.selectOne(wrapper);
-            if (!ObjectUtils.isEmpty(signInReview)){
-                punchingCardRecord.setWorkingAttendanceTime(signInReview.getClockingDayTime() + " " + signInReview.getAttendanceTime());
-                if (signInReview.getVerifierState().equals("pending")){
-                    punchingCardRecord.setWorkingAttendanceState("待审核");
-                }else {
-                    punchingCardRecord.setWorkingAttendanceState("视频签到被拒，请重新提交");
-                }
-
-            }
         }
 
         //下班
         if (!ObjectUtils.isEmpty(punchingCardRecord.getClosedAttendanceTime())){
             punchingCardRecord.setClosedAttendanceTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMd()) + " " + punchingCardRecord.getClosedAttendanceTime());
-        }else {
-            wrapper = new QueryWrapper();
-            //查询重复提交
-            wrapper.apply(true, "TO_DAYS(NOW())-TO_DAYS(clocking_day_time) = 0");
-            wrapper.eq("personnel_code",personnel.getPersonnelCode());
-            wrapper.eq("sign_in_type","下班");
-            wrapper.orderByDesc("id");
-            wrapper.last("LIMIT 1");
-            SignInReview signInReview = iSignInReviewMapper.selectOne(wrapper);
-            if (!ObjectUtils.isEmpty(signInReview)){
-                punchingCardRecord.setClosedAttendanceTime(signInReview.getClockingDayTime() + " " + signInReview.getAttendanceTime());
-                punchingCardRecord.setClosedAttendanceState(signInReview.getVerifierState());
-                if (signInReview.getVerifierState().equals("pending")){
-                    punchingCardRecord.setWorkingAttendanceState("待审核");
-                }else {
-                    punchingCardRecord.setWorkingAttendanceState("视频签到被拒，请重新提交");
-                }
-            }
         }
 
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,punchingCardRecord,"");

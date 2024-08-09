@@ -157,6 +157,12 @@ public class PunchingCardRecord implements Serializable {
     @TableField(exist = false)
     public String workingAttendanceState;//上班打卡状态
 
+    @TableField(exist = false)
+    public List<PunchingCardRecordReimbursement> punchingCardRecordReimbursement;
+
+    @TableField(exist = false)
+    public String verifierState;//状态
+
     public PunchingCardRecord() {
     }
 

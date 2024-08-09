@@ -13,14 +13,14 @@ import java.io.Serializable;
 
 /**
  * @avthor 潘小章
- * @date 2024-08-02 11:00:14
- * 视频签到审核表
+ * @date 2024-08-09 15:11:58
+ * 签到审核表
  */
 
 @Data
 @ToString
-@TableName(value = "sign_in_review_reimbursement")
-public class SignInReviewReimbursement implements Serializable {
+@TableName(value = "punching_card_record_reimbursement")
+public class PunchingCardRecordReimbursement implements Serializable {
     @TableId(value = "id",type = IdType.AUTO)
     public Integer id;//
     @TableField(value = "personnel_id")
@@ -43,17 +43,10 @@ public class SignInReviewReimbursement implements Serializable {
     @TableField(exist = false)
     public String personnelName;
 
-    @TableField(exist = false)
-    public SysPersonnel sysPersonnel;//审核人信息
-
-    public SignInReviewReimbursement() {
+    public PunchingCardRecordReimbursement() {
     }
 
-    public SignInReviewReimbursement(Integer id) {
-        this.id = id;
-    }
-
-    public SignInReviewReimbursement(Integer id, Integer personnelId, String verifierRemark, String verifierState, String verifierTime, String dispatchCode, String dispatchState, Integer number) {
+    public PunchingCardRecordReimbursement(Integer id, Integer personnelId, String verifierRemark, String verifierState, String verifierTime, String dispatchCode, String dispatchState, Integer number) {
         this.id = id;
         this.personnelId = personnelId;
         this.verifierRemark = verifierRemark;

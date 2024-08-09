@@ -127,8 +127,18 @@ public class WhiteCardReplacementRecordServiceImpl implements IWhiteCardReplacem
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.between("applicant_time", LocalDate.now().withDayOfMonth(1) + " 00:00:00", LocalDate.now() + " 23:59:59");
         wrapper.eq("personnel_id",jsonMap.get("personnelId"));
+
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(String.valueOf(jsonMap.get("personnelId")));
+
+        //查询次数
+        Map map = new HashMap();
+        map.put("verifierState","warning");
+        map.put("personnelCode",sysPersonnel.getPersonnelCode());
+        map.put("startTime",LocalDate.now().withDayOfMonth(1));
+        map.put("endTime",LocalDate.now());
+
         List<CardReplacementRecord> recordList = iCardReplacementRecordMapper.selectList(wrapper);
-        int i = cardNumber - recordList.size();
+        int i = cardNumber - (recordList.size() + iPunchingCardRecordMapper.queryCount(map));
         if (i < 1){
             if (i < 0){
                 i = 0;

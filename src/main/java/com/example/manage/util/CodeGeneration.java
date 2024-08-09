@@ -510,7 +510,7 @@ public class CodeGeneration {
     }
     public static void main(String[] args) {
         try {
-            methodMaster("视频签到审核表","sign_in_review_reimbursement","SignInReviewReimbursement");
+            methodMaster("签到审核表","punching_card_record_reimbursement","PunchingCardRecordReimbursement");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {

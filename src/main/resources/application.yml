@@ -99,6 +99,7 @@ url:
   employer_list: /packageZn/pages/employer_list/employer_list?managementId=
   leave_job_list: /packageZn/pages/leave_job_list/leave_job_list
   dispatch_list: /packageZn/pages/dispatch_list/dispatch_list
+  video_check_list: /packageZn/pages/video_check_list/video_check_list
 card:
   number: 5
 card_type:

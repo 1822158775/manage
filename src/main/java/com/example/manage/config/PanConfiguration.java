@@ -1,7 +1,9 @@
 package com.example.manage.config;
 
 import com.example.manage.entity.PunchingCardRecord;
+import com.example.manage.entity.SignInReview;
 import com.example.manage.job.SchedulingSysManagementService;
+import com.example.manage.mapper.ISignInReviewMapper;
 import com.example.manage.service.IPunchingCardRecordService;
 import com.example.manage.util.RedisUtil;
 import com.example.manage.util.XlsxReader;
@@ -42,13 +44,7 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     private String leaveJobList;
 
     @Resource
-    private IWhiteSysPersonnelService iWhiteSysPersonnelService;
-
-    @Resource
-    private IPunchingCardRecordService iPunchingCardRecordService;
-
-    @Resource
-    private SchedulingSysManagementService schedulingSysManagementService;
+    private ISignInReviewMapper iSignInReviewMapper;
 
     @Resource
     private XlsxReader xlsxReader;
@@ -56,7 +52,6 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
-
             //iWhiteSysPersonnelService.ceshi();
             //MythicalCreatures.mythical_creatures_1();
             //schedulingSysManagementService.windUpAnAccount();
