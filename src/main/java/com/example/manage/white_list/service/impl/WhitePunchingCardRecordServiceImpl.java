@@ -194,7 +194,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             return new ReturnEntity(CodeEntity.CODE_ERROR,"数据不具备审核条件");
         }
         //判断当前数据是否可审核状态
-        if (!cardRecordReimbursement.getVerifierState().equals("agree")){
+        if (cardRecordReimbursement.getVerifierState().equals("invalid")){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"数据不具备审核条件");
         }
         //查询签到人员信息
@@ -213,7 +213,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                     sysPersonnel.getOpenId(),
                     "",
                     "",
-                    cardRecord.getClockingDayTime() + "提交了视频签到被拒",
+                    cardRecord.getClockingDayTime() + "视频签到不规范按缺勤处理",
                     "",
                     ""
             );
@@ -246,7 +246,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
                 sysPersonnel.getOpenId(),
                 "",
                 "",
-                cardRecord.getClockingDayTime() + "提交了视频签到被警告",
+                cardRecord.getClockingDayTime() + "视频签到不规范被警告处理，扣当月补卡次数一次",
                 "",
                 ""
         );
