@@ -20,6 +20,7 @@ public class PunchingCardRecordTime implements Serializable {
     public String furloughRecordTime;//请假时间
     public String workingCheckRemark;//上班备注
     public String closedCheckRemark;//下班备注
+    public String verifierState;//状态
 
     public PunchingCardRecordTime() {
     }

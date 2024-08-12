@@ -197,6 +197,10 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (!cardRecordReimbursement.getVerifierState().equals("agree")){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"数据不具备审核条件");
         }
+        //查询签到人员信息
+        wrapper = new QueryWrapper();
+        wrapper.eq("personnel_code",cardRecord.getPersonnelCode());
+        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
         //如果是无效
         if (jsonParam.getVerifierState().equals("invalid")){
             cardRecordReimbursement.setVerifierState(jsonParam.getVerifierState());
@@ -204,12 +208,17 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
             if (updateById != 1) {
                 return new ReturnEntity(CodeEntity.CODE_ERROR, "审核数据更改失败");
             }
+            //告知审核人前往审核
+            PanXiaoZhang.postWechatFer(
+                    sysPersonnel.getOpenId(),
+                    "",
+                    "",
+                    cardRecord.getClockingDayTime() + "提交了视频签到被拒",
+                    "",
+                    ""
+            );
             return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
         }
-        //查询签到人员信息
-        wrapper = new QueryWrapper();
-        wrapper.eq("personnel_code",cardRecord.getPersonnelCode());
-        SysPersonnel sysPersonnel = iSysPersonnelMapper.selectOne(wrapper);
         //查询是否有当天的打卡记录
         wrapper = new QueryWrapper();
         wrapper.between("applicant_time", LocalDate.now().withDayOfMonth(1) + " 00:00:00", LocalDate.now() + " 23:59:59");
@@ -231,6 +240,16 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (updateById != 1) {
             return new ReturnEntity(CodeEntity.CODE_ERROR, "审核数据更改失败");
         }
+
+        //告知审核人前往审核
+        PanXiaoZhang.postWechatFer(
+                sysPersonnel.getOpenId(),
+                "",
+                "",
+                cardRecord.getClockingDayTime() + "提交了视频签到被警告",
+                "",
+                ""
+        );
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"审核成功");
     }
 

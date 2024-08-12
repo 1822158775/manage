@@ -158,6 +158,8 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                 for (int j = 0; j < punchingCardRecords.size(); j++) {
                     //获取打卡信息
                     PunchingCardRecord punchingCardRecord = punchingCardRecords.get(j);
+                    //获取当前数据状态
+
                     //存入map
                     cardRecordMap.put(
                             punchingCardRecord.getClockingDayTime() + punchingCardRecord.getPersonnelCode()
@@ -175,6 +177,8 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                 List<PunchingCardRecordTime> recordList = new ArrayList<>();
                 //总时长
                 Long sumTime = 0L;
+                Integer warningNumber = 0;//警告次数
+                Integer invalidNumber = 0;//缺勤次数
                 //遍历日期
                 for (int j = 0; j < days.size(); j++) {
                     String day = days.get(j);
@@ -192,6 +196,14 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                     //获取打卡信息
                     PunchingCardRecord punchingCardRecord = cardRecordMap.get(key);
                     if (!ObjectUtils.isEmpty(punchingCardRecord)) {
+                        //存储当前备注信息
+                        punchingCardRecordTime.setVerifierState(punchingCardRecord.getVerifierState());
+                        //判断次数
+                        if (!ObjectUtils.isEmpty(punchingCardRecord.getVerifierState()) && punchingCardRecord.getVerifierState().equals("warning")){
+                            warningNumber++;
+                        }else if (!ObjectUtils.isEmpty(punchingCardRecord.getVerifierState()) && punchingCardRecord.getVerifierState().equals("invalid")){
+                            invalidNumber++;
+                        }
                         //附上备注
                         punchingCardRecordTime.setWorkingCheckRemark(punchingCardRecord.getWorkingCheckRemark());
                         punchingCardRecordTime.setClosedCheckRemark(punchingCardRecord.getClosedCheckRemark());
@@ -252,12 +264,14 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                         }
                         recordList.add(punchingCardRecordTime);
                     }else {
+                        //存储当前备注信息
+                        punchingCardRecordTime.setVerifierState("agree");
                         punchingCardRecordTime.setCheckIn("缺勤");
                         punchingCardRecordTime.setCheckOut("缺勤");
                         recordList.add(punchingCardRecordTime);
                     }
                 }
-                punchingCardRecordStatistcs.add(new PunchingCardRecordStatistcs(
+                PunchingCardRecordStatistcs cardRecordStatistcs = new PunchingCardRecordStatistcs(
                         personnel.getName(),
                         personnel.getPersonnels(),
                         personnel.getManagements(),
@@ -268,7 +282,10 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
                         (sumTime / 60) + "小时" + (sumTime % 60) + "分钟",
                         personnel.getWorkingAgoOpenNumber(),
                         recordList
-                ));
+                );
+                cardRecordStatistcs.setWarningNumber(warningNumber);
+                cardRecordStatistcs.setInvalidNumber(invalidNumber);
+                punchingCardRecordStatistcs.add(cardRecordStatistcs);
             }
             //Object[] title = {"主管","项目","员工","执勤天数","迟到次数","早退次数","缺卡次数",days};
             //Object[] title = {days};

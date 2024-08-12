@@ -31,7 +31,12 @@ public class PunchingCardRecordStatistcs implements Serializable {
 
     public WorkingAgoOpenNumber workingAgoOpenNumber;//几个不同的微信号
 
+    public String verifierState;//状态
+
     public List<PunchingCardRecordTime> punchingCardRecordList;//签到时间
+
+    public Integer warningNumber;//警告次数
+    public Integer invalidNumber;//缺勤次数
 
     public PunchingCardRecordStatistcs() {
     }

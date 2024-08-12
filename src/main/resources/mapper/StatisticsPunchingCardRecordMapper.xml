@@ -57,6 +57,7 @@
             <result column="p_c_r_management_end_time" property="managementEndTime" />
             <result column="p_c_r_working_check_remark" property="workingCheckRemark" />
             <result column="p_c_r_closed_check_remark" property="closedCheckRemark" />
+            <result column="p_c_r_verifier_state" property="verifierState" />
         </collection>
 
         <collection property="furloughRecords" ofType="com.example.manage.entity.FurloughRecord">
@@ -99,13 +100,11 @@
 
     <!--  查询总数量  -->
     <select id="queryCount" resultType="int" parameterType="hashmap">
-        select count(DISTINCT <include refid="tableSqlAs"/>.id) as id
+        select count(DISTINCT <include refid="tableSql"/>.id) as id
         from
         <include refid="tableSql" />
-        as
-        <include refid="tableSqlAs" />
         <include refid="relevanceSql" />
-        <include refid="whereSqlModelCount"/>
+        <include refid="whereSqlModel"/>
     </select>
 
     <!--  查询分页  -->
@@ -116,8 +115,7 @@
         (<include refid="tableReturn" />)
         as
         <include refid="tableSqlAs" />
-        <include refid="relevanceSql" />
-        <include refid="whereSqlModelAs" />
+        <include refid="relevanceSqlAs" />
     </select>
 
     <!--  返回  -->
@@ -173,6 +171,8 @@
 
         ,<include refid="tableSqlSP" />.name as s_p_name
         ,<include refid="tableSqlSP" />.sex as s_p_sex
+
+        ,<include refid="tableSqlPunchingCardRecordReimbursement" />.verifier_state as p_c_r_verifier_state
     </sql>
     <!--  虚拟表  -->
     <sql id="tableSqlAs">
@@ -209,12 +209,18 @@
         manage.furlough_record
     </sql>
 
+    <!--  请假表  -->
+    <sql id="tableSqlPunchingCardRecordReimbursement">
+        manage.punching_card_record_reimbursement
+    </sql>
+
     <!--  进行关联表  -->
     <sql id="relevanceSql">
-        LEFT JOIN <include refid="tableSqlRole" /> on <include refid="tableSqlRole" />.id = <include refid="tableSqlAs" />.role_id
-        LEFT JOIN <include refid="tableSqlPunchingCardRecord" /> on <include refid="tableSqlAs" />.personnel_code = <include refid="tableSqlPunchingCardRecord" />.personnel_code
+        LEFT JOIN <include refid="tableSqlRole" /> on <include refid="tableSqlRole" />.id = <include refid="tableSql" />.role_id
+        LEFT JOIN <include refid="tableSqlPunchingCardRecord" /> on <include refid="tableSql" />.personnel_code = <include refid="tableSqlPunchingCardRecord" />.personnel_code
         <if test="dateFormat == 'start' "> and DATE_FORMAT(<include refid="tableSqlPunchingCardRecord" />.clocking_day_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime}</if>
-        LEFT JOIN <include refid="tableSqlManagementPersonnel" /> on <include refid="tableSqlManagementPersonnel" />.personnel_code = <include refid="tableSqlAs" />.personnel_code
+        LEFT JOIN <include refid="tableSqlPunchingCardRecordReimbursement" /> on <include refid="tableSqlPunchingCardRecordReimbursement" />.dispatch_code = <include refid="tableSqlPunchingCardRecord" />.punching_card_record_code
+        LEFT JOIN <include refid="tableSqlManagementPersonnel" /> on <include refid="tableSqlManagementPersonnel" />.personnel_code = <include refid="tableSql" />.personnel_code
         LEFT JOIN <include refid="tableSqlSysManagement" />  on <include refid="tableSqlSysManagement" />.id = <include refid="tableSqlManagementPersonnel" />.management_id
         LEFT JOIN
             <include refid="tableSql" />
@@ -223,17 +229,31 @@
          on
             <include refid="tableSqlSP" />.personnel_code = <include refid="tableSqlManagementPersonnel" />.personnel_code
             <if test="sysRoleId != null and sysRoleId != ''"> and <include refid="tableSqlSP" />.`role_id` = #{sysRoleId}</if>
+        LEFT JOIN <include refid="tableSqlFurloughRecord" /> on <include refid="tableSqlFurloughRecord" />.personnel_id = <include refid="tableSql" />.id
+        <if test="dateFormat == 'start' "> and (DATE_FORMAT(<include refid="tableSqlFurloughRecord" />.start_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime} or DATE_FORMAT(<include refid="tableSqlFurloughRecord" />.end_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime})</if>
+
+    </sql>
+
+    <!--  进行关联表  -->
+    <sql id="relevanceSqlAs">
+        LEFT JOIN <include refid="tableSqlRole" /> on <include refid="tableSqlRole" />.id = <include refid="tableSqlAs" />.role_id
+        LEFT JOIN <include refid="tableSqlPunchingCardRecord" /> on <include refid="tableSqlAs" />.personnel_code = <include refid="tableSqlPunchingCardRecord" />.personnel_code
+        <if test="dateFormat == 'start' "> and DATE_FORMAT(<include refid="tableSqlPunchingCardRecord" />.clocking_day_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime}</if>
+        LEFT JOIN <include refid="tableSqlPunchingCardRecordReimbursement" /> on <include refid="tableSqlPunchingCardRecordReimbursement" />.dispatch_code = <include refid="tableSqlPunchingCardRecord" />.punching_card_record_code
+        LEFT JOIN <include refid="tableSqlManagementPersonnel" /> on <include refid="tableSqlManagementPersonnel" />.personnel_code = <include refid="tableSqlAs" />.personnel_code
+        LEFT JOIN <include refid="tableSqlSysManagement" />  on <include refid="tableSqlSysManagement" />.id = <include refid="tableSqlManagementPersonnel" />.management_id
+        LEFT JOIN
+        <include refid="tableSql" />
+        as
+        <include refid="tableSqlSP" />
+        on
+        <include refid="tableSqlSP" />.personnel_code = <include refid="tableSqlManagementPersonnel" />.personnel_code
+        <if test="sysRoleId != null and sysRoleId != ''"> and <include refid="tableSqlSP" />.`role_id` = #{sysRoleId}</if>
         LEFT JOIN <include refid="tableSqlFurloughRecord" /> on <include refid="tableSqlFurloughRecord" />.personnel_id = <include refid="tableSqlAs" />.id
         <if test="dateFormat == 'start' "> and (DATE_FORMAT(<include refid="tableSqlFurloughRecord" />.start_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime} or DATE_FORMAT(<include refid="tableSqlFurloughRecord" />.end_time,"%Y-%m-%d") BETWEEN #{startTime} AND #{endTime})</if>
 
     </sql>
 
-    <!--  记录表查询  -->
-    <sql id="whereSqlModelAs">
-        where 1 = 1
-        <if test="id != null "> and `id` = #{id}</if>
-        and (<include refid="tableSqlAs" />.`employment_status` = 1 or <include refid="tableSqlAs" />.`leave_time` >= #{startTime})
-    </sql>
     <!--  分表排序  -->
     <sql id="safeOrderByAs">
         order by <include refid="tableSqlRole"/>.level_sorting
@@ -245,22 +265,11 @@
         <include refid="tableSql"/>.*
         from
         <include refid="tableSql"/>
-        <include refid="relevanceSqlModel" />
+        <include refid="relevanceSql" />
         <include refid="whereSqlModel" />
+        <include refid="safeGroupBy" />
         <include refid="safeOrderBy"/>
         <include refid="safeLIMIT"/>
-    </sql>
-    <!--  总数查询搜索条件  -->
-    <sql id="whereSqlModelCount">
-        where 1 = 1
-        <if test="keyWord != null and keyWord != ''"> and <include refid="tableSqlAs" />.`name` like concat('%',#{keyWord},'%')</if>
-        <if test="roleId != null and roleId != ''"> and <include refid="tableSqlAs" />.`role_id` = #{roleId}</if>
-        <if test="managementId != null and managementId != ''"> and <include refid="tableSqlManagementPersonnel" />.`management_id` = #{managementId}</if>
-        <if test="inRoleId != null"> and <include refid="tableSqlAs" />.`role_id` in
-            <foreach collection="inRoleId" separator="," item="item" open="(" close=")">
-                #{item}
-            </foreach>
-        </if>
     </sql>
     <!--  查询主表  -->
     <sql id="tableSql">
@@ -278,6 +287,9 @@
             </foreach>
         </if>
         and (<include refid="tableSql" />.`employment_status` = 1 or <include refid="tableSql" />.`leave_time` >= #{startTime})
+    </sql>
+    <sql id="safeGroupBy">
+        GROUP BY <include refid="tableSql"/>.id
     </sql>
     <!--  主表排序  -->
     <sql id="safeOrderBy">
