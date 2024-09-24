@@ -1,15 +1,13 @@
 package com.example.manage.config.handle;
 
-
-import com.alibaba.fastjson.JSONObject;
 import com.example.manage.entity.SysPersonnel;
 import com.example.manage.entity.SysTableAuthority;
 import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.mapper.ISysTableAuthorityMapper;
-import com.example.manage.service.IRedisUtilService;
-import com.example.manage.service.ISysPersonnelService;
-import com.example.manage.service.ISysTableAuthorityService;
-import com.example.manage.util.*;
+import com.example.manage.util.GetSpringBean;
+import com.example.manage.util.PanXiaoZhang;
+import com.example.manage.util.RedisUtil;
+import com.example.manage.util.TokenUtil;
 import com.example.manage.util.entity.TokenEntity;
 import com.example.manage.util.entity.TokenPersonnel;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +16,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -27,8 +24,10 @@ import java.util.Map;
 
 /**
  * @avthor 潘小章
- * @date 2022/4/14
+ * @date 2024/9/5
  */
+
+
 @Slf4j
 public class UserInterceptor implements HandlerInterceptor {
     @Override

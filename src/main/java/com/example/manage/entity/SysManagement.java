@@ -78,6 +78,9 @@ public class SysManagement implements Serializable {
     @TableField(value = "clock_in_type")
     public String clockInType;/*打卡类型*/
 
+    @TableField(value = "belonging_company")
+    public String belongingCompany;/*所属单位*/
+
     @TableField(exist = false)
     public List<CardType> cardTypeS;//卡种管理
     @TableField(exist = false)

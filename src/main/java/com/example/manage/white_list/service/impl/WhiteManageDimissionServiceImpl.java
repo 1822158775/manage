@@ -211,6 +211,15 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
             //设置该条数据唯一编码
             jsonParam.setReportCoding("coding" + System.currentTimeMillis() + PanXiaoZhang.ran(2));
         }
+        //查询项目
+        SysManagement sysManagement = iSysManagementMapper.selectById(jsonParam.getManagementId());
+        /*判定如果项目组单位不为空则不允许提交*/
+        if (!ObjectUtils.isEmpty(sysManagement.getBelongingCompany())){
+            return new ReturnEntity(
+                    CodeEntity.CODE_ERROR,
+                    "不可使用"
+            );
+        }
         //添加当前报告时间
         jsonParam.setSubmissionTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMdHms()));
         //添加默认状态
@@ -228,8 +237,6 @@ public class WhiteManageDimissionServiceImpl implements IWhiteManageDimissionSer
         wrapper = new QueryWrapper();
         wrapper.eq("username",phone);
         SysPersonnel personnel = iSysPersonnelMapper.selectOne(wrapper);
-        //查询项目
-        SysManagement sysManagement = iSysManagementMapper.selectById(jsonParam.getManagementId());
         ReturnEntity entity = new ReturnEntity();
         if (sysManagement.getId() != 1 && sysManagement.getId() != 2){
             // 发送人事

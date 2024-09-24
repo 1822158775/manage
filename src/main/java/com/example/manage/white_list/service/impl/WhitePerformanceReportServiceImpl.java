@@ -1410,22 +1410,23 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         if (!management.getManagementState().equals(1)){
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
         }
-        //查询该项目主管
-        Map map = new HashMap();
-        map.put("managementId",jsonParam.getManagementId());
-        map.put("roleId",roleId);
-        map.put("employmentStatus","1");
-        List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
-        if (sysPersonnels.size() < 1){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"当前项目无人审核，无法提交");
+        SysPersonnel personnel = new SysPersonnel();
+        if(ObjectUtils.isEmpty(management.getBelongingCompany())){
+            //查询该项目主管
+            Map map = new HashMap();
+            map.put("managementId",jsonParam.getManagementId());
+            map.put("roleId",roleId);
+            map.put("employmentStatus","1");
+            List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
+            if (sysPersonnels.size() < 1){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"当前项目无人审核，无法提交");
+            }
+            personnel = sysPersonnels.get(0);
+            jsonParam.setApproverPersonnelId(personnel.getId());
         }
-        SysPersonnel personnel = sysPersonnels.get(0);
-
-        jsonParam.setApproverPersonnelId(personnel.getId());
-
         jsonParam.setReportTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMdHms()));
 
-        jsonParam.setApproverState("pending");
+        jsonParam.setApproverState("agree");
 
         //修改
         if (!ObjectUtils.isEmpty(jsonParam.getSalesList())){
@@ -1471,15 +1472,19 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     MsgEntity.CODE_ERROR
             );
         }
-       PanXiaoZhang.postWechatFer(
-                personnel.getOpenId(),
-                "",
-                "",
-                sysPersonnel.getName() + ":修改了业绩信息,请前往审核",
-                "",
-                urlTransfer + "?from=zn&redirect_url=" + urlPerformance
-        );
-        return new ReturnEntity(CodeEntity.CODE_SUCCEED,"修改成功,请等待审核");
+       if (ObjectUtils.isEmpty(management.getBelongingCompany())){
+           PanXiaoZhang.postWechatFer(
+                   personnel.getOpenId(),
+                   "",
+                   "",
+                   sysPersonnel.getName() + ":修改了业绩信息,请前往审核",
+                   "",
+                   urlTransfer + "?from=zn&redirect_url=" + urlPerformance
+           );
+           return new ReturnEntity(CodeEntity.CODE_SUCCEED,"修改成功,请等待审核");
+       }else {
+           return new ReturnEntity(CodeEntity.CODE_SUCCEED,"修改成功");
+       }
     }
 
     //查询审核列表
@@ -1664,29 +1669,14 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                         "isNotNullAndIsLengthNot0",
                         "isNotNullAndIsLengthNot0",
                         "",
-                        "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0",
-                        "isNotNullAndIsLengthNot0"
+                        "",
+                        "",
+                        "",
+                        ""
                 )
         );
         if (returnEntity.getState()){
             return returnEntity;
-        }
-        if (
-            jsonParam.getEntryNumber() < 1
-            || jsonParam.getApprovedNumber() < 0
-            || jsonParam.getValidNumber() < 0
-            || jsonParam.getRefuseNumber() < 0
-        ){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"非法填写参数");
-        }
-        //判断填报数量是否正确
-        if (jsonParam.getEntryNumber() < (jsonParam.getApprovedNumber() + jsonParam.getRefuseNumber())){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"批核加拒绝总数量不能大于进件数");
-        }
-        if (jsonParam.getApprovedNumber() < jsonParam.getValidNumber()){
-            return new ReturnEntity(CodeEntity.CODE_ERROR,"有效数不能大于批核数");
         }
         SysPersonnel sysPersonnel = iSysPersonnelMapper.selectById(jsonParam.getPersonnelId());
         //判断当前人员状态
@@ -1708,6 +1698,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             return new ReturnEntity(CodeEntity.CODE_ERROR,"该卡种不存在");
         }
         QueryWrapper wrapper = new QueryWrapper();
+        SysManagement management = new SysManagement();
         //查询当前个人的信息
         if (!returnEntity.getState()){
             //如果查不到人员信息
@@ -1724,7 +1715,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"未关联项目组");
                 }
                 ManagementPersonnel managementPersonnel = list.get(0);
-                SysManagement management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+                management = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
                 if (!management.getManagementState().equals(1)){
                     return new ReturnEntity(CodeEntity.CODE_ERROR,"该项目已停止运营");
                 }
@@ -1736,13 +1727,15 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
             map.put("roleId",roleId);
             map.put("employmentStatus","1");
             List<SysPersonnel> sysPersonnels = whiteSysPersonnelMapper.queryAll(map);
-            if (sysPersonnels.size() < 1){
-                return new ReturnEntity(CodeEntity.CODE_ERROR,"当前项目无人审核，无法提交");
+            if (ObjectUtils.isEmpty(management.getBelongingCompany())){
+                if (sysPersonnels.size() < 1){
+                    return new ReturnEntity(CodeEntity.CODE_ERROR,"当前项目无人审核，无法提交");
+                }
+                SysPersonnel personnel = sysPersonnels.get(0);
+                //添加审核人编码
+                jsonParam.setApproverPersonnelId(personnel.getId());
+                jsonParam.setSysPersonnel(personnel);
             }
-            SysPersonnel personnel = sysPersonnels.get(0);
-            //添加审核人编码
-            jsonParam.setApproverPersonnelId(personnel.getId());
-            jsonParam.setSysPersonnel(personnel);
             //设置该条数据唯一编码
             jsonParam.setReportCoding("coding" + System.currentTimeMillis() + PanXiaoZhang.ran(2));
         }
@@ -1780,8 +1773,32 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         }
         //添加修改时间
         jsonParam.setUpdateTime(format);
+
         //添加默认状态
-        jsonParam.setApproverState("pending");
+        if (ObjectUtils.isEmpty(management.getBelongingCompany())){
+            jsonParam.setApproverState("pending");
+            if (
+                    ObjectUtils.isEmpty(jsonParam.getEntryNumber()) || jsonParam.getEntryNumber() < 1 ||
+                    ObjectUtils.isEmpty(jsonParam.getApprovedNumber())|| jsonParam.getApprovedNumber() < 0 ||
+                    ObjectUtils.isEmpty(jsonParam.getValidNumber())|| jsonParam.getValidNumber() < 0 ||
+                    ObjectUtils.isEmpty(jsonParam.getRefuseNumber())|| jsonParam.getRefuseNumber() < 0
+            ){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"进件,批核,有效(激活),拒绝 均为必填");
+            }
+            //判断填报数量是否正确
+            if (jsonParam.getEntryNumber() < (jsonParam.getApprovedNumber() + jsonParam.getRefuseNumber())){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"批核加拒绝总数量不能大于进件数");
+            }
+            if (jsonParam.getApprovedNumber() < jsonParam.getValidNumber()){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"有效数不能大于批核数");
+            }
+        }else {
+            jsonParam.setEntryNumber(0);
+            jsonParam.setApprovedNumber(0);
+            jsonParam.setValidNumber(0);
+            jsonParam.setRefuseNumber(0);
+            jsonParam.setApproverState("agree");
+        }
         //关联权益
         if (!ObjectUtils.isEmpty(jsonParam.getSalesList())){
             for (int i = 0; i < jsonParam.getSalesList().size(); i++) {
@@ -1817,14 +1834,16 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
                     MsgEntity.CODE_ERROR
             );
         }
-        ReturnEntity entity = PanXiaoZhang.postWechatFer(
-                jsonParam.getSysPersonnel().getOpenId(),
-                "",
-                "",
-                sysPersonnel.getName() + ":提交业绩信息,请前往审核",
-                "",
-                urlTransfer + "?from=zn&redirect_url=" + urlPerformance
-        );
+        if (ObjectUtils.isEmpty(management.getBelongingCompany())) {
+            ReturnEntity entity = PanXiaoZhang.postWechatFer(
+                    jsonParam.getSysPersonnel().getOpenId(),
+                    "",
+                    "",
+                    sysPersonnel.getName() + ":提交业绩信息,请前往审核",
+                    "",
+                    urlTransfer + "?from=zn&redirect_url=" + urlPerformance
+            );
+        }
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,"上报成功");
     }
     //查询提交的表单
@@ -1841,6 +1860,7 @@ public class WhitePerformanceReportServiceImpl implements IWhitePerformanceRepor
         if (!ObjectUtils.isEmpty(endTime)){
             map.put("endTime",endTime + " 23:59:59");
         }
+        map.put("BelongingCompanyIsNull","yes");
         return new ReturnEntity(CodeEntity.CODE_SUCCEED, iPerformanceReportMapper.queryAll(map),"");
     }
 

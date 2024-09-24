@@ -106,6 +106,7 @@ public class WhiteSysManagementServiceImpl implements IWhiteSysManagementService
     public ReturnEntity cat(HttpServletRequest request) {
         QueryWrapper wrapper = new QueryWrapper();
         wrapper.eq("management_state","1");
+        wrapper.isNull("belonging_company");
         return new ReturnEntity(
                 CodeEntity.CODE_SUCCEED,
                 iSysManagementMapper.selectList(wrapper),

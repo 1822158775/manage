@@ -106,6 +106,7 @@ public class WhiteUnbindRecordServiceImpl implements IWhiteUnbindRecordService {
         map.put("username",jsonParam.getUsername().replaceAll("[^a-zA-Z0-9]",""));
         //map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
         map.put("login","login");
+        map.put("BelongingCompanyIsNull","yes");
         //查询账号信息
         List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
         //判断如果账号查到唯一个就成功登录

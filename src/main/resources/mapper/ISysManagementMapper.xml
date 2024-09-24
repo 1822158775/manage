@@ -84,6 +84,7 @@
         <if test="id != null "> and <include refid="tableSql" />.`id` = #{id}</if>
         <if test="keyWord != null and keyWord != ''"> and <include refid="tableSql" />.`name` like concat('%',#{keyWord},'%')</if>
         <if test="managementState != null "> and <include refid="tableSql" />.`management_state` = #{managementState}</if>
+        AND <include refid="tableSql" />.`belonging_company` IS NULL
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

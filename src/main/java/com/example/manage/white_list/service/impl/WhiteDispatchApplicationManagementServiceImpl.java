@@ -500,6 +500,10 @@ public class WhiteDispatchApplicationManagementServiceImpl implements IWhiteDisp
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"您有多个所属项目，不符合调派逻辑,无法使用改功能");
             }
             ManagementPersonnel managementPersonnel = selectList.get(0);
+            SysManagement sysManagement = iSysManagementMapper.selectById(managementPersonnel.getManagementId());
+            if (!ObjectUtils.isEmpty(sysManagement.getBelongingCompany())){
+                return new ReturnEntity(CodeEntity.CODE_ERROR,"不可使用");
+            }
             if (managementPersonnel.getManagementId().equals(jsonParam.getLaterManagementId())){
                 return new ReturnEntity(CodeEntity.CODE_ERROR,"调派后项目重复");
             }

@@ -107,6 +107,8 @@ public class ILoginServiceImpl implements ILoginService {
             map.put("username",jsonParam.getUsername().replaceAll("[^a-zA-Z0-9]",""));
             //map.put("password",PanXiaoZhang.getPassword(jsonParam.getPassword()));
             map.put("login","login");
+            /*加上条件，允许查到*/
+            map.put("BelongingCompanyIsNull","yes");
             //查询账号信息
             List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.queryAll(map);
             //判断如果账号查到唯一个就成功登录
@@ -203,9 +205,13 @@ public class ILoginServiceImpl implements ILoginService {
         //String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid_by_token", jsonObject.toString(), "");
         //Token token = JSONObject.parseObject(send, Token.class);
         //System.out.println(token);
-        System.out.println(PanXiaoZhang.getPassword("null"));
+        //System.out.println(PanXiaoZhang.getPassword("null"));
+        //
+        //Token parseObject = JSONObject.parseObject(PanXiaoZhang.postOpenId("o_QtX5koly4ZwFla0_cBznevoEZY"), Token.class);
+        //System.out.println(parseObject);
 
-        Token parseObject = JSONObject.parseObject(PanXiaoZhang.postOpenId("o_QtX5koly4ZwFla0_cBznevoEZY"), Token.class);
-        System.out.println(parseObject);
+
+        System.out.println(PanXiaoZhang.isPassword("000216"));
+        System.out.println(PanXiaoZhang.getPassword("000216"));;
     }
 }

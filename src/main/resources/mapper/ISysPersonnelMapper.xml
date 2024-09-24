@@ -143,6 +143,9 @@
             and <include refid="tableSql" />.`standby_application` = #{standbyApplication}
         </if>
         <if test="startTime != null and endTime != ''"> and <include refid="tableSql" />.`entry_time` BETWEEN #{startTime} AND #{endTime}</if>
+        <if test="BelongingCompanyIsNull == null">
+            AND sys_management.`belonging_company` IS NULL
+        </if>
     </sql>
     <sql id="safeLIMIT">
         <if test="queryAll != 'yes'">

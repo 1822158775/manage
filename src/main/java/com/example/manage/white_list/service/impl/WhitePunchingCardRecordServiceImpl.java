@@ -1,5 +1,6 @@
 package com.example.manage.white_list.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.manage.entity.*;
@@ -1916,7 +1917,7 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         if (!ObjectUtils.isEmpty(punchingCardRecord.getClosedAttendanceTime())){
             punchingCardRecord.setClosedAttendanceTime(DateFormatUtils.format(new Date(),PanXiaoZhang.yMd()) + " " + punchingCardRecord.getClosedAttendanceTime());
         }
-
+        log.info("cat返回数据:{}", JSON.toJSONString(punchingCardRecord));
         return new ReturnEntity(CodeEntity.CODE_SUCCEED,punchingCardRecord,"");
     }
 

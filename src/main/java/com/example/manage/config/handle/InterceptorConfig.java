@@ -7,8 +7,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * @avthor 潘小章
- * @date 2022/4/14
+ * @date 2024/9/5
  */
+
+
 @Component
 @Configuration//定义此类为配置类
 public class InterceptorConfig  implements WebMvcConfigurer {
