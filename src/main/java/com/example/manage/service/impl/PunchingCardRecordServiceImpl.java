@@ -124,6 +124,7 @@ public class PunchingCardRecordServiceImpl implements IPunchingCardRecordService
         //存储整体数据
         ArrayList<PunchingCardRecordStatistcs> punchingCardRecordStatistcs = new ArrayList<>();
         if (integer < 32 && integer > 0){
+        //if (true){
             map.put("dateFormat","start");
             map.put("inRoleId", new Integer[]{roleId, manage5});
             map.put("sysRoleId",roleId);
