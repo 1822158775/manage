@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>manage</artifactId>
-    <version>1.7.5.2</version>
+    <version>1.7.5.3</version>
     <name>manage</name>
     <description>管理系统</description>
     <properties>
@@ -125,6 +125,28 @@
             <version>2.6.12</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.3.16</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+        </dependency>
+
+        <!--热部署-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
 <!--        &lt;!&ndash; OpenCV Java bindings &ndash;&gt;-->
 <!--        <dependency>-->
 <!--            <groupId>org.openpnp</groupId>-->

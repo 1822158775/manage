@@ -135,6 +135,11 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
             if (!ObjectUtils.isEmpty(personnel.getOpenId())){
                 openId = personnel.getOpenId();
             }
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+            }
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     openId,
@@ -184,6 +189,11 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
             String openId = "";
             if (!ObjectUtils.isEmpty(personnel.getOpenId())){
                 openId = personnel.getOpenId();
+            }
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
             }
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
@@ -235,6 +245,11 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
             if (!ObjectUtils.isEmpty(personnel.getOpenId())){
                 openId = personnel.getOpenId();
             }
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+            }
             //告知审核人前往审核
             PanXiaoZhang.postWechatFer(
                     openId,
@@ -274,6 +289,11 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                             "",
                             urlTransfer + "?from=zn&redirect_url=" + employerList + sysManagement.getId()
                     );
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e) {
+                        System.out.println(e.getMessage());
+                    }
                     break;
                 }
             }
@@ -302,6 +322,11 @@ public class SchedulingSysManagementImpl implements SchedulingSysManagementServi
                     "",
                     urlTransfer + "?from=zn&redirect_url=" + leaveJobList
             );
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+            }
         }
     }
 
