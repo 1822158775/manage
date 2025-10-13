@@ -1153,10 +1153,18 @@ public class PanXiaoZhang {
     }
     //获取token
     public static String postOpenId(String token){
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("token",token);
-        String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid_by_token", jsonObject.toString(), "");
-        return send;
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("token",token);
+            String send = HttpUtil.send("https://www.topvoyage.top/api/miniapp/v1/zhen_ning/get_openid_by_token", jsonObject.toString(), "");
+            return send;
+        }catch (Exception e){
+            return JSONObject.toJSONString(new Token(
+                    null,
+                    "",
+                    null
+            ));
+        }
     }
     //发送消息
     public static ReturnEntity postWechat(String phone,String keyword1,String keyword2,String keyword3,String keyword4,String pagepath){

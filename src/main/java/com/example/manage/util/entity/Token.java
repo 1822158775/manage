@@ -14,4 +14,13 @@ public class Token {
     public Boolean success;
     public String message;
     public TokenResponse response;
+
+    public Token() {
+    }
+
+    public Token(Boolean success, String message, TokenResponse response) {
+        this.success = success;
+        this.message = message;
+        this.response = response;
+    }
 }

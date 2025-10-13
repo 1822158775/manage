@@ -12,4 +12,12 @@ import lombok.ToString;
 public class TokenResponse {
     public String access_token;
     public String openid;
+
+    public TokenResponse() {
+    }
+
+    public TokenResponse(String access_token, String openid) {
+        this.access_token = access_token;
+        this.openid = openid;
+    }
 }

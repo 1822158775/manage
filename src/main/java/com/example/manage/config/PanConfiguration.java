@@ -1,9 +1,14 @@
 package com.example.manage.config;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.manage.entity.ManagementPersonnel;
 import com.example.manage.entity.PunchingCardRecord;
 import com.example.manage.entity.SignInReview;
+import com.example.manage.entity.SysPersonnel;
 import com.example.manage.job.SchedulingSysManagementService;
+import com.example.manage.mapper.IManagementPersonnelMapper;
 import com.example.manage.mapper.ISignInReviewMapper;
+import com.example.manage.mapper.ISysPersonnelMapper;
 import com.example.manage.service.IPunchingCardRecordService;
 import com.example.manage.util.RedisUtil;
 import com.example.manage.util.XlsxReader;
@@ -49,10 +54,31 @@ public class PanConfiguration implements ApplicationListener<ApplicationReadyEve
     @Resource
     private XlsxReader xlsxReader;
 
+    @Resource
+    private ISysPersonnelMapper iSysPersonnelMapper;
+
+    @Resource
+    private IManagementPersonnelMapper iManagementPersonnelMapper;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
     try {
-            //iWhiteSysPersonnelService.ceshi();
+//        QueryWrapper<SysPersonnel> personnelQueryWrapper = new QueryWrapper<>();
+//        personnelQueryWrapper.eq("role_id", 2);
+//        personnelQueryWrapper.ne("id",804);
+//        personnelQueryWrapper.ne("id",806);
+//        Integer[] integers = {55,56,57,58};
+//        List<SysPersonnel> sysPersonnels = iSysPersonnelMapper.selectList(personnelQueryWrapper);
+//        for (SysPersonnel sysPersonnel : sysPersonnels) {
+//            System.out.println(sysPersonnel);
+//            for (Integer integer : integers) {
+//                iManagementPersonnelMapper.insert(new ManagementPersonnel(
+//                        integer,
+//                        sysPersonnel.getPersonnelCode()
+//                ));
+//            }
+//        }
+        //iWhiteSysPersonnelService.ceshi();
             //MythicalCreatures.mythical_creatures_1();
             //schedulingSysManagementService.windUpAnAccount();
             //Map<String,Object> map = new HashMap();

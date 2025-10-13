@@ -1025,7 +1025,12 @@ public class WhitePunchingCardRecordServiceImpl implements IWhitePunchingCardRec
         }
         //获取用户openID
         String token = request.getHeader("Http-X-User-Access-Token");
+        log.info("Http-X-User-Access-Token:{}",token);
+        if (ObjectUtils.isEmpty(token)){
+            return new ReturnEntity(CodeEntity.CODE_ERROR,"令牌丢失");
+        }
         Token parseObject = JSONObject.parseObject(PanXiaoZhang.postOpenId(token), Token.class);
+
         String openid = "未获取到用户的openId";
         if (!ObjectUtils.isEmpty(parseObject.getResponse())){
             openid = parseObject.getResponse().getOpenid();
